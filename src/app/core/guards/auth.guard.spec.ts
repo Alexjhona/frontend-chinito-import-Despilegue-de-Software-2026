@@ -1,17 +1,43 @@
 import { TestBed } from '@angular/core/testing';
-import { CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router, provideRouter } from '@angular/router';
 
 import { AuthGuard } from './auth.guard';
+import { AuthService } from '../services/auth.service';
 
 describe('AuthGuard', () => {
   const executeGuard: CanActivateFn = (...guardParameters) =>
     TestBed.runInInjectionContext(() => AuthGuard(...guardParameters));
+  let authServiceSpy: jasmine.SpyObj<AuthService>;
+  let router: Router;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['isAuthenticated']);
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: authServiceSpy },
+      ],
+    });
+
+    router = TestBed.inject(Router);
   });
 
   it('should be created', () => {
     expect(executeGuard).toBeTruthy();
+  });
+
+  it('should allow access when the user is authenticated', () => {
+    authServiceSpy.isAuthenticated.and.returnValue(true);
+
+    expect(executeGuard({} as never, {} as never)).toBeTrue();
+  });
+
+  it('should redirect to login when the user is not authenticated', () => {
+    const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
+    authServiceSpy.isAuthenticated.and.returnValue(false);
+
+    expect(executeGuard({} as never, {} as never)).toBeFalse();
+    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   });
 });
