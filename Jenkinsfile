@@ -9,6 +9,7 @@ pipeline {
         PROJECT_KEY = 'frontend-chinito-import'
         PROJECT_NAME = 'frontend-chinito-import'
         REPO_URL = 'https://github.com/Alexjhona/frontend-chinito-import-Despilegue-de-Software-2026.git'
+        CHROME_BIN = '/usr/bin/chromium'
     }
 
     stages {
