@@ -25,7 +25,7 @@ describe('VentaComponent', () => {
       clienteNombre: 'Cliente Venta',
       fecha: '2026-05-16T00:00:00',
       total: 240,
-      items: [{ productoId: 10, cantidad: 2, precio: 0 }],
+      items: [{ productoId: 10, cantidad: 2, precio: 120 }],
     },
   ];
 
@@ -85,6 +85,8 @@ describe('VentaComponent', () => {
   });
 
   it('should call POST when registering a valid sale and refresh sales', () => {
+    spyOn(component, 'generarBoletaDesdeVenta').and.stub();
+
     component.seleccionarCliente(clientes[0]);
     component.agregarItem();
     component.seleccionarProducto(0, productos[0]);
@@ -98,7 +100,20 @@ describe('VentaComponent', () => {
       clienteId: 1,
       items: [{ productoId: 10, cantidad: 2 }],
     });
-    req.flush({ id: 101, clienteId: 1, items: [{ productoId: 10, cantidad: 2 }] });
+    req.flush({
+      id: 101,
+      clienteId: 1,
+      clienteNombre: 'Cliente Venta',
+      fecha: '2026-05-16T00:00:00',
+      total: 240,
+      items: [{ productoId: 10, cantidad: 2, precio: 120, productoNombre: 'Zapatilla Urbana' }],
+    });
+
+    expect(component.generarBoletaDesdeVenta).toHaveBeenCalledWith(jasmine.objectContaining({
+      id: 101,
+      total: 240,
+    }));
+    expect(component.mensaje).toBe('Venta registrada correctamente');
 
     httpMock.expectOne(ventasUrl).flush(ventas);
   });
@@ -119,5 +134,27 @@ describe('VentaComponent', () => {
     req.flush({ id: 2, ...component.nuevoCliente });
 
     httpMock.expectOne(clientesUrl).flush(clientes);
+  });
+
+  it('should call DELETE when deleting a sale and refresh the list', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    component.eliminarVenta(100);
+
+    const req = httpMock.expectOne(`${ventasUrl}/100`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({});
+
+    expect(component.mensaje).toBe('Venta eliminada correctamente');
+    httpMock.expectOne(ventasUrl).flush([]);
+  });
+
+  it('should not call DELETE when deletion is cancelled', () => {
+    spyOn(window, 'confirm').and.returnValue(false);
+
+    component.eliminarVenta(100);
+
+    expect(window.confirm).toHaveBeenCalled();
+    httpMock.expectNone(`${ventasUrl}/100`);
   });
 });

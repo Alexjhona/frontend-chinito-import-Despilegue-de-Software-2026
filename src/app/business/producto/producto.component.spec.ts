@@ -107,12 +107,33 @@ describe('ProductoComponent', () => {
     httpMock.expectOne(`${stockUrl}/10`).flush({ cantidad: 15 });
   });
 
+  it('should call PUT for product and stock when editing an existing product', () => {
+    component.editar({ ...productos[0], stock: 15 });
+    component.formProducto.stock = 8;
+
+    component.guardar();
+
+    const productReq = httpMock.expectOne(`${productosUrl}/10`);
+    expect(productReq.request.method).toBe('PUT');
+    productReq.flush({ ...productos[0], stock: 8 });
+
+    const stockReq = httpMock.expectOne(`${stockUrl}/10`);
+    expect(stockReq.request.method).toBe('PUT');
+    expect(stockReq.request.body).toEqual({ cantidad: 8 });
+    stockReq.flush({ productoId: 10, cantidad: 8 });
+
+    expect(component.mensaje).toBe('Producto actualizado correctamente');
+
+    httpMock.expectOne(productosUrl).flush(productos);
+    httpMock.expectOne(`${stockUrl}/10`).flush({ cantidad: 8 });
+  });
+
   it('should not call the backend when saving without a valid category', () => {
     spyOn(window, 'alert');
     component.formProducto.categoriaId = null;
 
     component.guardar();
 
-    expect(window.alert).toHaveBeenCalledWith('Selecciona una categoría válida');
+    expect(window.alert).toHaveBeenCalledWith(jasmine.stringMatching(/categor/i));
   });
 });

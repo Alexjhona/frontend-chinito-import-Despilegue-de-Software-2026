@@ -34,9 +34,10 @@
       <button
         (click)="login()"
         type="button"
+        [disabled]="isLoading"
         class="w-full py-3 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-medium text-sm active:scale-[0.98] transition"
       >
-        Iniciar sesión
+        {{ isLoading ? 'Iniciando...' : 'Iniciar sesion' }}
       </button>
 
       <!-- Error -->

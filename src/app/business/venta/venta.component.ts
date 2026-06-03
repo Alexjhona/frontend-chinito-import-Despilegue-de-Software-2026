@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { jsPDF } from 'jspdf';
 
@@ -41,7 +41,7 @@ interface Venta {
 @Component({
   selector: 'app-venta',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './venta.component.html',
   styleUrl: './venta.component.css',
 })
@@ -127,11 +127,17 @@ export class VentaComponent {
 
   // ================= PRODUCTOS =================
   cargarProductos() {
-    this.http.get<Producto[]>(this.apiProductos).subscribe(data => {
-      this.productos = data;
+    this.http.get<Producto[]>(this.apiProductos).subscribe({
+      next: data => {
+        this.productos = data;
 
       // 🔥 IMPORTANTE: cargar ventas después
-      this.cargarVentas();
+        this.cargarVentas();
+      },
+      error: () => {
+        this.productos = [];
+        this.cargarVentas();
+      }
     });
   }
 
@@ -189,10 +195,10 @@ export class VentaComponent {
 
           if (prod) {
             item.productoNombre = prod.nombre;
-            item.precio = prod.precioVenta;
+            item.precio = item.precio ?? prod.precioVenta;
           } else {
             item.productoNombre = item.productoNombre || 'Producto';
-            item.precio = item.precio || 0;
+            item.precio = item.precio ?? 0;
           }
 
         });
@@ -202,8 +208,42 @@ export class VentaComponent {
     });
   }
 
+  private prepararVentaParaVista(venta: Venta): Venta {
+    venta.items.forEach(item => {
+      const prod = this.productos.find(p => p.id === item.productoId);
+
+      if (prod) {
+        item.productoNombre = prod.nombre;
+        item.precio = item.precio ?? prod.precioVenta;
+      } else {
+        item.productoNombre = item.productoNombre || 'Producto';
+        item.precio = item.precio ?? 0;
+      }
+    });
+
+    return venta;
+  }
+
   toggleDetalles(id: number) {
     this.mostrarDetalles[id] = !this.mostrarDetalles[id];
+  }
+
+  eliminarVenta(id: number | undefined) {
+    if (!id) return;
+    if (!confirm('¿Seguro que deseas eliminar esta venta? Se repondra el stock de sus productos.')) {
+      return;
+    }
+
+    this.http.delete(`${this.apiVentas}/${id}`).subscribe({
+      next: () => {
+        delete this.mostrarDetalles[id];
+        this.mensaje = 'Venta eliminada correctamente';
+        this.cargarVentas();
+      },
+      error: () => {
+        this.mensaje = 'No se pudo eliminar la venta';
+      }
+    });
   }
 
   get totalVenta(): number {
@@ -216,6 +256,11 @@ export class VentaComponent {
       return;
     }
 
+    if (this.nuevaVenta.items.some(item => !item.productoId || item.cantidad < 1)) {
+      this.mensaje = 'Selecciona producto y cantidad';
+      return;
+    }
+
     const venta = {
       clienteId: this.nuevaVenta.clienteId,
       items: this.nuevaVenta.items.map(i => ({
@@ -224,10 +269,20 @@ export class VentaComponent {
       })),
     };
 
-    this.http.post<Venta>(this.apiVentas, venta).subscribe(() => {
-      this.cargarVentas();
-      this.nuevaVenta = { clienteId: null, items: [] };
-      this.mostrarFormulario = false;
+    this.http.post<Venta>(this.apiVentas, venta).subscribe({
+      next: ventaCreada => {
+        const ventaParaBoleta = this.prepararVentaParaVista(ventaCreada);
+        this.generarBoletaDesdeVenta(ventaParaBoleta);
+        this.cargarVentas();
+        this.nuevaVenta = { clienteId: null, items: [] };
+        this.busquedaCliente = '';
+        this.clienteSeleccionado = null;
+        this.mostrarFormulario = false;
+        this.mensaje = 'Venta registrada correctamente';
+      },
+      error: () => {
+        this.mensaje = 'No se pudo registrar la venta';
+      }
     });
   }
 
@@ -239,7 +294,8 @@ export class VentaComponent {
 
     let y = 20;
 
-    const cliente = this.clientes.find(c => c.id === venta.clienteId);
+    const cliente = this.clientes.find(c => c.id === venta.clienteId)
+      || (this.clienteSeleccionado?.id === venta.clienteId ? this.clienteSeleccionado : null);
     const fecha = venta.fecha ? new Date(venta.fecha).toLocaleDateString() : '';
 
     // =========================
@@ -322,14 +378,15 @@ export class VentaComponent {
 
     venta.items.forEach((item, index) => {
       let rowX = marginX;
-      const totalItem = item.precio * item.cantidad;
+      const precio = item.precio ?? 0;
+      const totalItem = precio * item.cantidad;
       subtotal += totalItem;
 
       const rowData = [
         String(index + 1),
         item.productoNombre || '',
         String(item.cantidad),
-        item.precio.toFixed(2),
+        precio.toFixed(2),
         totalItem.toFixed(2)
       ];
 

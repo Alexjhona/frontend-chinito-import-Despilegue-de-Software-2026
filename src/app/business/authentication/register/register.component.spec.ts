@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
@@ -59,22 +60,22 @@ describe('RegisterComponent', () => {
     component.confirmPassword = 'secret';
 
     component.register();
-    tick(1200);
+    tick(2000);
 
-    expect(component.successMessage).toBe('Usuario registrado correctamente');
+    expect(component.successMessage).toBe('Usuario registrado correctamente. Ahora puedes iniciar sesion.');
     expect(authServiceSpy.register).toHaveBeenCalledWith('nuevo', 'secret');
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   }));
 
   it('should show an error when register fails', () => {
     spyOn(console, 'error');
-    authServiceSpy.register.and.returnValue(throwError(() => new Error('Duplicated user')));
+    authServiceSpy.register.and.returnValue(throwError(() => new HttpErrorResponse({ status: 400 })));
     component.user = 'nuevo';
     component.password = 'secret';
     component.confirmPassword = 'secret';
 
     component.register();
 
-    expect(component.errorMessage).toBe('No se pudo registrar el usuario. Quizá ya existe.');
+    expect(component.errorMessage).toBe('No se pudo registrar el usuario. Puede que ya exista o que los datos no sean validos.');
   });
 });

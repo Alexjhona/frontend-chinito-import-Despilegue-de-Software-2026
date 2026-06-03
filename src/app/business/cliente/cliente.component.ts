@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 interface Cliente {
   id?: number;
@@ -14,7 +14,7 @@ interface Cliente {
 @Component({
   selector: 'app-cliente',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cliente.component.html',
   styleUrl: './cliente.component.css',
 })

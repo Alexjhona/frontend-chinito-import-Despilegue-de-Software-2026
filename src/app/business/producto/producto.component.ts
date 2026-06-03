@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 interface Categoria {
   id: number;
@@ -22,7 +22,7 @@ interface Producto {
 @Component({
   selector: 'app-producto',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './producto.component.html',
   styleUrl: './producto.component.css',
 })
@@ -32,6 +32,7 @@ export class ProductoComponent {
   categorias: Categoria[] = [];
   mostrarFormulario = false;
   editProducto: Producto | null = null;
+  mensaje = '';
 
   // Autocomplete
   busquedaCategoriaInput: string = '';
@@ -88,6 +89,8 @@ export class ProductoComponent {
   }
 
   guardar() {
+    this.mensaje = '';
+
     if (!this.formProducto.categoriaId) {
       alert('Selecciona una categoría válida');
       return;
@@ -99,16 +102,21 @@ export class ProductoComponent {
       this.http.put<Producto>(`${this.apiUrl}/${this.editProducto.id}`, this.formProducto)
         .subscribe(() => {
 
-          this.http.post(this.stockUrl, {
-            productoId: this.editProducto?.id,
+          this.http.put(`${this.stockUrl}/${this.editProducto?.id}`, {
             cantidad: this.formProducto.stock
-          }).subscribe(() => {
-
-            this.cargarProductos();
-            this.resetFormulario();
-
+          }).subscribe({
+            next: () => {
+              this.mensaje = 'Producto actualizado correctamente';
+              this.cargarProductos();
+              this.resetFormulario();
+            },
+            error: () => {
+              this.mensaje = 'Producto actualizado, pero no se pudo guardar el stock';
+            }
           });
 
+        }, () => {
+          this.mensaje = 'No se pudo actualizar el producto';
         });
 
     } else {
@@ -120,13 +128,19 @@ export class ProductoComponent {
           this.http.post(this.stockUrl, {
             productoId: productoCreado.id,
             cantidad: this.formProducto.stock
-          }).subscribe(() => {
-
-            this.cargarProductos();
-            this.resetFormulario();
-
+          }).subscribe({
+            next: () => {
+              this.mensaje = 'Producto registrado correctamente';
+              this.cargarProductos();
+              this.resetFormulario();
+            },
+            error: () => {
+              this.mensaje = 'Producto registrado, pero no se pudo crear el stock';
+            }
           });
 
+        }, () => {
+          this.mensaje = 'No se pudo registrar el producto';
         });
 
     }

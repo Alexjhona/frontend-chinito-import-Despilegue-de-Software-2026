@@ -1,6 +1,10 @@
 <p class="text-lg font-bold mb-2">Productos</p>
 <button class="bg-blue-600 text-white px-4 py-2 rounded mb-4" (click)="nuevoProducto()">Nuevo Producto</button>
 
+<div *ngIf="mensaje" class="mb-4 text-sm font-semibold text-blue-700">
+  {{ mensaje }}
+</div>
+
 <!-- Buscadores -->
 <div class="flex flex-wrap gap-4 mb-4">
   <!-- Buscador por Categoría -->

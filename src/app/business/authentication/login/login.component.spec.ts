@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
@@ -37,7 +38,7 @@ describe('LoginComponent', () => {
 
     component.login();
 
-    expect(component.errorMessage).toBe('Completa usuario y contraseña');
+    expect(component.errorMessage).toBe('Completa usuario y contrasena');
     expect(authServiceSpy.login).not.toHaveBeenCalled();
   });
 
@@ -55,12 +56,12 @@ describe('LoginComponent', () => {
 
   it('should show an error when login fails', () => {
     spyOn(console, 'error');
-    authServiceSpy.login.and.returnValue(throwError(() => new Error('Unauthorized')));
+    authServiceSpy.login.and.returnValue(throwError(() => new HttpErrorResponse({ status: 400 })));
     component.user = 'admin';
     component.password = 'bad-password';
 
     component.login();
 
-    expect(component.errorMessage).toBe('Usuario o contraseña incorrectos');
+    expect(component.errorMessage).toBe('Usuario o contrasena incorrectos.');
   });
 });
