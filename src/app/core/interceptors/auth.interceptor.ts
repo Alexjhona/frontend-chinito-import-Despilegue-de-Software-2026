@@ -4,9 +4,9 @@ const TOKEN_KEY = 'authToken';
 const GATEWAY_API_URL = 'http://localhost:8080/api/';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const token = typeof globalThis.window !== 'undefined'
-    ? localStorage.getItem(TOKEN_KEY)
-    : null;
+  const token = globalThis.window === undefined
+    ? null
+    : globalThis.window.localStorage.getItem(TOKEN_KEY);
 
   const isGatewayApiRequest = request.url.startsWith(GATEWAY_API_URL);
 
