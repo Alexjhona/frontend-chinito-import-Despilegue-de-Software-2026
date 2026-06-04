@@ -157,4 +157,145 @@ describe('VentaComponent', () => {
     expect(window.confirm).toHaveBeenCalled();
     httpMock.expectNone(`${ventasUrl}/100`);
   });
+
+  it('should validate required data before creating a client', () => {
+    const alertSpy = spyOn(window, 'alert');
+
+    component.crearCliente();
+
+    expect(alertSpy).toHaveBeenCalledWith('Completa DNI/RUC y nombre');
+    httpMock.expectNone(clientesUrl);
+  });
+
+  it('should keep loading sales when product loading fails', () => {
+    component.cargarProductos();
+
+    httpMock.expectOne(productosUrl).flush(null, { status: 500, statusText: 'Error' });
+    httpMock.expectOne(ventasUrl).flush([]);
+
+    expect(component.productos).toEqual([]);
+    expect(component.ventas).toEqual([]);
+  });
+
+  it('should filter products, normalize quantities and remove items', () => {
+    component.agregarItem();
+    component.filtrarProductos(0);
+    expect(component.nuevaVenta.items[0].productosFiltrados).toEqual([]);
+
+    component.nuevaVenta.items[0].busquedaProducto = 'prod-001';
+    component.filtrarProductos(0);
+    expect(component.nuevaVenta.items[0].productosFiltrados).toEqual(productos);
+
+    component.nuevaVenta.items[0].cantidad = 0;
+    component.seleccionarProducto(0, productos[0]);
+    expect(component.nuevaVenta.items[0].cantidad).toBe(1);
+
+    component.nuevaVenta.items[0].cantidad = 0;
+    component.onCantidadChange(0);
+    expect(component.nuevaVenta.items[0].cantidad).toBe(1);
+
+    component.eliminarItem(0);
+    expect(component.nuevaVenta.items).toEqual([]);
+  });
+
+  it('should use fallback values when a loaded sale references an unknown product', () => {
+    component.cargarVentas();
+
+    httpMock.expectOne(ventasUrl).flush([
+      {
+        id: 101,
+        clienteId: 1,
+        items: [{ productoId: 999, cantidad: 1 }],
+      },
+    ]);
+
+    expect(component.ventas[0].items[0].productoNombre).toBe('Producto');
+    expect(component.ventas[0].items[0].precio).toBe(0);
+  });
+
+  it('should toggle details and show an error when deletion fails', () => {
+    component.toggleDetalles(100);
+    expect(component.mostrarDetalles[100]).toBeTrue();
+    component.toggleDetalles(100);
+    expect(component.mostrarDetalles[100]).toBeFalse();
+
+    component.eliminarVenta(undefined);
+    spyOn(window, 'confirm').and.returnValue(true);
+    component.eliminarVenta(100);
+    httpMock.expectOne(`${ventasUrl}/100`).flush(null, { status: 500, statusText: 'Error' });
+
+    expect(component.mensaje).toBe('No se pudo eliminar la venta');
+  });
+
+  it('should reject a sale with an invalid product or quantity', () => {
+    component.nuevaVenta = {
+      clienteId: 1,
+      items: [{ productoId: null, cantidad: 0, precio: 0 }],
+    };
+
+    component.registrarVenta();
+
+    expect(component.mensaje).toBe('Selecciona producto y cantidad');
+    httpMock.expectNone(ventasUrl);
+  });
+
+  it('should show an error when sale registration fails', () => {
+    component.nuevaVenta = {
+      clienteId: 1,
+      items: [{ productoId: 10, cantidad: 1, precio: 120 }],
+    };
+
+    component.registrarVenta();
+
+    httpMock.expectOne(ventasUrl).flush(null, { status: 500, statusText: 'Error' });
+    expect(component.mensaje).toBe('No se pudo registrar la venta');
+  });
+
+  it('should prepare unknown products with fallback values after registration', () => {
+    const boletaSpy = spyOn(component, 'generarBoletaDesdeVenta').and.stub();
+    component.nuevaVenta = {
+      clienteId: 1,
+      items: [{ productoId: 999, cantidad: 1, precio: 0 }],
+    };
+
+    component.registrarVenta();
+
+    httpMock.expectOne(ventasUrl).flush({
+      id: 102,
+      clienteId: 1,
+      items: [{ productoId: 999, cantidad: 1 }],
+    });
+    httpMock.expectOne(ventasUrl).flush([]);
+
+    expect(boletaSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      items: [jasmine.objectContaining({ productoNombre: 'Producto', precio: 0 })],
+    }));
+  });
+
+  it('should generate and save a sales receipt PDF without errors', () => {
+    expect(() => component.generarBoletaDesdeVenta({
+        id: 100,
+        clienteId: 1,
+        fecha: '2026-05-16T00:00:00',
+        items: [
+          {
+            productoId: 10,
+            productoNombre: 'Zapatilla Urbana',
+            cantidad: 2,
+            precio: 120,
+          },
+        ],
+      })
+    ).not.toThrow();
+  });
+
+  it('should expose filtered sales and sum totals with missing totals as zero', () => {
+    component.ventas = [
+      ...ventas,
+      { id: 101, clienteId: 1, items: [] },
+    ];
+
+    expect(component.ventasFiltradas).toBe(component.ventas);
+    expect(component.totalVentasFiltradas).toBe(240);
+  });
 });

@@ -72,4 +72,23 @@ describe('DashboardComponent', () => {
     expect(component.productos.length).toBe(0);
     expect(component.aviso).toBe('No hay datos registrados todavia.');
   });
+
+  it('should use product stock defaults and tolerate sales without optional values', () => {
+    httpMock.expectOne(ventasUrl).flush([
+      { id: 1, clienteId: 1 },
+    ]);
+    httpMock.expectOne(productosUrl).flush([
+      { id: 10, nombre: 'Mouse', stock: 3 },
+      { id: 11, nombre: 'Teclado' },
+    ]);
+    httpMock.expectOne(clientesUrl).flush([{ id: 1 }]);
+    httpMock.expectOne(proveedoresUrl).flush([]);
+    httpMock.expectOne(stockUrl).flush([]);
+
+    expect(component.montoTotalVendido).toBe(0);
+    expect(component.productosStockBajo.map(producto => producto.id)).toEqual([10]);
+    expect(component.productosSinStock.map(producto => producto.id)).toEqual([11]);
+    expect(component.ultimasVentas.map(venta => venta.id)).toEqual([1]);
+    expect(component.aviso).toBe('');
+  });
 });

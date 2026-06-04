@@ -29,4 +29,15 @@ describe('App routes', () => {
       '',
     ]);
   });
+
+  it('should load every lazy frontend component', async () => {
+    const businessRoutes = routes[0].children?.filter(route => route.loadComponent) ?? [];
+    const lazyRoutes = [routes[0], ...businessRoutes, routes[1], routes[2]];
+
+    const loadedComponents = await Promise.all(
+      lazyRoutes.map(route => Promise.resolve(route.loadComponent?.()))
+    );
+
+    expect(loadedComponents.every(component => Boolean(component))).toBeTrue();
+  });
 });

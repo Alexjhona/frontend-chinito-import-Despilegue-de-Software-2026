@@ -64,4 +64,19 @@ describe('LoginComponent', () => {
 
     expect(component.errorMessage).toBe('Usuario o contrasena incorrectos.');
   });
+
+  it('should distinguish backend connection errors from unexpected errors', () => {
+    spyOn(console, 'error');
+    component.user = 'admin';
+    component.password = 'secret';
+
+    authServiceSpy.login.and.returnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    component.login();
+    expect(component.errorMessage).toContain('No hay conexion con el backend');
+
+    authServiceSpy.login.and.returnValue(throwError(() => new Error('Unexpected')));
+    component.login();
+    expect(component.errorMessage).toBe('No se pudo iniciar sesion. Intenta nuevamente.');
+    expect(component.isLoading).toBeFalse();
+  });
 });

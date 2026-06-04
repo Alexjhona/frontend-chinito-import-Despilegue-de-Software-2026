@@ -98,4 +98,30 @@ describe('ClienteComponent', () => {
 
     httpMock.expectOne(apiUrl).flush(clientes);
   });
+
+  it('should guard, cancel and confirm client deletion', () => {
+    const confirmSpy = spyOn(window, 'confirm').and.returnValues(false, true);
+
+    component.eliminarCliente(undefined);
+    component.eliminarCliente(2);
+    httpMock.expectNone(`${apiUrl}/2`);
+    component.eliminarCliente(1);
+    httpMock.expectOne(`${apiUrl}/1`).flush({});
+    httpMock.expectOne(apiUrl).flush(clientes);
+
+    component.editar(clientes[0]);
+    component.cancelar();
+
+    expect(confirmSpy).toHaveBeenCalledTimes(2);
+    expect(component.editCliente).toBeNull();
+    expect(component.mostrarFormulario).toBeFalse();
+  });
+
+  it('should return all clients for blank search and filter by DNI/RUC', () => {
+    component.busqueda = ' ';
+    expect(component.clientesFiltrados).toEqual(clientes);
+
+    component.busqueda = '20111111111';
+    expect(component.clientesFiltrados).toEqual([clientes[0]]);
+  });
 });

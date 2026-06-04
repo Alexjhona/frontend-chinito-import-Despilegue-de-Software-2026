@@ -87,4 +87,42 @@ describe('ProveedorComponent', () => {
 
     httpMock.expectOne(apiUrl).flush(proveedores);
   });
+
+  it('should call PUT when editing a provider and reset the form', () => {
+    component.editar(proveedores[0]);
+    component.formProveedor.telefono = '900000000';
+
+    component.guardar();
+
+    const req = httpMock.expectOne(`${apiUrl}/1`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body.telefono).toBe('900000000');
+    req.flush({ ...component.formProveedor });
+    httpMock.expectOne(apiUrl).flush(proveedores);
+
+    expect(component.editProveedor).toBeNull();
+    expect(component.mostrarFormulario).toBeFalse();
+  });
+
+  it('should guard or cancel provider deletion and cancel editing', () => {
+    const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
+
+    component.eliminarProveedor(undefined);
+    component.eliminarProveedor(1);
+    component.editar(proveedores[0]);
+    component.cancelar();
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(component.editProveedor).toBeNull();
+    expect(component.mostrarFormulario).toBeFalse();
+    httpMock.expectNone(`${apiUrl}/1`);
+  });
+
+  it('should return all providers for blank search and filter by DNI/RUC', () => {
+    component.busqueda = ' ';
+    expect(component.proveedoresFiltrados).toEqual(proveedores);
+
+    component.busqueda = '20555555555';
+    expect(component.proveedoresFiltrados).toEqual([proveedores[0]]);
+  });
 });

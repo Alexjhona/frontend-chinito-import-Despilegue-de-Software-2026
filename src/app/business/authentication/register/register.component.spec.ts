@@ -78,4 +78,20 @@ describe('RegisterComponent', () => {
 
     expect(component.errorMessage).toBe('No se pudo registrar el usuario. Puede que ya exista o que los datos no sean validos.');
   });
+
+  it('should distinguish backend connection errors from unexpected errors', () => {
+    spyOn(console, 'error');
+    component.user = 'nuevo';
+    component.password = 'secret';
+    component.confirmPassword = 'secret';
+
+    authServiceSpy.register.and.returnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    component.register();
+    expect(component.errorMessage).toContain('No hay conexion con el backend');
+
+    authServiceSpy.register.and.returnValue(throwError(() => new Error('Unexpected')));
+    component.register();
+    expect(component.errorMessage).toBe('No se pudo registrar el usuario. Revisa la consola o intenta nuevamente.');
+    expect(component.isLoading).toBeFalse();
+  });
 });

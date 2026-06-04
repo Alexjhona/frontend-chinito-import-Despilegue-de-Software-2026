@@ -47,13 +47,13 @@ export default class DashboardComponent {
   cargando = true;
   aviso = '';
 
-  private apiVentas = 'http://localhost:8080/api/ventas';
-  private apiProductos = 'http://localhost:8080/api/productos';
-  private apiClientes = 'http://localhost:8080/api/clientes';
-  private apiProveedores = 'http://localhost:8080/api/proveedores';
-  private apiStock = 'http://localhost:8080/api/stock';
+  private readonly apiVentas = 'http://localhost:8080/api/ventas';
+  private readonly apiProductos = 'http://localhost:8080/api/productos';
+  private readonly apiClientes = 'http://localhost:8080/api/clientes';
+  private readonly apiProveedores = 'http://localhost:8080/api/proveedores';
+  private readonly apiStock = 'http://localhost:8080/api/stock';
 
-  constructor(private http: HttpClient) {
+  constructor(private readonly http: HttpClient) {
     this.cargarResumen();
   }
 

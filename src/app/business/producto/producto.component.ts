@@ -100,47 +100,49 @@ export class ProductoComponent {
 
       // EDITAR
       this.http.put<Producto>(`${this.apiUrl}/${this.editProducto.id}`, this.formProducto)
-        .subscribe(() => {
-
-          this.http.put(`${this.stockUrl}/${this.editProducto?.id}`, {
-            cantidad: this.formProducto.stock
-          }).subscribe({
-            next: () => {
-              this.mensaje = 'Producto actualizado correctamente';
-              this.cargarProductos();
-              this.resetFormulario();
-            },
-            error: () => {
-              this.mensaje = 'Producto actualizado, pero no se pudo guardar el stock';
-            }
-          });
-
-        }, () => {
-          this.mensaje = 'No se pudo actualizar el producto';
+        .subscribe({
+          next: () => {
+            this.http.put(`${this.stockUrl}/${this.editProducto?.id}`, {
+              cantidad: this.formProducto.stock
+            }).subscribe({
+              next: () => {
+                this.mensaje = 'Producto actualizado correctamente';
+                this.cargarProductos();
+                this.resetFormulario();
+              },
+              error: () => {
+                this.mensaje = 'Producto actualizado, pero no se pudo guardar el stock';
+              }
+            });
+          },
+          error: () => {
+            this.mensaje = 'No se pudo actualizar el producto';
+          }
         });
 
     } else {
 
       // NUEVO
       this.http.post<Producto>(this.apiUrl, this.formProducto)
-        .subscribe((productoCreado) => {
-
-          this.http.post(this.stockUrl, {
-            productoId: productoCreado.id,
-            cantidad: this.formProducto.stock
-          }).subscribe({
-            next: () => {
-              this.mensaje = 'Producto registrado correctamente';
-              this.cargarProductos();
-              this.resetFormulario();
-            },
-            error: () => {
-              this.mensaje = 'Producto registrado, pero no se pudo crear el stock';
-            }
-          });
-
-        }, () => {
-          this.mensaje = 'No se pudo registrar el producto';
+        .subscribe({
+          next: (productoCreado) => {
+            this.http.post(this.stockUrl, {
+              productoId: productoCreado.id,
+              cantidad: this.formProducto.stock
+            }).subscribe({
+              next: () => {
+                this.mensaje = 'Producto registrado correctamente';
+                this.cargarProductos();
+                this.resetFormulario();
+              },
+              error: () => {
+                this.mensaje = 'Producto registrado, pero no se pudo crear el stock';
+              }
+            });
+          },
+          error: () => {
+            this.mensaje = 'No se pudo registrar el producto';
+          }
         });
 
     }

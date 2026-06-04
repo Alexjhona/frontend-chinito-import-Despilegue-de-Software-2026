@@ -50,6 +50,14 @@ describe('AuthService', () => {
     req.flush({ token });
   });
 
+  it('should not store an empty token returned by login', () => {
+    service.login('admin', 'secret').subscribe();
+
+    httpMock.expectOne('http://localhost:8085/auth/login').flush({ token: '' });
+
+    expect(service.getToken()).toBeNull();
+  });
+
   it('should call register endpoint with POST and return the created user', () => {
     service.register('nuevo', 'secret').subscribe(response => {
       expect(response).toEqual({ id: 7, userName: 'nuevo' });
@@ -70,5 +78,20 @@ describe('AuthService', () => {
 
     expect(localStorage.getItem('authToken')).toBeNull();
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('should report authentication only for a valid non-expired token', () => {
+    expect(service.isAuthenticated()).toBeFalse();
+
+    const futurePayload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 60 }));
+    localStorage.setItem('authToken', `header.${futurePayload}.signature`);
+    expect(service.isAuthenticated()).toBeTrue();
+
+    const expiredPayload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 60 }));
+    localStorage.setItem('authToken', `header.${expiredPayload}.signature`);
+    expect(service.isAuthenticated()).toBeFalse();
+
+    localStorage.setItem('authToken', 'malformed-token');
+    expect(service.isAuthenticated()).toBeFalse();
   });
 });
