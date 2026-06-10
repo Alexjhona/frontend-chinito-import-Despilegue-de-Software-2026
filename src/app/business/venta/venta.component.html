@@ -1,0 +1,204 @@
+<p class="text-lg font-bold mb-2">Ventas</p>
+
+<button class="bg-blue-600 text-white px-4 py-2 rounded mb-4"
+        (click)="mostrarFormulario = true">
+  Registrar Nueva Venta
+</button>
+
+<div *ngIf="mensaje" class="mb-2 text-green-600 font-semibold">
+  {{ mensaje }}
+</div>
+
+<!-- FORMULARIO -->
+<div *ngIf="mostrarFormulario" class="bg-gray-100 p-4 rounded shadow mb-6">
+  <form (ngSubmit)="registrarVenta()" #ventaForm="ngForm">
+
+    <!-- CLIENTE -->
+    <div class="mb-3">
+      <label class="block font-semibold mb-1">Cliente:</label>
+
+      <div class="relative">
+        <input type="text"
+               class="border p-2 w-[340px]"
+               placeholder="Buscar cliente..."
+               [(ngModel)]="busquedaCliente"
+               name="busquedaCliente"
+               (input)="filtrarClientes()"
+               autocomplete="off"/>
+
+        <ul *ngIf="clientesFiltrados.length && busquedaCliente && !clienteSeleccionado"
+            class="absolute bg-white border w-[340px] max-h-40 overflow-y-auto z-10 shadow">
+
+          <li *ngFor="let cli of clientesFiltrados"
+              (click)="seleccionarCliente(cli)"
+              class="p-2 hover:bg-blue-100 cursor-pointer">
+
+            <div class="font-medium">{{ cli.razonSocialONombre }}</div>
+            <div class="text-xs text-gray-500">{{ cli.dniOrRuc }}</div>
+
+          </li>
+        </ul>
+      </div>
+
+      <div *ngIf="clienteSeleccionado" class="mt-2 bg-white p-2 border rounded">
+        {{ clienteSeleccionado.razonSocialONombre }}
+      </div>
+    </div>
+
+    <!-- PRODUCTOS -->
+    <div class="mb-3">
+      <label class="block font-semibold mb-1">Productos:</label>
+
+      <button type="button"
+              class="bg-green-600 text-white px-2 py-1 rounded mb-2"
+              (click)="agregarItem()">
+        Agregar producto
+      </button>
+
+      <table class="table-auto w-full border">
+        <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2">Producto</th>
+          <th class="p-2">Cantidad</th>
+          <th class="p-2">Precio</th>
+          <th class="p-2">Subtotal</th>
+          <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let item of nuevaVenta.items; let i = index">
+
+          <!-- 🔥 PRODUCTO CON AUTOCOMPLETE -->
+          <td class="relative">
+            <input type="text"
+                   class="border p-2 w-full"
+                   [(ngModel)]="item.busquedaProducto"
+                   (input)="filtrarProductos(i)"
+                   name="busquedaProducto-{{i}}"
+                   placeholder="Buscar producto..."
+                   autocomplete="off">
+
+            <!-- 🔽 LISTA -->
+            <ul *ngIf="item.productosFiltrados?.length"
+                class="absolute bg-white border w-full max-h-40 overflow-y-auto z-50 shadow rounded">
+
+              <li *ngFor="let prod of item.productosFiltrados"
+                  (click)="seleccionarProducto(i, prod)"
+                  class="p-2 cursor-pointer hover:bg-blue-100">
+
+                <div class="font-medium">{{ prod.nombre }}</div>
+                <div class="text-xs text-gray-500">
+                  {{ prod.codigoInterno }} | S/ {{ prod.precioVenta }}
+                </div>
+
+              </li>
+            </ul>
+          </td>
+
+          <!-- CANTIDAD -->
+          <td>
+            <input type="number"
+                   class="border p-2 w-16"
+                   [(ngModel)]="item.cantidad"
+                   (change)="onCantidadChange(i)"
+                   name="cantidad-{{i}}">
+          </td>
+
+          <!-- PRECIO -->
+          <td class="text-center">
+            S/ {{ item.precio }}
+          </td>
+
+          <!-- SUBTOTAL -->
+          <td class="text-center">
+            S/ {{ item.precio * item.cantidad }}
+          </td>
+
+          <!-- ELIMINAR -->
+          <td>
+            <button type="button"
+                    class="bg-red-600 text-white px-2"
+                    (click)="eliminarItem(i)">
+              X
+            </button>
+          </td>
+
+        </tr>
+        </tbody>
+      </table>
+
+      <div class="font-semibold mt-2">
+        Total: S/ {{ totalVenta }}
+      </div>
+    </div>
+
+    <button type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded">
+      Registrar venta
+    </button>
+
+  </form>
+</div>
+
+<!-- LISTADO -->
+<table class="table-auto w-full mt-4 border">
+  <thead class="bg-gray-200">
+  <tr>
+    <th>ID</th>
+    <th>Cliente</th>
+    <th>Fecha</th>
+    <th>Total</th>
+    <th>Detalles</th>
+    <th>Eliminar</th>
+    <th>Boleta</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <ng-container *ngFor="let venta of ventasFiltradas">
+    <tr>
+      <td>{{ venta.id }}</td>
+      <td>{{ venta.clienteNombre || venta.clienteId }}</td>
+      <td>{{ venta.fecha | date:'short' }}</td>
+      <td>S/ {{ venta.total?.toFixed(2) }}</td>
+
+      <td>
+        <button (click)="toggleDetalles(venta.id!)"
+                class="bg-blue-600 text-white px-2 rounded">
+          Ver
+        </button>
+      </td>
+
+      <td>
+        <button (click)="eliminarVenta(venta.id)"
+                class="bg-red-600 text-white px-2 rounded">
+          Eliminar
+        </button>
+      </td>
+
+      <td>
+        <button (click)="generarBoletaDesdeVenta(venta)"
+                class="bg-purple-600 text-white px-2 rounded">
+          PDF
+        </button>
+      </td>
+    </tr>
+
+    <tr *ngIf="mostrarDetalles[venta.id!]">
+      <td colspan="7" class="bg-gray-100 p-2">
+
+        <table class="w-full border">
+          <tr *ngFor="let item of venta.items">
+            <td>{{ item.productoNombre }}</td>
+            <td>{{ item.cantidad }}</td>
+            <td>S/ {{ item.precio }}</td>
+            <td>S/ {{ item.precio * item.cantidad }}</td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </ng-container>
+  </tbody>
+</table>

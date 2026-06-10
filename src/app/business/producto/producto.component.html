@@ -1,0 +1,149 @@
+<p class="text-lg font-bold mb-2">Productos</p>
+<button class="bg-blue-600 text-white px-4 py-2 rounded mb-4" (click)="nuevoProducto()">Nuevo Producto</button>
+
+<div *ngIf="mensaje" class="mb-4 text-sm font-semibold text-blue-700">
+  {{ mensaje }}
+</div>
+
+<!-- Buscadores -->
+<div class="flex flex-wrap gap-4 mb-4">
+  <!-- Buscador por Categoría -->
+  <div class="flex items-center">
+    <input
+      type="text"
+      class="border rounded-l p-2 w-[300px] h-[44px]"
+      placeholder="Buscar por categoría..."
+      [(ngModel)]="busquedaCategoria"
+    />
+    <span class="bg-gray-200 px-5 py-3 rounded-r">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+      </svg>
+    </span>
+  </div>
+
+  <!-- Buscador por Nombre o Código -->
+  <div class="flex items-center">
+    <input
+      type="text"
+      class="border rounded-l p-2 w-[300px] h-[44px]"
+      placeholder="Buscar por producto o código..."
+      [(ngModel)]="busquedaProducto"
+    />
+    <span class="bg-gray-200 px-5 py-3 rounded-r">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 000 15z" />
+      </svg>
+    </span>
+  </div>
+</div>
+
+<!-- Formulario -->
+<div *ngIf="mostrarFormulario" class="bg-gray-100 p-4 rounded shadow mb-4 relative">
+  <h3 class="text-lg font-bold mb-2">
+    {{ editProducto ? 'Editar Producto' : 'Nuevo Producto' }}
+  </h3>
+
+  <form (ngSubmit)="guardar()" #productoForm="ngForm">
+
+    <!-- Categoría -->
+    <div class="relative mb-2">
+      <input
+        type="text"
+        class="border p-2 w-full rounded"
+        placeholder="Buscar categoría..."
+        [(ngModel)]="busquedaCategoriaInput"
+        name="busquedaCategoriaInput"
+        (input)="actualizarCategoriasFiltradas()"
+        autocomplete="off"
+        required
+      />
+      <ul *ngIf="busquedaCategoriaInput && categoriasFiltradas.length"
+          class="absolute bg-white border rounded shadow w-full max-h-40 overflow-auto z-10 mt-1">
+        <li *ngFor="let cat of categoriasFiltradas"
+            class="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+            (click)="seleccionarCategoria(cat)">
+          {{ cat.nombre }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Campos -->
+    <input class="border p-2 mb-2 w-full" type="text"
+           [(ngModel)]="formProducto.codigoInterno" name="codigoInterno"
+           placeholder="Código Interno" required>
+
+    <input class="border p-2 mb-2 w-full" type="text"
+           [(ngModel)]="formProducto.nombre" name="nombre"
+           placeholder="Nombre" required>
+
+    <input class="border p-2 mb-2 w-full" type="number" step="0.01"
+           [(ngModel)]="formProducto.precioVenta" name="precioVenta"
+           placeholder="Precio Venta" required>
+
+    <input class="border p-2 mb-2 w-full" type="number" step="0.01"
+           [(ngModel)]="formProducto.precioCompra" name="precioCompra"
+           placeholder="Precio Compra" required>
+
+    <input class="border p-2 mb-2 w-full" type="text"
+           [(ngModel)]="formProducto.moneda" name="moneda"
+           placeholder="Moneda">
+
+    <!-- 🔥 STOCK -->
+    <input class="border p-2 mb-2 w-full" type="number"
+           [(ngModel)]="formProducto.stock" name="stock"
+           placeholder="Stock" required>
+
+    <!-- Botones -->
+    <button class="bg-green-600 text-white px-4 py-2 rounded mr-2" type="submit">
+      Guardar
+    </button>
+
+    <button class="bg-red-600 text-white px-4 py-2 rounded" type="button" (click)="cancelar()">
+      Cancelar
+    </button>
+
+  </form>
+</div>
+
+<!-- Tabla -->
+<table class="table-auto w-full mt-4 border">
+  <thead>
+  <tr class="bg-gray-200">
+    <th class="px-4 py-2">ID</th>
+    <th class="px-4 py-2">Categoría</th>
+    <th class="px-4 py-2">Código</th>
+    <th class="px-4 py-2">Nombre</th>
+    <th class="px-4 py-2">Precio Venta</th>
+    <th class="px-4 py-2">Precio Compra</th>
+    <th class="px-4 py-2">Moneda</th>
+    <th class="px-4 py-2">Stock</th>
+    <th class="px-4 py-2">Acciones</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  <tr *ngFor="let producto of productosFiltrados" class="border-t">
+    <td class="px-4 py-2">{{ producto.id }}</td>
+    <td class="px-4 py-2">{{ getNombreCategoria(producto.categoriaId) }}</td>
+    <td class="px-4 py-2">{{ producto.codigoInterno }}</td>
+    <td class="px-4 py-2">{{ producto.nombre }}</td>
+    <td class="px-4 py-2">S/ {{ producto.precioVenta?.toFixed(2) }}</td>
+    <td class="px-4 py-2">S/ {{ producto.precioCompra?.toFixed(2) }}</td>
+    <td class="px-4 py-2">{{ producto.moneda }}</td>
+
+    <!-- 🔥 MOSTRAR STOCK -->
+    <td class="px-4 py-2 font-bold text-blue-600">
+      {{ producto.stock }}
+    </td>
+
+    <td class="px-4 py-2">
+      <button class="bg-green-600 text-white px-2 py-1 rounded mr-2"
+              (click)="editar(producto)">Editar</button>
+
+      <button class="bg-red-600 text-white px-2 py-1 rounded"
+              (click)="eliminarProducto(producto.id)">Eliminar</button>
+    </td>
+  </tr>
+  </tbody>
+</table>

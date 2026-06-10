@@ -1,0 +1,57 @@
+<div class="flex flex-col-reverse md:flex-row justify-between items-center gap-6 p-4 bg-white rounded-2xl shadow-md border border-gray-200">
+
+  <!-- Breadcrumb y título -->
+  <div class="capitalize flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto">
+    <nav aria-label="breadcrumb" class="w-max">
+      <ol class="flex flex-wrap items-center w-full bg-transparent p-0">
+        <li class="flex items-center text-gray-500 hover:text-blue-500 transition-colors duration-300 cursor-pointer">
+          <a href="#">
+            <p class="block text-sm font-normal opacity-60 hover:opacity-100">dashboard</p>
+          </a>
+          <span class="mx-2 select-none text-gray-400">/</span>
+        </li>
+        <li class="flex items-center text-gray-700 hover:text-blue-600 transition-colors duration-300 cursor-pointer">
+          <p class="block text-sm font-medium">home</p>
+        </li>
+      </ol>
+    </nav>
+    <h6 class="text-base font-semibold text-gray-900 mt-1 md:mt-0">home</h6>
+  </div>
+
+  <!-- Input y botones -->
+  <div class="flex items-center w-full md:w-auto gap-2">
+
+    <!-- Input -->
+    <div class="relative w-full md:w-56">
+      <input class="peer w-full h-10 px-3 py-2 text-gray-700 text-sm font-sans bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all hover:border-blue-400" placeholder=" " disabled>
+      <label class="absolute left-3 top-1 text-xs text-gray-400 peer-focus:text-blue-500 transition-all pointer-events-none select-none">Type here</label>
+    </div>
+
+    <!-- Botones -->
+    <button class="relative w-10 h-10 rounded-lg text-gray-500 hover:bg-blue-100 active:bg-blue-200 grid xl:hidden transition-colors duration-200" type="button">
+      <span class="absolute inset-0 flex justify-center items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="h-6 w-6">
+          <path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"></path>
+        </svg>
+      </span>
+    </button>
+
+    <!-- Logout -->
+    <a>
+      <button (click)="logout()" class="hidden xl:flex items-center gap-1 px-4 py-2 text-xs font-bold text-gray-600 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-all duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd"></path>
+        </svg>
+        Log Out
+      </button>
+    </a>
+
+    <!-- Otros botones pequeños -->
+    <button class="relative w-10 h-10 rounded-lg text-gray-500 hover:bg-blue-100 active:bg-blue-200 grid transition-colors duration-200">
+      <span class="absolute inset-0 flex justify-center items-center">
+        <!-- Aquí puedes colocar otro icono -->
+      </span>
+    </button>
+
+  </div>
+</div>

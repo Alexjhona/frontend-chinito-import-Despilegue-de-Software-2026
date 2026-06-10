@@ -1,0 +1,89 @@
+<aside class="bg-gradient-to-br from-gray-800 to-gray-900 -translate-x-80 fixed inset-y-4 left-4 z-50 h-[calc(100vh-48px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0">
+  <!-- Header / Logo -->
+  <div class="relative border-b border-white/20">
+    <a class="flex items-center gap-4 py-6 px-8" routerLink="/dashboard">
+      <h6 class="block antialiased tracking-normal font-sans text-base font-semibold leading-relaxed text-white">Chinito Importaciones</h6>
+    </a>
+    <button class="middle none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-8 max-w-[32px] h-8 max-h-[32px] rounded-lg text-xs text-white hover:bg-white/10 active:bg-white/30 absolute right-0 top-0 grid rounded-br-none rounded-tl-none xl:hidden" type="button">
+      <span class="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true" class="h-5 w-5 text-white">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </span>
+    </button>
+  </div>
+
+  <!-- Menú de navegación -->
+  <div class="m-4">
+    <ul class="mb-4 flex flex-col gap-1">
+
+      <!-- Cliente -->
+      <li>
+        <a routerLink="/cliente">
+          <button routerLinkActive="bg-gradient-to-tr from-green-600 to-green-400 shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 15.232a3.75 3.75 0 01-6.464 0M4.5 19.5A7.5 7.5 0 0112 4.5a7.5 7.5 0 017.5 15" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">cliente</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Proveedor -->
+      <li>
+        <a routerLink="/proveedor">
+          <button routerLinkActive="bg-gradient-to-tr from-amber-600 to-amber-400 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 9.75V6.75A2.25 2.25 0 0014.25 4.5h-4.5A2.25 2.25 0 007.5 6.75v3M3.75 9.75h16.5m-16.5 0v7.5A2.25 2.25 0 006 19.5h12a2.25 2.25 0 002.25-2.25v-7.5m-16.5 0L12 16.5m0 0l8.25-6.75" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">proveedor</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Categoría -->
+      <li>
+        <a routerLink="/categoria">
+          <button routerLinkActive="bg-gradient-to-tr from-purple-600 to-purple-400 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.25 8.25 11.25-11.25M2.25 12L12 2.25m0 0l8.25 8.25" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">categoría</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Producto -->
+      <li>
+        <a routerLink="/producto">
+          <button routerLinkActive="bg-gradient-to-tr from-pink-600 to-pink-400 shadow-md shadow-pink-500/20 hover:shadow-lg hover:shadow-pink-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 16.5V7.125A2.625 2.625 0 0018.375 4.5h-12.75A2.625 2.625 0 003 7.125v9.375M21 16.5a2.625 2.625 0 01-2.625 2.625H5.625A2.625 2.625 0 013 16.5m18 0V7.125M3 16.5v-9.375m0 0h18" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">producto</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Venta -->
+      <li>
+        <a routerLink="/venta">
+          <button routerLinkActive="bg-gradient-to-tr from-yellow-600 to-yellow-400 shadow-md shadow-yellow-500/20 hover:shadow-lg hover:shadow-yellow-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.5l1.658 14.34a2.25 2.25 0 002.243 2.16h8.898a2.25 2.25 0 002.243-2.16L20.25 3h-18z" />
+              <circle cx="9" cy="20" r="1.5"/>
+              <circle cx="15" cy="20" r="1.5"/>
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">venta</p>
+          </button>
+        </a>
+      </li>
+
+    </ul>
+  </div>
+</aside>

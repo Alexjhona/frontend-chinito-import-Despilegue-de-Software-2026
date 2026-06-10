@@ -1,0 +1,79 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-2">
+    <p class="text-sm font-semibold text-blue-600 uppercase">Chinito Importaciones</p>
+    <h1 class="text-2xl font-bold text-gray-900">Resumen del negocio</h1>
+    <p class="text-sm text-gray-500">Vista general de ventas, productos, clientes y stock.</p>
+  </div>
+
+  <div *ngIf="cargando" class="rounded bg-white border p-4 text-gray-500">
+    Cargando resumen...
+  </div>
+
+  <div *ngIf="!cargando" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <p class="text-sm text-gray-500">Ventas registradas</p>
+      <p class="text-2xl font-bold text-gray-900">{{ totalVentas }}</p>
+    </div>
+
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <p class="text-sm text-gray-500">Monto vendido</p>
+      <p class="text-2xl font-bold text-green-700">S/ {{ montoTotalVendido.toFixed(2) }}</p>
+    </div>
+
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <p class="text-sm text-gray-500">Productos</p>
+      <p class="text-2xl font-bold text-gray-900">{{ productos.length }}</p>
+    </div>
+
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <p class="text-sm text-gray-500">Clientes</p>
+      <p class="text-2xl font-bold text-gray-900">{{ clientes.length }}</p>
+    </div>
+
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <p class="text-sm text-gray-500">Proveedores</p>
+      <p class="text-2xl font-bold text-gray-900">{{ proveedores.length }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="!cargando && aviso" class="rounded bg-blue-50 border border-blue-200 p-4 text-blue-700">
+    {{ aviso }}
+  </div>
+
+  <div *ngIf="!cargando" class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-gray-900">Stock bajo</h2>
+        <span class="text-sm font-semibold text-yellow-700">{{ productosStockBajo.length }}</span>
+      </div>
+      <div *ngIf="!productosStockBajo.length" class="text-sm text-gray-500">No hay productos con stock bajo.</div>
+      <div *ngFor="let producto of productosStockBajo" class="flex justify-between border-t py-2 text-sm">
+        <span>{{ producto.nombre }}</span>
+        <span class="font-semibold">{{ producto.stock }}</span>
+      </div>
+    </div>
+
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-gray-900">Sin stock</h2>
+        <span class="text-sm font-semibold text-red-700">{{ productosSinStock.length }}</span>
+      </div>
+      <div *ngIf="!productosSinStock.length" class="text-sm text-gray-500">Todos los productos tienen stock.</div>
+      <div *ngFor="let producto of productosSinStock" class="border-t py-2 text-sm">
+        {{ producto.nombre }}
+      </div>
+    </div>
+
+    <div class="bg-white border rounded-lg p-4 shadow-sm">
+      <h2 class="font-bold text-gray-900 mb-3">Ultimas ventas</h2>
+      <div *ngIf="!ultimasVentas.length" class="text-sm text-gray-500">No hay ventas registradas.</div>
+      <div *ngFor="let venta of ultimasVentas" class="border-t py-2 text-sm">
+        <div class="flex justify-between">
+          <span class="font-medium">{{ venta.clienteNombre || ('Cliente ' + venta.clienteId) }}</span>
+          <span>S/ {{ (venta.total || 0).toFixed(2) }}</span>
+        </div>
+        <div class="text-xs text-gray-500">{{ venta.fecha | date:'short' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
