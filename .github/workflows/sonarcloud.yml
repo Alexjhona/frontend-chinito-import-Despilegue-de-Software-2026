@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
@@ -31,18 +28,23 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:ci
 
-      - name: Verify coverage file
-        shell: bash
-        run: |
-          test -s coverage/ng-menu-dashboard/lcov.info
-          echo "Coverage file found: coverage/ng-menu-dashboard/lcov.info"
-
-      - name: Validate SonarCloud configuration
+      - name: Validate SonarCloud configuration and coverage
         shell: bash
         env:
           SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          echo "SonarCloud organization: ${SONAR_ORGANIZATION:-<not configured>}"
+          echo "sonar-project.properties:"
+          cat sonar-project.properties
+
+          echo "Coverage file:"
+          ls -lh coverage/ng-menu-dashboard/lcov.info
+          test -s coverage/ng-menu-dashboard/lcov.info || {
+            echo "::error::coverage/ng-menu-dashboard/lcov.info is missing or empty."
+            exit 1
+          }
+
           test -n "$SONAR_ORGANIZATION" || {
             echo "::error::Repository variable SONAR_ORGANIZATION is not configured."
             exit 1
@@ -51,11 +53,15 @@ jobs:
             echo "::error::Repository secret SONAR_TOKEN is not configured."
             exit 1
           }
+          echo "SONAR_TOKEN is configured."
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
         with:
           args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.projectKey=frontend-chinito-import
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.javascript.lcov.reportPaths=coverage/ng-menu-dashboard/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
