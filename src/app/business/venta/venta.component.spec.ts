@@ -9,14 +9,27 @@ describe('VentaComponent', () => {
   let fixture: ComponentFixture<VentaComponent>;
   let httpMock: HttpTestingController;
 
-  const ventasUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/ventas';
-  const clientesUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/clientes';
-  const productosUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/productos';
+  const ventasUrl = 'http://localhost:8080/api/ventas';
+  const clientesUrl = 'http://localhost:8080/api/clientes';
+  const productosUrl = 'http://localhost:8080/api/productos';
+  const categoriasUrl = 'http://localhost:8080/api/categorias';
+  const stockUrl = 'http://localhost:8080/api/stock';
+  const dniUrl = 'http://localhost:8080/auth/dni';
   const clientes = [
     { id: 1, razonSocialONombre: 'Cliente Venta', dniOrRuc: '20111111111', direccion: 'Lima', telefono: '999111222' },
   ];
+  const categorias = [
+    { id: 1, nombre: 'Zapatillas', imagen: 'data:image/png;base64,categoria-uno' },
+  ];
   const productos = [
-    { id: 10, nombre: 'Zapatilla Urbana', codigoInterno: 'PROD-001', precioVenta: 120 },
+    {
+      id: 10,
+      categoriaId: 1,
+      nombre: 'Zapatilla Urbana',
+      codigoInterno: 'PROD-001',
+      precioVenta: 120,
+      imagen: 'data:image/png;base64,producto-uno',
+    },
   ];
   const ventas = [
     {
@@ -43,7 +56,9 @@ describe('VentaComponent', () => {
     component = fixture.componentInstance;
     httpMock = TestBed.inject(HttpTestingController);
 
+    httpMock.expectOne(categoriasUrl).flush(categorias);
     httpMock.expectOne(productosUrl).flush(productos);
+    httpMock.expectOne(`${stockUrl}/10`).flush({ cantidad: 10 });
     httpMock.expectOne(ventasUrl).flush(ventas);
     httpMock.expectOne(clientesUrl).flush(clientes);
     fixture.detectChanges();
@@ -56,9 +71,21 @@ describe('VentaComponent', () => {
   it('should create and load products, sales and clients using GET', () => {
     expect(component).toBeTruthy();
     expect(component.productos).toEqual(productos);
-    expect(component.clientes).toEqual(clientes);
+    expect(component.productos[0].stock).toBe(10);
+    expect(component.categorias).toEqual(categorias);
+    expect(component.clientes[0]).toEqual(jasmine.objectContaining(clientes[0]));
     expect(component.ventas[0].items[0].productoNombre).toBe('Zapatilla Urbana');
     expect(component.ventas[0].items[0].precio).toBe(120);
+  });
+
+  it('should render product and category images in sale details', () => {
+    component.toggleDetalles(100);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('img[alt="Zapatilla Urbana"]')).not.toBeNull();
+    expect(compiled.querySelector('img[alt="Zapatillas"]')).not.toBeNull();
   });
 
   it('should filter clients using simulated customer data', () => {
@@ -66,7 +93,7 @@ describe('VentaComponent', () => {
 
     component.filtrarClientes();
 
-    expect(component.clientesFiltrados).toEqual(clientes);
+    expect(component.clientesFiltrados[0]).toEqual(jasmine.objectContaining(clientes[0]));
   });
 
   it('should add a sale item, select a product and calculate total', () => {
@@ -75,13 +102,15 @@ describe('VentaComponent', () => {
     component.nuevaVenta.items[0].cantidad = 2;
 
     expect(component.nuevaVenta.items[0].productoId).toBe(10);
+    expect(component.getImagenProducto(component.nuevaVenta.items[0])).toBe('data:image/png;base64,producto-uno');
+    expect(component.getNombreCategoriaItem(component.nuevaVenta.items[0])).toBe('Zapatillas');
     expect(component.totalVenta).toBe(240);
   });
 
   it('should validate customer and items before registering a sale', () => {
     component.registrarVenta();
 
-    expect(component.mensaje).toBe('Completa los datos');
+    expect(component.errorFormulario).toBe('Selecciona un cliente válido de la lista.');
   });
 
   it('should call POST when registering a valid sale and refresh sales', () => {
@@ -120,26 +149,69 @@ describe('VentaComponent', () => {
 
   it('should call POST when creating a client inside the sale flow', () => {
     component.nuevoCliente = {
-      dniOrRuc: '20999999999',
-      razonSocialONombre: 'Cliente Nuevo',
-      direccion: 'Ica',
-      telefono: '944444444',
+      dniOrRuc: '99999999',
+      razonSocialONombre: '',
+      direccion: '',
+      telefono: '',
+      nombres: 'Cliente',
+      apellidoPaterno: 'Nuevo',
+      apellidoMaterno: 'Venta',
     };
 
     component.crearCliente();
 
     const req = httpMock.expectOne(clientesUrl);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(component.nuevoCliente);
+    expect(req.request.body).toEqual(jasmine.objectContaining({
+      dniOrRuc: '99999999',
+      razonSocialONombre: 'Cliente Nuevo Venta',
+      direccion: '',
+      telefono: '',
+      nombres: 'Cliente',
+      apellidoPaterno: 'Nuevo',
+      apellidoMaterno: 'Venta',
+    }));
     req.flush({ id: 2, ...component.nuevoCliente });
 
     httpMock.expectOne(clientesUrl).flush(clientes);
   });
 
-  it('should call DELETE when deleting a sale and refresh the list', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should show unregistered DNI and create the client with the plus action', () => {
+    component.busquedaCliente = '87654321';
 
-    component.eliminarVenta(100);
+    component.filtrarClientes();
+
+    const dniReq = httpMock.expectOne(`${dniUrl}/87654321`);
+    expect(component.mostrarClienteNoRegistrado).toBeTrue();
+    dniReq.flush({
+      dni: '87654321',
+      nombres: 'Ana Maria',
+      apellidoPaterno: 'Lopez',
+      apellidoMaterno: 'Ramos',
+      nombreCompleto: 'LOPEZ RAMOS ANA MARIA',
+    });
+
+    component.agregarClienteNoRegistrado();
+
+    const postReq = httpMock.expectOne(clientesUrl);
+    expect(postReq.request.method).toBe('POST');
+    expect(postReq.request.body).toEqual(jasmine.objectContaining({
+      dniOrRuc: '87654321',
+      razonSocialONombre: 'Ana Maria Lopez Ramos',
+    }));
+    postReq.flush({ id: 3, ...postReq.request.body });
+
+    expect(component.clienteSeleccionado?.id).toBe(3);
+    expect(component.nuevaVenta.clienteId).toBe(3);
+    httpMock.expectOne(clientesUrl).flush(clientes);
+  });
+
+  it('should call DELETE when deleting a sale and refresh the list', () => {
+    component.solicitarEliminar(ventas[0]);
+    expect(component.accionPendiente).toBe('eliminar');
+    expect(component.mensajeConfirmacion).toContain('#100');
+
+    component.confirmarAccion();
 
     const req = httpMock.expectOne(`${ventasUrl}/100`);
     expect(req.request.method).toBe('DELETE');
@@ -150,20 +222,17 @@ describe('VentaComponent', () => {
   });
 
   it('should not call DELETE when deletion is cancelled', () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    component.solicitarEliminar(ventas[0]);
+    component.cancelarConfirmacion();
 
-    component.eliminarVenta(100);
-
-    expect(window.confirm).toHaveBeenCalled();
+    expect(component.accionPendiente).toBeNull();
     httpMock.expectNone(`${ventasUrl}/100`);
   });
 
   it('should validate required data before creating a client', () => {
-    const alertSpy = spyOn(window, 'alert');
-
     component.crearCliente();
 
-    expect(alertSpy).toHaveBeenCalledWith('Completa DNI/RUC y nombre');
+    expect(component.errorNuevoCliente).toBe('Completa DNI, nombre, apellido paterno y apellido materno.');
     httpMock.expectNone(clientesUrl);
   });
 
@@ -175,6 +244,26 @@ describe('VentaComponent', () => {
 
     expect(component.productos).toEqual([]);
     expect(component.ventas).toEqual([]);
+  });
+
+  it('should warn and block sales when stock is missing or insufficient', () => {
+    component.nuevaVenta = {
+      clienteId: 1,
+      items: [{ productoId: 10, cantidad: 11, precio: 120, productoSeleccionado: { ...productos[0], stock: 10 } }],
+    };
+
+    component.registrarVenta();
+
+    expect(component.errorFormulario).toContain('Cantidad mayor al stock disponible');
+    httpMock.expectNone(ventasUrl);
+
+    component.nuevaVenta.items[0].cantidad = 1;
+    component.nuevaVenta.items[0].productoSeleccionado = { ...productos[0], stock: 0 };
+
+    component.registrarVenta();
+
+    expect(component.errorFormulario).toContain('no tiene stock');
+    httpMock.expectNone(ventasUrl);
   });
 
   it('should filter products, normalize quantities and remove items', () => {
@@ -220,8 +309,8 @@ describe('VentaComponent', () => {
     expect(component.mostrarDetalles[100]).toBeFalse();
 
     component.eliminarVenta(undefined);
-    spyOn(window, 'confirm').and.returnValue(true);
-    component.eliminarVenta(100);
+    component.solicitarEliminar(ventas[0]);
+    component.confirmarAccion();
     httpMock.expectOne(`${ventasUrl}/100`).flush(null, { status: 500, statusText: 'Error' });
 
     expect(component.mensaje).toBe('No se pudo eliminar la venta');
@@ -235,7 +324,7 @@ describe('VentaComponent', () => {
 
     component.registrarVenta();
 
-    expect(component.mensaje).toBe('Selecciona producto y cantidad');
+    expect(component.errorFormulario).toBe('Producto 1: Selecciona un producto válido de la lista.');
     httpMock.expectNone(ventasUrl);
   });
 
@@ -255,7 +344,18 @@ describe('VentaComponent', () => {
     const boletaSpy = spyOn(component, 'generarBoletaDesdeVenta').and.stub();
     component.nuevaVenta = {
       clienteId: 1,
-      items: [{ productoId: 999, cantidad: 1, precio: 0 }],
+      items: [{
+        productoId: 999,
+        cantidad: 1,
+        precio: 0,
+        productoSeleccionado: {
+          id: 999,
+          nombre: 'Producto',
+          codigoInterno: 'SIN-CODIGO',
+          precioVenta: 0,
+          stock: 10,
+        },
+      }],
     };
 
     component.registrarVenta();
@@ -295,7 +395,7 @@ describe('VentaComponent', () => {
       { id: 101, clienteId: 1, items: [] },
     ];
 
-    expect(component.ventasFiltradas).toBe(component.ventas);
+    expect(component.ventasFiltradas).toEqual(component.ventas);
     expect(component.totalVentasFiltradas).toBe(240);
   });
 });

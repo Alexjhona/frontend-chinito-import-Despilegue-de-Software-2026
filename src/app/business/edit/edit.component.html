@@ -1,0 +1,433 @@
+<section class="min-h-[calc(100vh-140px)] space-y-5">
+  <div class="overflow-hidden rounded-lg border border-white/80 bg-white/90 shadow-[0_24px_90px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+    <div class="relative p-4 sm:p-5">
+      <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-400"></div>
+
+      <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div class="flex min-w-0 items-center gap-4">
+          <div class="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-gray-950 text-white shadow-xl shadow-gray-950/20">
+            <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h16M6 16l10-10 2 2L8 18H6v-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l4 4" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-black uppercase tracking-[0.22em] text-violet-600">Editor visual</p>
+            <h1 class="mt-1 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Edit inicio</h1>
+            <p class="mt-2 text-sm font-semibold text-gray-500">Edita el header, páginas públicas, visibilidad y vista previa del catálogo.</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 lg:grid-cols-[minmax(170px,1fr)_minmax(360px,auto)_auto_auto_auto] xl:w-[990px]">
+          <label class="flex h-12 items-center gap-3 rounded-lg border border-gray-100 bg-gray-50 px-4 text-sm font-black text-gray-600">
+            {{ (escalaPreview * 100) | number:'1.0-0' }}%
+            <input [(ngModel)]="escalaPreview" type="range" min="0.62" max="1" step="0.02" class="min-w-0 flex-1 accent-sky-600">
+          </label>
+          <div class="grid h-12 grid-cols-3 rounded-lg border border-gray-100 bg-gray-50 p-1">
+            <button *ngFor="let dispositivo of dispositivos" type="button" class="rounded-lg px-3 text-xs font-black transition"
+                    [class.bg-gray-950]="dispositivoPreview === dispositivo.id"
+                    [class.text-white]="dispositivoPreview === dispositivo.id"
+                    [class.text-gray-500]="dispositivoPreview !== dispositivo.id"
+                    [class.hover:bg-white]="dispositivoPreview !== dispositivo.id"
+                    (click)="seleccionarDispositivo(dispositivo.id)">
+              <span class="block truncate">{{ dispositivo.label }}</span>
+            </button>
+          </div>
+          <a routerLink="/inicio" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-black text-gray-700 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:bg-sky-50">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" />
+            </svg>
+            Ver inicio
+          </a>
+          <button type="button" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gray-950 px-4 text-sm font-black text-white shadow-xl shadow-gray-950/15 transition hover:-translate-y-0.5 hover:bg-gray-800" (click)="guardar()">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Guardar
+          </button>
+          <button type="button" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-rose-50 px-4 text-sm font-black text-rose-700 transition hover:-translate-y-0.5 hover:bg-rose-100" (click)="resetear()">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5 15a7 7 0 0012 3M19 9A7 7 0 007 6" />
+            </svg>
+            Restaurar
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="guardado" class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-700">
+        {{ guardado }}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-5 xl:grid-cols-[240px_minmax(0,1fr)]">
+    <aside class="rounded-lg border border-white/80 bg-white/90 p-3 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div class="px-2 pb-3">
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Capas</p>
+        <p class="mt-1 text-sm font-bold text-gray-500">Elige una sección para editarla.</p>
+      </div>
+
+      <div class="space-y-2">
+        <button *ngFor="let panel of paneles"
+                type="button"
+                class="group flex min-h-12 w-full items-center justify-between rounded-lg px-3 text-left text-sm font-black transition"
+                [class.bg-gray-950]="panelActivo === panel.id"
+                [class.text-white]="panelActivo === panel.id"
+                [class.shadow-lg]="panelActivo === panel.id"
+                [class.text-gray-600]="panelActivo !== panel.id"
+                [class.hover:bg-gray-50]="panelActivo !== panel.id"
+                (click)="seleccionar(panel.id)">
+          <span class="flex min-w-0 items-center gap-3">
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg"
+                  [class.bg-white]="panelActivo === panel.id"
+                  [class.text-gray-950]="panelActivo === panel.id"
+                  [class.bg-sky-50]="panelActivo !== panel.id"
+                  [class.text-sky-700]="panelActivo !== panel.id">
+              <svg *ngIf="panel.id === 'header'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              <svg *ngIf="panel.id === 'hero'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16v14H4zM8 15l3-3 2 2 3-4 2 5" /></svg>
+              <svg *ngIf="panel.id === 'catalogo'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v5H4zM13 14h7v5h-7z" /></svg>
+              <svg *ngIf="panel.id === 'productos'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12l-1 12H7L6 7zM9 7a3 3 0 016 0" /></svg>
+              <svg *ngIf="panel.id === 'servicios'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l2.2 4.5 4.8.7-3.5 3.4.8 4.8L12 14.1l-4.3 2.3.8-4.8L5 8.2l4.8-.7L12 3z" /></svg>
+              <svg *ngIf="panel.id === 'beneficios'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.5-7-11a4 4 0 017-2.6A4 4 0 0119 10c0 6.5-7 11-7 11z" /></svg>
+              <svg *ngIf="panel.id === 'visibilidad'" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" /><circle cx="12" cy="12" r="2.5" /></svg>
+            </span>
+            <span class="truncate">{{ panel.label }}</span>
+          </span>
+          <span *ngIf="panelActivo === panel.id" class="h-2 w-2 rounded-full bg-emerald-400"></span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="min-h-[720px] overflow-auto rounded-lg border border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(139,92,246,0.16),transparent_30%),#eef3f8] p-4 shadow-inner sm:p-5">
+      <div class="sticky top-0 z-20 mx-auto mb-5 flex w-fit flex-wrap items-center justify-center gap-2 rounded-lg border border-white/80 bg-white/90 p-2 shadow-xl shadow-slate-900/10 backdrop-blur-xl">
+        <div class="flex gap-1 rounded-lg bg-gray-100 p-1">
+          <button *ngFor="let pagina of paginas"
+                  type="button"
+                  class="h-10 rounded-lg px-4 text-sm font-black transition"
+                  [class.bg-gray-950]="paginaPreview === pagina.id"
+                  [class.text-white]="paginaPreview === pagina.id"
+                  [class.shadow-lg]="paginaPreview === pagina.id"
+                  [class.text-gray-600]="paginaPreview !== pagina.id"
+                  [class.hover:bg-white]="paginaPreview !== pagina.id"
+                  (click)="seleccionarPagina(pagina.id)">
+            {{ pagina.label }}
+          </button>
+        </div>
+        <div class="h-8 w-px bg-gray-200"></div>
+        <button type="button" class="h-10 rounded-lg px-3 text-xs font-black transition"
+                [class.bg-sky-50]="mostrarGuias"
+                [class.text-sky-700]="mostrarGuias"
+                [class.text-gray-500]="!mostrarGuias"
+                (click)="mostrarGuias = !mostrarGuias">
+          Guías
+        </button>
+        <button type="button" class="h-10 rounded-lg px-3 text-xs font-black transition"
+                [class.bg-violet-50]="modoInspector"
+                [class.text-violet-700]="modoInspector"
+                [class.text-gray-500]="!modoInspector"
+                (click)="modoInspector = !modoInspector">
+          Inspector
+        </button>
+        <span class="rounded-lg bg-gray-950 px-3 py-2 text-xs font-black text-white">{{ anchoPreview }}px</span>
+      </div>
+
+      <div class="mx-auto origin-top transition-all"
+           [style.width.px]="dispositivoPreview === 'desktop' ? anchoPreview : anchoPreview + 34"
+           [style.transform]="'scale(' + escalaPreview + ')'">
+        <div class="mb-3 flex items-center justify-center gap-2">
+          <span class="rounded-full bg-white/90 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500 shadow-sm">{{ dispositivoActual.label }}</span>
+          <span class="rounded-full bg-white/90 px-3 py-1 text-[11px] font-black text-slate-500 shadow-sm">{{ anchoPreview }} × {{ altoMinimoPreview }}</span>
+        </div>
+
+        <div class="relative mx-auto overflow-visible bg-slate-950 shadow-[0_35px_120px_rgba(15,23,42,0.28)] transition-all"
+             [class.rounded-[30px]]="dispositivoPreview === 'mobile'"
+             [class.rounded-[26px]]="dispositivoPreview === 'tablet'"
+             [class.rounded-[18px]]="dispositivoPreview === 'desktop'"
+             [class.p-[5px]]="dispositivoPreview === 'mobile'"
+             [class.p-[14px]]="dispositivoPreview === 'tablet'"
+             [class.p-0]="dispositivoPreview === 'desktop'">
+          <div *ngIf="dispositivoPreview === 'mobile'" class="absolute -left-[5px] top-24 z-20 h-9 w-[5px] rounded-l-full bg-black"></div>
+          <div *ngIf="dispositivoPreview === 'mobile'" class="absolute -left-[5px] top-40 z-20 h-12 w-[5px] rounded-l-full bg-black"></div>
+          <div *ngIf="dispositivoPreview === 'mobile'" class="absolute -left-[5px] top-56 z-20 h-12 w-[5px] rounded-l-full bg-black"></div>
+          <div *ngIf="dispositivoPreview === 'mobile'" class="absolute -right-[5px] top-44 z-20 h-16 w-[5px] rounded-r-full bg-black"></div>
+          <div *ngIf="dispositivoPreview === 'mobile'" class="absolute left-1/2 top-4 z-30 h-5 w-24 -translate-x-1/2 rounded-full bg-black"></div>
+          <div *ngIf="dispositivoPreview === 'tablet'" class="absolute left-1/2 top-2 z-30 h-2 w-16 -translate-x-1/2 rounded-full bg-black/80"></div>
+
+          <div class="relative overflow-y-auto overflow-x-hidden bg-[#f7fbff] p-5 text-slate-950 ring-1 ring-white/80 transition-all"
+               [class.rounded-[25px]]="dispositivoPreview === 'mobile'"
+               [class.rounded-[18px]]="dispositivoPreview === 'tablet'"
+               [class.rounded-[18px]]="dispositivoPreview === 'desktop'"
+               [class.pt-12]="dispositivoPreview === 'mobile'"
+               [class.pt-8]="dispositivoPreview === 'tablet'"
+               [style.width.px]="anchoPreview"
+               [style.height.px]="altoMinimoPreview">
+        <div *ngIf="mostrarGuias" class="pointer-events-none absolute inset-0 z-0 opacity-60"
+             style="background-image: linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px); background-size: 40px 40px;"></div>
+        <div class="pointer-events-none absolute left-5 right-5 top-5 z-0 h-px bg-sky-300/40"></div>
+        <div class="relative z-10">
+        <header *ngIf="config.mostrarHeader"
+                class="flex cursor-pointer items-center justify-between rounded-lg border bg-white/90 px-4 py-3 shadow-lg transition"
+                [ngClass]="[clasePanel('header'), dispositivoPreview === 'mobile' ? 'flex-col items-stretch gap-3 px-3' : '']"
+                (click)="seleccionar('header')">
+          <div class="flex min-w-0 items-center gap-3">
+            <img src="/logo.png" [alt]="config.marca" class="h-11 w-11 rounded-lg object-contain shadow-lg shadow-sky-500/20">
+            <div class="min-w-0">
+              <p class="truncate text-base font-black leading-tight">{{ config.marca }}</p>
+              <p class="truncate text-xs font-bold text-slate-500">{{ config.subtituloHeader }}</p>
+            </div>
+          </div>
+          <nav class="flex items-center gap-1 rounded-lg border border-white/80 bg-white/65 p-1" [class.w-full]="dispositivoPreview === 'mobile'">
+            <button type="button" class="rounded-lg px-3 py-2 text-sm font-black text-slate-600 hover:bg-sky-50" [class.flex-1]="dispositivoPreview === 'mobile'" [class.text-xs]="dispositivoPreview === 'mobile'" [class.bg-sky-50]="paginaPreview === 'inicio'" (click)="$event.stopPropagation(); seleccionarPagina('inicio')">Inicio</button>
+            <button *ngIf="config.mostrarCatalogo" type="button" class="rounded-lg px-3 py-2 text-sm font-black text-slate-600 hover:bg-sky-50" [class.flex-1]="dispositivoPreview === 'mobile'" [class.text-xs]="dispositivoPreview === 'mobile'" [class.bg-sky-50]="paginaPreview === 'catalogo'" (click)="$event.stopPropagation(); seleccionarPagina('catalogo')">Catálogo</button>
+            <button type="button" class="rounded-lg px-3 py-2 text-sm font-black text-slate-600 hover:bg-sky-50" [class.flex-1]="dispositivoPreview === 'mobile'" [class.text-xs]="dispositivoPreview === 'mobile'" [class.bg-sky-50]="paginaPreview === 'servicios'" (click)="$event.stopPropagation(); seleccionarPagina('servicios')">Servicios</button>
+          </nav>
+        </header>
+
+        <section *ngIf="paginaPreview === 'inicio'"
+                 class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
+                 [ngClass]="clasePanel('hero')"
+                 (click)="seleccionar('hero')">
+          <div class="grid items-center gap-8 rounded-lg bg-gradient-to-br from-white via-blue-50 to-blue-100"
+               [ngClass]="dispositivoPreview === 'desktop' ? 'min-h-[420px] p-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)]' : dispositivoPreview === 'tablet' ? 'min-h-[560px] grid-cols-1 p-7' : 'min-h-[620px] grid-cols-1 gap-5 p-5'">
+            <div>
+              <p class="font-black uppercase tracking-[0.22em] text-slate-500" [class.text-xs]="dispositivoPreview === 'mobile'" [class.text-sm]="dispositivoPreview !== 'mobile'">{{ config.slidesInicio[0].etiqueta }}</p>
+              <h2 class="mt-4 font-black leading-none tracking-tight text-slate-950" [class.text-5xl]="dispositivoPreview === 'mobile'" [class.text-6xl]="dispositivoPreview !== 'mobile'">{{ config.slidesInicio[0].titulo }}</h2>
+              <p class="mt-5 max-w-xl font-semibold leading-7 text-slate-600" [class.text-base]="dispositivoPreview === 'mobile'" [class.text-lg]="dispositivoPreview !== 'mobile'">{{ config.slidesInicio[0].descripcion }}</p>
+              <span class="mt-7 inline-flex h-12 items-center rounded-lg bg-black px-6 text-sm font-black text-white shadow-xl">Ver productos</span>
+            </div>
+            <div class="grid place-items-center">
+              <img [src]="config.slidesInicio[0].imagen" [alt]="config.slidesInicio[0].titulo" class="w-full rounded-2xl object-contain drop-shadow-2xl" [class.max-h-56]="dispositivoPreview === 'mobile'" [class.max-h-64]="dispositivoPreview === 'tablet'" [class.max-h-72]="dispositivoPreview === 'desktop'">
+            </div>
+          </div>
+
+          <div *ngIf="config.mostrarVitrina" class="mt-8 rounded-lg bg-white p-6 shadow-sm">
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-500">{{ config.vitrinaEtiqueta }}</p>
+            <h3 class="mt-2 text-3xl font-black tracking-tight">{{ config.vitrinaTitulo }}</h3>
+            <div class="mt-6 grid gap-4" [ngClass]="dispositivoPreview === 'mobile' ? 'grid-cols-1' : dispositivoPreview === 'tablet' ? 'grid-cols-2' : 'sm:grid-cols-4'">
+              <article *ngFor="let producto of productosVisibles.slice(0, 8); let i = index" class="relative rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                <span class="absolute right-3 top-3 rounded-full bg-violet-50 px-2 py-1 text-[10px] font-black text-violet-700">{{ i % 2 ? 'Oferta' : 'Nuevo' }}</span>
+                <div class="grid h-36 place-items-center rounded-lg bg-slate-50 text-2xl font-black text-sky-700">
+                  <img *ngIf="imagenProducto(producto); else productoIniciales" [src]="imagenProducto(producto)" [alt]="producto.nombre" class="h-full w-full object-contain p-2">
+                  <ng-template #productoIniciales>{{ iniciales(producto.nombre) }}</ng-template>
+                </div>
+                <h4 class="mt-3 line-clamp-2 text-sm font-black">{{ producto.nombre }}</h4>
+                <p class="mt-1 text-xs font-bold text-slate-400">{{ nombreCategoria(producto.categoriaId) }}</p>
+                <p class="mt-2 text-sm font-black">{{ precio(producto) }}</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section *ngIf="paginaPreview === 'catalogo' && config.mostrarCatalogo"
+                 class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
+                 [ngClass]="clasePanel('catalogo')"
+                 (click)="seleccionar('catalogo')">
+          <div class="mb-5 flex justify-end">
+            <div class="h-12 w-[520px] rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-400 shadow-sm">Buscar categoría o producto...</div>
+          </div>
+          <div class="mt-5 grid gap-4" [ngClass]="dispositivoPreview === 'mobile' ? 'grid-cols-1' : dispositivoPreview === 'tablet' ? 'grid-cols-2' : 'sm:grid-cols-3'">
+            <article *ngFor="let categoria of categoriasVisibles.slice(0, 3)" class="rounded-lg bg-white p-4 shadow-sm">
+              <div class="grid aspect-[4/3] place-items-center rounded-lg bg-sky-50 text-3xl font-black text-sky-700">{{ iniciales(categoria.nombre) }}</div>
+              <h3 class="mt-3 text-lg font-black">{{ categoria.nombre }}</h3>
+              <p class="text-xs font-bold text-slate-400">Categoría visible</p>
+            </article>
+          </div>
+        </section>
+
+        <section *ngIf="paginaPreview === 'productos' && config.mostrarProductos"
+                 class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
+                 [ngClass]="clasePanel('productos')"
+                 (click)="seleccionar('productos')">
+          <div class="mb-5 flex justify-end">
+            <div class="h-12 w-[520px] rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-400 shadow-sm">Buscar producto, código o categoría...</div>
+          </div>
+          <div class="mt-5 grid gap-4" [ngClass]="dispositivoPreview === 'mobile' ? 'grid-cols-1' : dispositivoPreview === 'tablet' ? 'grid-cols-2' : 'sm:grid-cols-4'">
+            <article *ngFor="let producto of productosVisibles.slice(0, 4)" class="rounded-lg bg-white p-3 shadow-sm">
+              <div class="grid aspect-[4/3] place-items-center rounded-lg bg-violet-50 text-2xl font-black text-violet-700">
+                <img *ngIf="imagenProducto(producto); else productoCardIniciales" [src]="imagenProducto(producto)" [alt]="producto.nombre" class="h-full w-full object-contain p-2">
+                <ng-template #productoCardIniciales>{{ iniciales(producto.nombre) }}</ng-template>
+              </div>
+              <h3 class="mt-3 line-clamp-2 text-sm font-black">{{ producto.nombre }}</h3>
+              <p class="mt-1 text-sm font-black text-blue-700">{{ precio(producto) }}</p>
+            </article>
+          </div>
+        </section>
+
+        <section *ngIf="paginaPreview === 'servicios' && config.mostrarServicios"
+                 class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
+                 [ngClass]="clasePanel('servicios')"
+                 (click)="seleccionar('servicios')">
+          <div class="mb-6 text-center">
+            <h2 class="text-4xl font-black">¿Por qué elegirnos?</h2>
+          </div>
+          <div class="grid gap-4" [ngClass]="dispositivoPreview === 'mobile' ? 'grid-cols-1' : dispositivoPreview === 'tablet' ? 'grid-cols-2' : 'lg:grid-cols-3'">
+            <article *ngFor="let servicio of config.servicios" class="overflow-hidden rounded-2xl bg-white shadow-sm">
+              <img [src]="servicio.imagen" [alt]="servicio.titulo" class="h-44 w-full object-cover">
+              <div class="p-4"><h3 class="text-xl font-black">{{ servicio.titulo }}</h3><p class="mt-2 text-sm font-semibold text-slate-500">{{ servicio.descripcion }}</p></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="mt-6 grid cursor-pointer gap-4 rounded-lg bg-slate-950 p-5 text-white lg:grid-cols-4"
+                 [ngClass]="clasePanel('beneficios')"
+                 (click)="seleccionar('beneficios')">
+          <article *ngFor="let beneficio of config.beneficios"><p class="text-lg font-black">{{ beneficio.titulo }}</p><p class="mt-1 text-sm font-semibold text-slate-300">{{ beneficio.descripcion }}</p></article>
+        </section>
+
+        <section *ngIf="paginaPreview === 'servicios' && !config.mostrarServicios"
+                 class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
+                 (click)="seleccionar('servicios')">
+          <p class="text-lg font-black text-slate-700">La página de servicios está oculta.</p>
+          <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar servicios” en propiedades para verla en el inicio.</p>
+        </section>
+
+        <section *ngIf="paginaPreview === 'catalogo' && !config.mostrarCatalogo"
+                 class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
+                 (click)="seleccionar('catalogo')">
+          <p class="text-lg font-black text-slate-700">La página de catálogo está oculta.</p>
+          <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar catálogo” en propiedades para verla.</p>
+        </section>
+
+        <section *ngIf="paginaPreview === 'productos' && !config.mostrarProductos"
+                 class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
+                 (click)="seleccionar('productos')">
+          <p class="text-lg font-black text-slate-700">La página de productos está oculta.</p>
+          <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar productos” en propiedades para verla.</p>
+        </section>
+        </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div *ngIf="formularioAbierto" class="fixed inset-0 z-[120] bg-slate-950/30 backdrop-blur-[3px]" (click)="cerrarFormulario()"></div>
+
+    <aside *ngIf="formularioAbierto" class="fixed right-4 top-1/2 z-[130] max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-[430px] -translate-y-1/2 overflow-y-auto rounded-lg border border-white/80 bg-white/95 p-4 shadow-[0_30px_120px_rgba(15,23,42,0.24)] backdrop-blur-2xl">
+      <div class="space-y-4">
+        <div class="rounded-lg bg-gray-950 p-4 text-white">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-sky-300">Propiedades</p>
+          <h2 class="mt-1 text-2xl font-black capitalize">{{ panelActivo }}</h2>
+            </div>
+            <button type="button" class="grid h-9 w-9 place-items-center rounded-lg bg-white/10 text-xl font-black text-white transition hover:bg-white/20" aria-label="Cerrar formulario" (click)="cerrarFormulario()">×</button>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-xs font-black">
+            <span class="rounded-lg bg-white/10 px-3 py-2">{{ estadoPanelActivo }}</span>
+            <span class="rounded-lg bg-white/10 px-3 py-2">{{ dispositivoActual.label }}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-3">
+            <p class="text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">Secciones</p>
+            <p class="mt-1 text-xl font-black text-gray-950">{{ seccionesVisibles }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-3">
+            <p class="text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">Categorías</p>
+            <p class="mt-1 text-xl font-black text-gray-950">{{ categoriasVisibles.length }}</p>
+          </div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50 p-3">
+            <p class="text-[10px] font-black uppercase tracking-[0.16em] text-gray-400">Productos</p>
+            <p class="mt-1 text-xl font-black text-gray-950">{{ productosVisibles.length }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="panelActivo === 'header'" class="space-y-4">
+          <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3 text-sm font-black text-gray-700">
+            Mostrar header
+            <input [(ngModel)]="config.mostrarHeader" type="checkbox" class="h-5 w-5 rounded border-gray-300">
+          </label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Marca<input [(ngModel)]="config.marca" class="h-11 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Subtítulo<input [(ngModel)]="config.subtituloHeader" class="h-11 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+        </div>
+
+        <div *ngIf="panelActivo === 'hero'" class="space-y-4">
+          <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3 text-sm font-black text-gray-700">Vitrina<input [(ngModel)]="config.mostrarVitrina" type="checkbox" class="h-5 w-5 rounded border-gray-300"></label>
+          <div class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
+            <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Vitrina</p>
+            <label class="grid gap-2 text-sm font-black text-gray-500">Etiqueta<input [(ngModel)]="config.vitrinaEtiqueta" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+            <label class="grid gap-2 text-sm font-black text-gray-500">Título<input [(ngModel)]="config.vitrinaTitulo" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+          </div>
+          <div class="space-y-4">
+            <article *ngFor="let slide of config.slidesInicio; let i = index" class="space-y-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+              <p class="text-xs font-black uppercase tracking-[0.16em] text-violet-500">Slide {{ i + 1 }}</p>
+              <label class="grid gap-2 text-xs font-black text-gray-500">Etiqueta<input [(ngModel)]="slide.etiqueta" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+              <label class="grid gap-2 text-xs font-black text-gray-500">Título<input [(ngModel)]="slide.titulo" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+              <label class="grid gap-2 text-xs font-black text-gray-500">Descripción<textarea [(ngModel)]="slide.descripcion" rows="3" class="rounded-lg border border-gray-200 px-3 py-2 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></textarea></label>
+              <label class="grid gap-2 text-xs font-black text-gray-500">Botón<input [(ngModel)]="slide.boton" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+              <label class="grid gap-2 text-xs font-black text-gray-500">Imagen<input [(ngModel)]="slide.imagen" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+            </article>
+          </div>
+        </div>
+
+        <div *ngIf="panelActivo === 'catalogo'" class="space-y-4">
+          <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3 text-sm font-black text-gray-700">Mostrar catálogo<input [(ngModel)]="config.mostrarCatalogo" type="checkbox" class="h-5 w-5 rounded border-gray-300"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Etiqueta<input [(ngModel)]="config.catalogoEtiqueta" class="h-11 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Título<input [(ngModel)]="config.catalogoTitulo" class="h-11 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Descripción<textarea [(ngModel)]="config.catalogoDescripcion" rows="4" class="rounded-lg border border-gray-200 px-3 py-2 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></textarea></label>
+        </div>
+
+        <div *ngIf="panelActivo === 'productos'" class="space-y-4">
+          <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3 text-sm font-black text-gray-700">Mostrar productos<input [(ngModel)]="config.mostrarProductos" type="checkbox" class="h-5 w-5 rounded border-gray-300"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Etiqueta<input [(ngModel)]="config.productosEtiqueta" class="h-11 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Título<input [(ngModel)]="config.productosTitulo" class="h-11 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+          <label class="grid gap-2 text-sm font-black text-gray-500">Descripción<textarea [(ngModel)]="config.productosDescripcion" rows="4" class="rounded-lg border border-gray-200 px-3 py-2 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></textarea></label>
+        </div>
+
+        <div *ngIf="panelActivo === 'servicios'" class="space-y-4">
+          <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3 text-sm font-black text-gray-700">Mostrar servicios<input [(ngModel)]="config.mostrarServicios" type="checkbox" class="h-5 w-5 rounded border-gray-300"></label>
+          <article *ngFor="let servicio of config.servicios" class="space-y-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+            <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-500">{{ servicio.id }}</p>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Icono<input [(ngModel)]="servicio.icono" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Título<input [(ngModel)]="servicio.titulo" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Descripción<textarea [(ngModel)]="servicio.descripcion" rows="3" class="rounded-lg border border-gray-200 px-3 py-2 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></textarea></label>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Texto del formulario<textarea [(ngModel)]="servicio.modalDescripcion" rows="4" class="rounded-lg border border-gray-200 px-3 py-2 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></textarea></label>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Imagen<input [(ngModel)]="servicio.imagen" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+            <div class="space-y-2">
+              <p class="text-xs font-black text-gray-500">Puntos</p>
+              <input *ngFor="let punto of servicio.puntos; let pi = index" [(ngModel)]="servicio.puntos[pi]" class="h-10 w-full rounded-lg border border-gray-200 px-3 text-xs font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100">
+            </div>
+          </article>
+        </div>
+
+        <div *ngIf="panelActivo === 'beneficios'" class="space-y-4">
+          <article *ngFor="let beneficio of config.beneficios; let i = index" class="space-y-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm">
+            <p class="text-xs font-black uppercase tracking-[0.16em] text-emerald-500">Beneficio {{ i + 1 }}</p>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Título<input [(ngModel)]="beneficio.titulo" class="h-10 rounded-lg border border-gray-200 px-3 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></label>
+            <label class="grid gap-2 text-xs font-black text-gray-500">Descripción<textarea [(ngModel)]="beneficio.descripcion" rows="3" class="rounded-lg border border-gray-200 px-3 py-2 font-bold text-gray-900 outline-none focus:ring-4 focus:ring-sky-100"></textarea></label>
+          </article>
+        </div>
+
+        <div *ngIf="panelActivo === 'visibilidad'" class="space-y-4">
+          <div class="grid gap-2">
+            <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm font-black text-gray-700">Mostrar catálogo<input [(ngModel)]="config.mostrarCatalogo" type="checkbox" class="h-5 w-5 rounded border-gray-300"></label>
+            <label class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm font-black text-gray-700">Mostrar productos<input [(ngModel)]="config.mostrarProductos" type="checkbox" class="h-5 w-5 rounded border-gray-300"></label>
+          </div>
+          <div>
+            <h3 class="font-black text-gray-950">Categorías</h3>
+            <div class="mt-3 max-h-56 space-y-2 overflow-y-auto pr-1">
+              <label *ngFor="let categoria of categorias" class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm font-black text-gray-700">
+                <span class="truncate">{{ categoria.nombre }}</span>
+                <input type="checkbox" class="h-5 w-5 rounded border-gray-300" [ngModel]="!categoriaOculta(categoria.id)" (ngModelChange)="toggleCategoria(categoria.id, !$event)">
+              </label>
+            </div>
+          </div>
+          <div>
+            <h3 class="font-black text-gray-950">Productos</h3>
+            <div class="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
+              <label *ngFor="let producto of productos" class="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm font-black text-gray-700">
+                <span class="min-w-0">
+                  <span class="block truncate">{{ producto.nombre }}</span>
+                  <span class="block truncate text-xs text-gray-400">{{ nombreCategoria(producto.categoriaId) }}</span>
+                </span>
+                <input type="checkbox" class="h-5 w-5 shrink-0 rounded border-gray-300" [ngModel]="!productoOculto(producto.id)" (ngModelChange)="toggleProducto(producto.id, !$event)">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>

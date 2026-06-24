@@ -43,9 +43,9 @@ describe('AuthService', () => {
       expect(service.getToken()).toBe(token);
     });
 
-    const req = httpMock.expectOne('https://album-tested-cgi-dragon.trycloudflare.com/auth/login');
+    const req = httpMock.expectOne('http://localhost:8080/auth/login');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ userName: 'admin', password: 'secret' });
+    expect(req.request.body).toEqual({ userName: 'admin', correo: 'admin', password: 'secret' });
 
     req.flush({ token });
   });
@@ -53,31 +53,63 @@ describe('AuthService', () => {
   it('should not store an empty token returned by login', () => {
     service.login('admin', 'secret').subscribe();
 
-    httpMock.expectOne('https://album-tested-cgi-dragon.trycloudflare.com/auth/login').flush({ token: '' });
+    httpMock.expectOne('http://localhost:8080/auth/login').flush({ token: '' });
 
     expect(service.getToken()).toBeNull();
   });
 
-  it('should call register endpoint with POST and return the created user', () => {
-    service.register('nuevo', 'secret').subscribe(response => {
-      expect(response).toEqual({ id: 7, userName: 'nuevo' });
+  it('should call worker activation endpoint with email, user and password', () => {
+    service.activateWorker('trabajador@correo.com', 'secret', 'trabajador1').subscribe(response => {
+      expect(response).toEqual({ id: 8, correo: 'trabajador@correo.com' });
     });
 
-    const req = httpMock.expectOne('https://album-tested-cgi-dragon.trycloudflare.com/auth/create');
+    const req = httpMock.expectOne('http://localhost:8080/auth/trabajadores/activar');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ userName: 'nuevo', password: 'secret' });
+    expect(req.request.body).toEqual({ correo: 'trabajador@correo.com', userName: 'trabajador1', password: 'secret' });
 
-    req.flush({ id: 7, userName: 'nuevo' });
+    req.flush({ id: 8, correo: 'trabajador@correo.com' });
   });
 
-  it('should remove the token and navigate to login on logout', () => {
+  it('should impersonate a worker and store the returned token', () => {
+    const ownerToken = 'header.eyJleHAiOjk5OTk5OTk5OTl9.owner';
+    const token = 'header.eyJleHAiOjk5OTk5OTk5OTl9.signature';
+    localStorage.setItem('authToken', ownerToken);
+
+    service.impersonateWorker(12).subscribe(response => {
+      expect(response.token).toBe(token);
+      expect(service.getToken()).toBe(token);
+      expect(localStorage.getItem('ownerAuthToken')).toBe(ownerToken);
+    });
+
+    const req = httpMock.expectOne('http://localhost:8080/auth/trabajadores/12/impersonar');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+
+    req.flush({ token });
+  });
+
+  it('should return to the owner session after impersonating', () => {
+    const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
+    localStorage.setItem('authToken', 'worker-token');
+    localStorage.setItem('ownerAuthToken', 'owner-token');
+
+    service.returnToOwnerSession();
+
+    expect(localStorage.getItem('authToken')).toBe('owner-token');
+    expect(localStorage.getItem('ownerAuthToken')).toBeNull();
+    expect(navigateSpy).toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('should remove the token and navigate to inicio on logout', () => {
     localStorage.setItem('authToken', 'token');
+    localStorage.setItem('ownerAuthToken', 'owner-token');
     const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
 
     service.logout();
 
     expect(localStorage.getItem('authToken')).toBeNull();
-    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+    expect(localStorage.getItem('ownerAuthToken')).toBeNull();
+    expect(navigateSpy).toHaveBeenCalledWith(['/inicio']);
   });
 
   it('should report authentication only for a valid non-expired token', () => {

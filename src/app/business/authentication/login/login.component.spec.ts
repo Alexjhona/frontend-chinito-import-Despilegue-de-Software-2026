@@ -38,7 +38,7 @@ describe('LoginComponent', () => {
 
     component.login();
 
-    expect(component.errorMessage).toBe('Completa usuario y contrasena');
+    expect(component.errorMessage).toBe('Completa usuario o correo y contrasena');
     expect(authServiceSpy.login).not.toHaveBeenCalled();
   });
 
@@ -62,7 +62,7 @@ describe('LoginComponent', () => {
 
     component.login();
 
-    expect(component.errorMessage).toBe('Usuario o contrasena incorrectos.');
+    expect(component.errorMessage).toBe('Usuario, correo o contrasena incorrectos.');
   });
 
   it('should distinguish backend connection errors from unexpected errors', () => {

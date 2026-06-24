@@ -1,48 +1,199 @@
-<p class="text-lg font-bold mb-2">Categorías</p>
-<button class="bg-blue-600 text-white px-4 py-2 rounded mb-4" (click)="nuevaCategoria()">Nueva Categoría</button>
+<section class="space-y-5 sm:space-y-6">
+  <div *ngIf="puedeEscribir && esPaginaAgregarCategoria" class="flex justify-end">
+    <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30 active:translate-y-0 sm:w-auto" (click)="nuevaCategoria()">
+      <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 hover:translate-x-full"></span>
+      <span class="relative">Nueva Categoría</span>
+    </button>
+  </div>
 
-<!-- Buscador con lupa -->
-<div class="flex items-center mb-4">
-  <input
-    type="text"
-    class="border rounded-l w-[400px] h-[40px] p-2"
-    placeholder="Buscar categoría..."
-    [(ngModel)]="busqueda"
-  />
-  <span class="bg-gray-200 px-3 py-2 rounded-r h-[40px] flex items-center">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-    </svg>
-  </span>
-</div>
+  <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+    <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+      </svg>
+      <input
+        type="text"
+        class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+        placeholder="Buscar por ID o nombre..."
+        [(ngModel)]="busqueda"
+      />
+    </div>
+  </div>
 
-<!-- Formulario -->
-<div *ngIf="mostrarFormulario" class="bg-gray-100 p-4 rounded shadow mb-4">
-  <h3 class="text-lg font-bold mb-2">{{ editCategoria ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
-  <form (ngSubmit)="guardar()" #categoriaForm="ngForm">
-    <input class="border p-2 mb-2 w-full" type="text" [(ngModel)]="formCategoria.nombre" name="nombre" placeholder="Nombre de la categoría" required>
-    <button class="bg-green-600 text-white px-4 py-2 rounded mr-2" type="submit">Guardar</button>
-    <button class="bg-red-600 text-white px-4 py-2 rounded" type="button" (click)="cancelar()">Cancelar</button>
-  </form>
-</div>
+  <div *ngIf="mostrarFormulario" class="fixed inset-0 z-[80] bg-slate-950/25 backdrop-blur-[2px]" (click)="cancelar()"></div>
 
-<!-- Tabla de categorías -->
-<table class="table-auto w-full mt-4 border">
-  <thead>
-  <tr class="bg-gray-200">
-    <th class="px-4 py-2">ID</th>
-    <th class="px-4 py-2">Nombre</th>
-    <th class="px-4 py-2">Acciones</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr *ngFor="let categoria of categoriasFiltradas" class="border-t">
-    <td class="px-4 py-2">{{ categoria.id }}</td>
-    <td class="px-4 py-2">{{ categoria.nombre }}</td>
-    <td class="px-4 py-2">
-      <button class="bg-green-600 text-white px-2 py-1 rounded mr-2" (click)="editar(categoria)">Editar</button>
-      <button class="bg-red-600 text-white px-2 py-1 rounded" (click)="eliminarCategoria(categoria.id)">Eliminar</button>
-    </td>
-  </tr>
-  </tbody>
-</table>
+  <div *ngIf="mostrarFormulario" class="fixed left-1/2 top-1/2 z-[90] max-h-[calc(100vh-2rem)] w-[calc(100%-1.5rem)] max-w-3xl overflow-y-auto rounded-lg border border-white/70 bg-white/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl sm:p-5"
+       [style.transform]="'translate(-50%, -50%)'">
+    <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-black uppercase tracking-[0.18em] text-violet-500">Formulario</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-gray-950">{{ editCategoria ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
+      </div>
+      <div class="rounded-lg bg-gradient-to-r from-sky-100 via-rose-50 to-emerald-50 px-4 py-2 text-sm font-black text-gray-700 shadow-sm max-[420px]:w-full max-[420px]:text-center">
+        Clasificación
+      </div>
+    </div>
+
+    <div *ngIf="errorFormulario" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+      {{ errorFormulario }}
+    </div>
+
+    <form (ngSubmit)="guardar(categoriaForm)" #categoriaForm="ngForm" class="grid gap-3" novalidate>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Nombre de la categoría</span>
+        <input #nombreCtrl="ngModel" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="formCategoria.nombre" name="nombre" placeholder="Ej. Accesorios" required>
+        <p *ngIf="nombreCtrl.invalid && (nombreCtrl.touched || categoriaForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          Este campo es obligatorio.
+        </p>
+      </label>
+
+      <div class="grid gap-3 rounded-lg border border-gray-100 bg-white/70 p-3 sm:grid-cols-[96px_1fr] sm:items-center">
+        <div class="relative grid h-24 w-24 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-lg font-black text-sky-700 shadow-inner shadow-sky-100">
+          <img *ngIf="formCategoria.imagen; else previewIniciales"
+               [src]="formCategoria.imagen"
+               [alt]="formCategoria.nombre || 'Imagen de categoría'"
+               class="h-full w-full object-cover"
+               (load)="imagenWebLista()"
+               (error)="imagenWebError()">
+          <ng-template #previewIniciales>
+            {{ getIniciales(formCategoria.nombre) }}
+          </ng-template>
+          <div *ngIf="cargandoImagenWeb" class="ai-image-generating">
+            <span class="ai-image-glow"></span>
+            <span class="ai-image-ring"></span>
+            <span class="ai-image-scan"></span>
+            <span class="ai-image-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </div>
+        </div>
+
+        <div class="min-w-0">
+          <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Imagen de la categoría</span>
+          <div class="grid gap-2 lg:grid-cols-[1fr_auto]">
+            <input
+              class="block w-full cursor-pointer rounded-lg border border-gray-200/80 bg-white/80 text-sm font-semibold text-gray-600 file:mr-4 file:h-11 file:border-0 file:bg-sky-50 file:px-4 file:text-sm file:font-black file:text-sky-700 hover:file:bg-sky-100"
+              type="file"
+              name="imagenArchivo"
+              accept="image/*"
+              (change)="seleccionarImagen($event)">
+            <button
+              class="h-11 rounded-lg bg-emerald-50 px-4 text-xs font-black text-emerald-700 transition-colors hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-70"
+              type="button"
+              [disabled]="cargandoImagenWeb"
+              (click)="buscarImagenCategoriaWeb()">
+              {{ cargandoImagenWeb ? 'Generando...' : formCategoria.imagen ? 'Regenerar' : 'Generar por nombre' }}
+            </button>
+          </div>
+          <p *ngIf="mensajeImagenWeb" class="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+            {{ mensajeImagenWeb }}
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button *ngIf="formCategoria.imagen"
+                    class="h-9 rounded-lg bg-rose-50 px-4 text-xs font-black text-rose-700 transition-colors hover:bg-rose-100"
+                    type="button"
+                    (click)="quitarImagen()">
+              Quitar imagen
+            </button>
+            <span class="rounded-lg bg-gray-50 px-3 py-2 text-xs font-bold text-gray-500">PNG, JPG o WebP sin límite de peso</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-3 pt-2 sm:flex sm:flex-wrap">
+        <button class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" type="submit">Guardar</button>
+        <button class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" type="button" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="mensajeExito" class="animate-soft-enter rounded-lg border border-emerald-200 bg-emerald-50/90 px-5 py-4 text-sm font-black text-emerald-700 shadow-[0_18px_60px_rgba(16,185,129,0.14)]">
+    {{ mensajeExito }}
+  </div>
+
+  <div class="rounded-lg border border-white/70 bg-white/65 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-5">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Vista de categorías</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-gray-950">Familias del catálogo</h2>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-center">
+        <span class="rounded-lg bg-sky-50 px-4 py-2 text-xs font-black text-sky-700">{{ categoriasFiltradas.length }} visibles</span>
+        <span class="rounded-lg bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">{{ totalCategorias }} total</span>
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <article *ngFor="let categoria of categoriasFiltradas" class="group overflow-hidden rounded-lg border border-white/80 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(15,23,42,0.14)]">
+        <div class="relative aspect-[4/3] overflow-hidden bg-[radial-gradient(circle_at_28%_20%,#dbeafe,transparent_34%),radial-gradient(circle_at_78%_22%,#fce7f3,transparent_30%),linear-gradient(135deg,#ecfeff,#f8fafc_52%,#f0fdf4)]">
+          <img *ngIf="categoria.imagen; else gridIniciales"
+               [src]="categoria.imagen"
+               [alt]="categoria.nombre"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <ng-template #gridIniciales>
+            <div class="grid h-full w-full place-items-center">
+              <span class="grid h-20 w-20 place-items-center rounded-lg border border-white/80 bg-white/75 text-3xl font-black text-sky-700 shadow-[0_18px_50px_rgba(14,165,233,0.18)] backdrop-blur-xl">
+                {{ getIniciales(categoria.nombre) }}
+              </span>
+            </div>
+          </ng-template>
+
+          <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-950/55 to-transparent"></div>
+          <span class="absolute bottom-3 left-3 right-3 truncate text-lg font-black text-white drop-shadow">
+            {{ categoria.nombre }}
+          </span>
+        </div>
+
+        <div class="grid gap-3 p-4">
+          <div class="flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate text-sm font-black text-gray-950">{{ categoria.nombre }}</p>
+              <p class="mt-1 text-xs font-bold text-gray-400">ID {{ categoria.id || '-' }}</p>
+            </div>
+            <span class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700">Activa</span>
+          </div>
+
+          <div *ngIf="puedeEscribir" class="grid grid-cols-2 gap-2">
+            <button class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition-all duration-300 hover:bg-sky-100 active:scale-[0.98]" (click)="solicitarEditar(categoria)">Editar</button>
+            <button class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 transition-all duration-300 hover:bg-rose-100 active:scale-[0.98]" (click)="solicitarEliminar(categoria)">Eliminar</button>
+          </div>
+        </div>
+      </article>
+
+      <div *ngIf="!categoriasFiltradas.length" class="col-span-full rounded-lg border border-dashed border-sky-200 bg-white/70 px-5 py-10 text-center text-sm font-bold text-gray-500">
+        No hay categorías para mostrar.
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-[110] bg-slate-950/30 backdrop-blur-[2px] transition-opacity duration-300"
+       [style.opacity]="accionPendiente ? '1' : '0'"
+       [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
+       (click)="cancelarConfirmacion()"></div>
+
+  <div class="fixed left-1/2 top-1/2 z-[120] w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-white/70 bg-white/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-all duration-300 sm:p-6"
+       [style.opacity]="accionPendiente ? '1' : '0'"
+       [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
+       [style.transform]="accionPendiente ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -46%) scale(0.96)'"
+       role="dialog"
+       aria-modal="true">
+    <div class="mb-4 flex items-start gap-4">
+      <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 via-rose-50 to-amber-100 text-amber-700 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        </svg>
+      </span>
+      <div class="min-w-0">
+        <h3 class="text-xl font-black tracking-tight text-gray-950">{{ tituloConfirmacion }}</h3>
+        <p class="mt-2 text-sm font-semibold text-gray-500">{{ mensajeConfirmacion }}</p>
+      </div>
+    </div>
+
+    <div class="grid gap-3 sm:grid-cols-2">
+      <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="cancelarConfirmacion()">Cancelar</button>
+      <button type="button" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" (click)="confirmarAccion()">Confirmar</button>
+    </div>
+  </div>
+</section>

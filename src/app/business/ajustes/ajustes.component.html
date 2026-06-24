@@ -1,0 +1,239 @@
+<section class="space-y-6">
+  <div class="overflow-hidden rounded-lg border border-white/80 bg-white/85 shadow-[0_24px_90px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+    <div class="relative p-5 sm:p-6">
+      <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-violet-500 to-emerald-400"></div>
+
+      <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div class="flex min-w-0 items-start gap-4">
+          <div class="grid h-14 w-14 shrink-0 place-items-center rounded-lg bg-gray-950 text-white shadow-xl shadow-gray-950/20">
+            <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h3M6 10.5v3m12-3v3M10.5 18h3M7.8 7.8l2.1 2.1m4.2 4.2 2.1 2.1m0-8.4-2.1 2.1m-4.2 4.2-2.1 2.1" />
+              <circle cx="12" cy="12" r="2.8" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-black uppercase tracking-[0.22em] text-sky-600">Panel administrativo</p>
+            <h1 class="mt-1 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Ajustes</h1>
+            <p class="mt-2 max-w-3xl text-sm font-semibold leading-6 text-gray-500">
+              Controla apariencia, respaldos, estado del sistema y actividad reciente desde un solo lugar.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2 xl:w-[430px]">
+          <button type="button" class="group inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gray-950 px-4 text-sm font-black text-white shadow-xl shadow-gray-950/15 transition hover:-translate-y-0.5 hover:bg-gray-800" (click)="comprobarSistema(); cargarEstadisticasGenerales()">
+            <svg class="h-5 w-5 transition group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5 15a7 7 0 0 0 12 3M19 9A7 7 0 0 0 7 6" />
+            </svg>
+            Comprobar
+          </button>
+          <button type="button" class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-gradient-to-r px-4 text-sm font-black text-white shadow-xl shadow-sky-500/20 transition hover:-translate-y-0.5" [ngClass]="colorClase" (click)="aplicarTema()">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Aplicar tema
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-3 md:grid-cols-3">
+        <div class="rounded-lg border border-emerald-100 bg-emerald-50/80 p-4">
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-emerald-600">Servidor</p>
+          <p class="mt-2 text-xl font-black text-gray-950">{{ estadoServidor === 'Activo' ? 'Activo' : estadoServidor }}</p>
+        </div>
+        <div class="rounded-lg border border-sky-100 bg-sky-50/80 p-4">
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-600">Base de datos</p>
+          <p class="mt-2 text-xl font-black text-gray-950">{{ estadoBaseDatos === 'Conectada' ? 'Conectada' : estadoBaseDatos }}</p>
+        </div>
+        <div class="rounded-lg border border-violet-100 bg-violet-50/80 p-4">
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-violet-600">Último respaldo</p>
+          <p class="mt-2 truncate text-xl font-black text-gray-950">{{ ultimoRespaldo }}</p>
+        </div>
+      </div>
+
+      <div *ngIf="mensaje" class="mt-5 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-black text-sky-700">
+        {{ mensaje }}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
+    <div class="space-y-6">
+      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Apariencia</p>
+            <h2 class="mt-1 text-2xl font-black text-gray-950">Tema y botones del sistema</h2>
+          </div>
+          <span class="w-fit rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">Vista previa activa</span>
+        </div>
+
+        <div class="mt-5 grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <div class="space-y-4">
+            <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
+              <p class="text-sm font-black text-gray-600">Tema</p>
+              <div class="mt-3 grid grid-cols-2 gap-2">
+                <button *ngFor="let item of temas" type="button" class="h-11 rounded-lg text-sm font-black transition hover:-translate-y-0.5"
+                        [class.bg-gray-950]="tema === item"
+                        [class.text-white]="tema === item"
+                        [class.shadow-lg]="tema === item"
+                        [class.bg-white]="tema !== item"
+                        [class.text-gray-700]="tema !== item"
+                        (click)="tema = item; aplicarTema()">
+                  {{ item }}
+                </button>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
+              <p class="text-sm font-black text-gray-600">Color principal</p>
+              <div class="mt-3 grid grid-cols-5 gap-2">
+                <button *ngFor="let color of colores" type="button" class="grid h-11 place-items-center rounded-lg bg-gradient-to-r text-[0px] shadow-sm transition hover:-translate-y-0.5"
+                        [ngClass]="{
+                          'from-sky-500 to-blue-600': color === 'Azul',
+                          'from-emerald-500 to-green-600': color === 'Verde',
+                          'from-rose-500 to-red-600': color === 'Rojo',
+                          'from-violet-500 to-purple-600': color === 'Morado',
+                          'from-orange-400 to-amber-600': color === 'Naranja',
+                          'ring-4 ring-gray-950/10': colorPrincipal === color
+                        }"
+                        [title]="color"
+                        (click)="colorPrincipal = color; aplicarTema()">
+                  {{ color }}
+                </button>
+              </div>
+              <p class="mt-3 text-xs font-bold text-gray-500">Seleccionado: {{ colorPrincipal }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-gray-100 p-4 transition" [class.bg-gray-950]="previewOscuro" [class.bg-slate-50]="!previewOscuro">
+            <div class="rounded-lg bg-white p-5 shadow-xl" [class.bg-gray-900]="previewOscuro">
+              <div class="flex items-center justify-between gap-3">
+                <div class="h-3 w-28 rounded-full bg-gradient-to-r" [ngClass]="colorClase"></div>
+                <span class="rounded-full px-3 py-1 text-xs font-black" [class.bg-white]="previewOscuro" [class.text-gray-950]="previewOscuro" [class.bg-gray-950]="!previewOscuro" [class.text-white]="!previewOscuro">{{ tema }}</span>
+              </div>
+              <h3 class="mt-5 text-2xl font-black" [class.text-white]="previewOscuro" [class.text-gray-950]="!previewOscuro">Chinito Importaciones</h3>
+              <p class="mt-2 text-sm font-bold" [class.text-gray-300]="previewOscuro" [class.text-gray-500]="!previewOscuro">Así se verán los botones principales dentro del sistema.</p>
+              <div class="mt-5 flex flex-wrap gap-3">
+                <button type="button" class="h-11 rounded-lg bg-gradient-to-r px-5 text-sm font-black text-white shadow-lg" [ngClass]="colorClase">Guardar</button>
+                <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-700 shadow-md shadow-gray-200/80">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">Base de datos</p>
+            <h2 class="mt-1 text-2xl font-black text-gray-950">Respaldos, Excel e importación</h2>
+          </div>
+          <div class="grid gap-2 sm:grid-cols-3">
+            <button type="button" class="rounded-lg bg-emerald-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:bg-emerald-700" (click)="crearRespaldo()">Crear general</button>
+            <button type="button" class="rounded-lg bg-sky-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-700" (click)="descargarRespaldo()">Descargar</button>
+            <label class="grid cursor-pointer place-items-center rounded-lg bg-amber-50 px-4 py-3 text-center text-xs font-black text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-100">
+              {{ restaurando ? 'Restaurando...' : 'Restaurar' }}
+              <input type="file" accept=".json" class="hidden" (change)="restaurarRespaldo($event)">
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-3">
+          <article *ngFor="let modulo of modulosRespaldo" class="grid gap-3 rounded-lg border border-gray-100 bg-gray-50/70 p-4 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p class="text-base font-black text-gray-950">{{ modulo.nombre }}</p>
+              <p class="mt-1 text-sm font-semibold text-gray-500">{{ modulo.descripcion }}</p>
+            </div>
+            <div class="grid gap-2 sm:grid-cols-3">
+              <button type="button" class="rounded-lg bg-gray-950 px-4 py-3 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-gray-800" (click)="exportarModuloExcel(modulo.id)">Excel</button>
+              <button type="button" class="rounded-lg bg-emerald-50 px-4 py-3 text-xs font-black text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100" (click)="crearRespaldoModulo(modulo.id)">JSON</button>
+              <label class="cursor-pointer rounded-lg bg-amber-50 px-4 py-3 text-center text-xs font-black text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-100">
+                Cargar
+                <input type="file" accept=".json,.csv" class="hidden" (change)="cargarRespaldoModulo($event, modulo.id)">
+              </label>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Auditoría</p>
+            <h2 class="mt-1 text-2xl font-black text-gray-950">Movimientos recientes</h2>
+          </div>
+          <span class="rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-orange-700">{{ auditoria.length }} registros</span>
+        </div>
+
+        <div class="mt-5 overflow-hidden rounded-lg border border-gray-100">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[620px] text-left text-sm">
+              <thead class="bg-gray-50 text-xs font-black uppercase tracking-[0.16em] text-gray-400">
+                <tr><th class="px-4 py-3">Fecha</th><th class="px-4 py-3">Usuario</th><th class="px-4 py-3">Acción</th></tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 font-bold text-gray-700">
+                <tr *ngFor="let item of auditoria" class="transition hover:bg-orange-50/40">
+                  <td class="px-4 py-3">{{ item.fecha }}</td>
+                  <td class="px-4 py-3">{{ item.usuario }}</td>
+                  <td class="px-4 py-3">{{ item.accion }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="space-y-6">
+      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">Estadísticas</p>
+            <h2 class="mt-1 text-2xl font-black text-gray-950">Negocio</h2>
+          </div>
+          <button type="button" class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-emerald-700" (click)="cargarEstadisticasGenerales()">
+            {{ cargandoEstadisticas ? 'Cargando...' : 'Actualizar' }}
+          </button>
+        </div>
+
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Clientes</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.clientes }}</p></div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Proveedores</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.proveedores }}</p></div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Categorías</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.categorias }}</p></div>
+          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Productos</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.productos }}</p></div>
+        </div>
+
+        <div class="mt-3 rounded-lg border border-sky-100 bg-sky-50/80 p-4">
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-500">Ventas realizadas</p>
+          <div class="mt-2 flex items-end justify-between gap-3">
+            <p class="text-3xl font-black text-gray-950">{{ estadisticas.ventas }}</p>
+            <p class="text-lg font-black text-sky-700">S/ {{ estadisticas.montoVendido | number:'1.2-2' }}</p>
+          </div>
+        </div>
+
+        <div class="mt-3 rounded-lg border border-amber-100 bg-amber-50/80 p-4">
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-amber-600">Alertas de stock</p>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div><p class="text-2xl font-black text-amber-700">{{ estadisticas.productosStockBajo }}</p><p class="text-xs font-black text-amber-700">Menos de 3</p></div>
+            <div><p class="text-2xl font-black text-red-700">{{ estadisticas.productosSinStock }}</p><p class="text-xs font-black text-red-700">Sin stock</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Sistema</p>
+        <h2 class="mt-1 text-2xl font-black text-gray-950">Estado general</h2>
+
+        <div class="mt-5 space-y-3">
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Versión</span><span class="text-sm font-black text-gray-950">{{ versionSistema }}</span></div>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Instalación</span><span class="text-sm font-black text-gray-950">{{ fechaInstalacion }}</span></div>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Servidor</span><span class="text-sm font-black text-gray-950">{{ estadoServidor === 'Activo' ? 'Activo' : estadoServidor === 'Comprobando' ? 'Comprobando' : 'Inactivo' }}</span></div>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Base de datos</span><span class="text-sm font-black text-gray-950">{{ estadoBaseDatos === 'Conectada' ? 'Conectada' : estadoBaseDatos === 'Comprobando' ? 'Comprobando' : 'Sin conexión' }}</span></div>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Espacio</span><span class="text-sm font-black text-gray-950">{{ espacioUtilizado }}</span></div>
+          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Respaldo</span><span class="truncate text-right text-sm font-black text-gray-950">{{ ultimoRespaldo }}</span></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>

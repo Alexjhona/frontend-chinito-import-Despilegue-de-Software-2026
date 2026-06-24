@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
 
-const PRODUCT_API_TARGET = 'https://mean-election-candle-joint.trycloudflare.com';
-const AUTH_API_TARGET = 'https://album-tested-cgi-dragon.trycloudflare.com';
+const PRODUCT_API_TARGET = 'http://localhost:8080';
+const AUTH_API_TARGET = 'http://localhost:8080';
 
 function proxyRequest(targetBaseUrl: string): express.RequestHandler {
   return async (req, res, next) => {

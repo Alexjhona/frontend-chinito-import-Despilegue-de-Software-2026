@@ -1,57 +1,145 @@
-<div class="flex flex-col-reverse md:flex-row justify-between items-center gap-6 p-4 bg-white rounded-2xl shadow-md border border-gray-200">
-
-  <!-- Breadcrumb y título -->
-  <div class="capitalize flex flex-col md:flex-row md:items-center gap-2 w-full md:w-auto">
-    <nav aria-label="breadcrumb" class="w-max">
-      <ol class="flex flex-wrap items-center w-full bg-transparent p-0">
-        <li class="flex items-center text-gray-500 hover:text-blue-500 transition-colors duration-300 cursor-pointer">
-          <a href="#">
-            <p class="block text-sm font-normal opacity-60 hover:opacity-100">dashboard</p>
-          </a>
-          <span class="mx-2 select-none text-gray-400">/</span>
-        </li>
-        <li class="flex items-center text-gray-700 hover:text-blue-600 transition-colors duration-300 cursor-pointer">
-          <p class="block text-sm font-medium">home</p>
-        </li>
-      </ol>
-    </nav>
-    <h6 class="text-base font-semibold text-gray-900 mt-1 md:mt-0">home</h6>
-  </div>
-
-  <!-- Input y botones -->
-  <div class="flex items-center w-full md:w-auto gap-2">
-
-    <!-- Input -->
-    <div class="relative w-full md:w-56">
-      <input class="peer w-full h-10 px-3 py-2 text-gray-700 text-sm font-sans bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all hover:border-blue-400" placeholder=" " disabled>
-      <label class="absolute left-3 top-1 text-xs text-gray-400 peer-focus:text-blue-500 transition-all pointer-events-none select-none">Type here</label>
+<header class="animate-shell-drop relative flex items-center justify-between gap-3 rounded-lg border border-white/70 bg-white/75 px-3 py-2.5 text-gray-900 shadow-[0_18px_60px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:px-4 sm:py-3">
+  <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+    <div>
+      <button type="button"
+              class="group inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/70 bg-white/80 text-gray-800 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg active:translate-y-0 sm:h-11 sm:w-11"
+              aria-haspopup="menu"
+              aria-label="Abrir menú"
+              [attr.aria-expanded]="isMenuOpen"
+              (click)="toggleMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 group-hover:scale-110" [class.rotate-90]="isMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
     </div>
 
-    <!-- Botones -->
-    <button class="relative w-10 h-10 rounded-lg text-gray-500 hover:bg-blue-100 active:bg-blue-200 grid xl:hidden transition-colors duration-200" type="button">
-      <span class="absolute inset-0 flex justify-center items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="h-6 w-6">
-          <path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"></path>
-        </svg>
+    <a routerLink="/dashboard" class="flex min-w-0 items-center gap-2 sm:gap-3" (click)="closeMenu()">
+      <img src="/logo.png" alt="Chinito Importaciones" class="h-10 w-10 shrink-0 rounded-lg object-contain shadow-lg shadow-indigo-500/25 sm:h-11 sm:w-11">
+      <span class="min-w-0">
+        <span class="block truncate text-sm font-black leading-tight text-gray-950 sm:text-base">{{ tituloActual }}</span>
       </span>
-    </button>
-
-    <!-- Logout -->
-    <a>
-      <button (click)="logout()" class="hidden xl:flex items-center gap-1 px-4 py-2 text-xs font-bold text-gray-600 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-all duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-          <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd"></path>
-        </svg>
-        Log Out
-      </button>
     </a>
+  </div>
 
-    <!-- Otros botones pequeños -->
-    <button class="relative w-10 h-10 rounded-lg text-gray-500 hover:bg-blue-100 active:bg-blue-200 grid transition-colors duration-200">
-      <span class="absolute inset-0 flex justify-center items-center">
-        <!-- Aquí puedes colocar otro icono -->
-      </span>
+  <nav class="flex shrink-0 items-center gap-2">
+    <button *ngIf="estaEnOtroRol" (click)="volverAMiRol()" class="inline-flex h-10 items-center gap-2 rounded-lg bg-emerald-600 px-3 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-500/30 active:translate-y-0 sm:px-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14 4 9m0 0 5-5M4 9h11a5 5 0 0 1 0 10h-1"></path>
+      </svg>
+      <span class="hidden sm:inline">Volver a mi rol</span>
+      <span class="sm:hidden">Volver</span>
     </button>
+    <button (click)="logout()" class="inline-flex h-10 items-center gap-2 rounded-lg bg-red-600 px-3 text-sm font-bold text-white shadow-lg shadow-red-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl hover:shadow-red-500/30 active:translate-y-0 sm:px-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+        <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd"></path>
+      </svg>
+      <span class="hidden sm:inline">Cerrar sesión</span>
+    </button>
+  </nav>
+</header>
 
+<div class="fixed inset-0 z-[110] bg-slate-950/30 backdrop-blur-[2px] transition-opacity duration-300"
+     [style.opacity]="mostrarConfirmacionLogout ? '1' : '0'"
+     [style.pointer-events]="mostrarConfirmacionLogout ? 'auto' : 'none'"
+     (click)="cancelarLogout()"></div>
+
+<div class="fixed inset-x-3 top-[calc(50%+2rem)] z-[120] mx-auto max-w-md -translate-y-1/2 rounded-lg border border-white/70 bg-white/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-all duration-300 sm:top-[calc(50%+2.5rem)] sm:p-6"
+     [style.opacity]="mostrarConfirmacionLogout ? '1' : '0'"
+     [style.pointer-events]="mostrarConfirmacionLogout ? 'auto' : 'none'"
+     [style.transform]="mostrarConfirmacionLogout ? 'translateY(-50%) scale(1)' : 'translateY(-46%) scale(0.96)'"
+     role="dialog"
+     aria-modal="true">
+  <div class="mb-4 flex items-start gap-4">
+    <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 via-rose-50 to-amber-100 text-amber-700 shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      </svg>
+    </span>
+    <div class="min-w-0">
+      <h3 class="text-xl font-black tracking-tight text-gray-950">¿Cerrar sesión?</h3>
+      <p class="mt-2 text-sm font-semibold text-gray-500">Se cerrará tu sesión actual y volverás a la pantalla de login.</p>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="cancelarLogout()">Cancelar</button>
+    <button type="button" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" (click)="confirmarLogout()">Confirmar</button>
   </div>
 </div>
+
+<div class="fixed inset-0 z-[90] bg-slate-950/35 backdrop-blur-sm transition-opacity duration-300"
+     [style.opacity]="isMenuOpen ? '1' : '0'"
+     [style.pointer-events]="isMenuOpen ? 'auto' : 'none'"
+     (click)="closeMenu()"></div>
+
+<aside class="fixed inset-y-0 left-0 z-[100] flex w-80 max-w-[86vw] flex-col overflow-hidden border-r border-white/70 bg-white/90 shadow-[28px_0_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-transform duration-500 ease-out will-change-transform"
+       [style.transform]="isMenuOpen ? 'translateX(0)' : 'translateX(-100%)'"
+       [style.pointer-events]="isMenuOpen ? 'auto' : 'none'"
+       [class.menu-open]="isMenuOpen"
+       [attr.aria-hidden]="!isMenuOpen"
+       role="menu">
+  <div class="bg-gradient-to-br from-sky-100 via-rose-50 to-emerald-50 px-5 pb-6 pt-5">
+    <div class="mb-5 flex items-center justify-between">
+      <img src="/logo.png" alt="Chinito Importaciones" class="h-12 w-12 rounded-lg object-contain shadow-lg shadow-indigo-500/25">
+      <button type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/75 text-gray-500 shadow-sm transition-all duration-300 hover:rotate-90 hover:bg-white hover:text-gray-900"
+              aria-label="Cerrar menú"
+              (click)="closeMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <p class="text-3xl font-black tracking-tight text-gray-950">Menú</p>
+      <p class="mt-1 text-sm font-semibold text-gray-500">Chinito Importaciones</p>
+    </div>
+  </div>
+
+  <nav class="scroll-slim flex flex-1 flex-col gap-2 overflow-y-auto overscroll-contain bg-white/70 px-4 py-4 sm:gap-3 sm:py-5">
+    <a *ngIf="can('dashboard')" routerLink="/dashboard" routerLinkActive="bg-gradient-to-r from-blue-100 to-sky-50 text-blue-800 shadow-md shadow-blue-500/10" [routerLinkActiveOptions]="{ exact: true }" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5M5 10v11h14V10M9 21v-6h6v6"/></svg>
+      Inicio
+    </a>
+    <a *ngIf="can('clientes')" routerLink="/cliente" routerLinkActive="bg-gradient-to-r from-green-100 to-emerald-50 text-green-800 shadow-md shadow-green-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 0 0-4-4h-1M9 20H4v-2a4 4 0 0 1 4-4h1m0-4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 0a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg>
+      Cliente
+    </a>
+    <a *ngIf="can('proveedores')" routerLink="/proveedor" routerLinkActive="bg-gradient-to-r from-amber-100 to-yellow-50 text-amber-800 shadow-md shadow-amber-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M5 7v12h14V7M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-8 5h8"/></svg>
+      Proveedor
+    </a>
+    <a *ngIf="can('categorias')" routerLink="/categoria" routerLinkActive="bg-gradient-to-r from-purple-100 to-fuchsia-50 text-purple-800 shadow-md shadow-purple-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h6v6H4V6Zm10 0h6v6h-6V6ZM4 16h6v2H4v-2Zm10 0h6v2h-6v-2Z"/></svg>
+      Categoría
+    </a>
+    <a *ngIf="can('categorias-write')" routerLink="/agregar-categoria" routerLinkActive="bg-gradient-to-r from-purple-100 to-fuchsia-50 text-purple-800 shadow-md shadow-purple-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m7-7H5"/></svg>
+      Agregar Categoría
+    </a>
+    <a *ngIf="can('productos')" routerLink="/producto" routerLinkActive="bg-gradient-to-r from-pink-100 to-rose-50 text-pink-800 shadow-md shadow-pink-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 8-9-5-9 5 9 5 9-5Zm0 4-9 5-9-5m18 4-9 5-9-5"/></svg>
+      Producto
+    </a>
+    <a *ngIf="can('productos-write')" routerLink="/agregar-productos" routerLinkActive="bg-gradient-to-r from-pink-100 to-rose-50 text-pink-800 shadow-md shadow-pink-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m7-7H5"/></svg>
+      Agregar Productos
+    </a>
+    <a *ngIf="can('ventas')" routerLink="/venta" routerLinkActive="bg-gradient-to-r from-sky-100 to-cyan-50 text-sky-800 shadow-md shadow-sky-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l2.2 12.5a2 2 0 0 0 2 1.6H18a2 2 0 0 0 2-1.6L21 8H6m4 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+      Venta
+    </a>
+    <a *ngIf="can('trabajadores')" routerLink="/trabajadores" routerLinkActive="bg-gradient-to-r from-cyan-100 to-blue-50 text-cyan-800 shadow-md shadow-cyan-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87m-2-11.26a4 4 0 0 1 0 7.75"/></svg>
+      Trabajadores
+    </a>
+    <a *ngIf="can('ajustes')" routerLink="/ajustes" routerLinkActive="bg-gradient-to-r from-slate-100 to-gray-50 text-slate-800 shadow-md shadow-slate-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4h3.4l.4 2.2 2.1.9 1.9-1.2 2.4 2.4-1.2 1.9.9 2.1 2.2.4v3.4l-2.2.4-.9 2.1 1.2 1.9-2.4 2.4-1.9-1.2-2.1.9-.4 2.2h-3.4l-.4-2.2-2.1-.9-1.9 1.2-2.4-2.4 1.2-1.9-.9-2.1-2.2-.4v-3.4l2.2-.4.9-2.1-1.2-1.9 2.4-2.4 1.9 1.2 2.1-.9.4-2.2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 14a3 3 0 1 0-6 0 3 3 0 0 0 6 0Z"/></svg>
+      Ajustes
+    </a>
+    <a *ngIf="can('edit')" routerLink="/edit" routerLinkActive="bg-gradient-to-r from-indigo-100 to-violet-50 text-indigo-800 shadow-md shadow-indigo-500/10" class="menu-link group flex items-center gap-3 rounded-lg px-4 py-3.5 text-lg font-black text-gray-800 transition-all duration-300 hover:translate-x-1 hover:bg-white hover:shadow-lg sm:py-4 sm:text-xl" role="menuitem" (click)="closeMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m16.9 4.5 2.6 2.6M4 20l3.2-.8L20.1 6.3a1.8 1.8 0 0 0-2.5-2.5L4.8 16.7 4 20Zm10 0h6"/></svg>
+      Edit
+    </a>
+  </nav>
+</aside>

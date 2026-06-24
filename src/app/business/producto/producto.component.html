@@ -1,149 +1,332 @@
-<p class="text-lg font-bold mb-2">Productos</p>
-<button class="bg-blue-600 text-white px-4 py-2 rounded mb-4" (click)="nuevoProducto()">Nuevo Producto</button>
-
-<div *ngIf="mensaje" class="mb-4 text-sm font-semibold text-blue-700">
-  {{ mensaje }}
-</div>
-
-<!-- Buscadores -->
-<div class="flex flex-wrap gap-4 mb-4">
-  <!-- Buscador por Categoría -->
-  <div class="flex items-center">
-    <input
-      type="text"
-      class="border rounded-l p-2 w-[300px] h-[44px]"
-      placeholder="Buscar por categoría..."
-      [(ngModel)]="busquedaCategoria"
-    />
-    <span class="bg-gray-200 px-5 py-3 rounded-r">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-      </svg>
-    </span>
+<section class="space-y-5 sm:space-y-6">
+  <div *ngIf="puedeEscribir && esPaginaAgregarProductos" class="flex justify-end">
+    <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30 active:translate-y-0 sm:w-auto" (click)="nuevoProducto()">
+      <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 hover:translate-x-full"></span>
+      <span class="relative">Nuevo Producto</span>
+    </button>
   </div>
 
-  <!-- Buscador por Nombre o Código -->
-  <div class="flex items-center">
-    <input
-      type="text"
-      class="border rounded-l p-2 w-[300px] h-[44px]"
-      placeholder="Buscar por producto o código..."
-      [(ngModel)]="busquedaProducto"
-    />
-    <span class="bg-gray-200 px-5 py-3 rounded-r">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-700">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 000 15z" />
-      </svg>
-    </span>
-  </div>
-</div>
-
-<!-- Formulario -->
-<div *ngIf="mostrarFormulario" class="bg-gray-100 p-4 rounded shadow mb-4 relative">
-  <h3 class="text-lg font-bold mb-2">
-    {{ editProducto ? 'Editar Producto' : 'Nuevo Producto' }}
-  </h3>
-
-  <form (ngSubmit)="guardar()" #productoForm="ngForm">
-
-    <!-- Categoría -->
-    <div class="relative mb-2">
-      <input
-        type="text"
-        class="border p-2 w-full rounded"
-        placeholder="Buscar categoría..."
-        [(ngModel)]="busquedaCategoriaInput"
-        name="busquedaCategoriaInput"
-        (input)="actualizarCategoriasFiltradas()"
-        autocomplete="off"
-        required
-      />
-      <ul *ngIf="busquedaCategoriaInput && categoriasFiltradas.length"
-          class="absolute bg-white border rounded shadow w-full max-h-40 overflow-auto z-10 mt-1">
-        <li *ngFor="let cat of categoriasFiltradas"
-            class="px-4 py-2 hover:bg-blue-100 cursor-pointer"
-            (click)="seleccionarCategoria(cat)">
-          {{ cat.nombre }}
-        </li>
-      </ul>
+  <div class="grid gap-3 lg:grid-cols-2">
+    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+      <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+        </svg>
+        <input
+          type="text"
+          class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+          placeholder="Buscar por categoría..."
+          [(ngModel)]="busquedaCategoria"
+        />
+      </div>
     </div>
 
-    <!-- Campos -->
-    <input class="border p-2 mb-2 w-full" type="text"
-           [(ngModel)]="formProducto.codigoInterno" name="codigoInterno"
-           placeholder="Código Interno" required>
+    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+      <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-violet-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+        </svg>
+        <input
+          type="text"
+          class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+          placeholder="Buscar por producto o código..."
+          [(ngModel)]="busquedaProducto"
+        />
+      </div>
+    </div>
+  </div>
 
-    <input class="border p-2 mb-2 w-full" type="text"
-           [(ngModel)]="formProducto.nombre" name="nombre"
-           placeholder="Nombre" required>
+  <div *ngIf="mostrarFormulario && puedeEscribir" class="fixed inset-0 z-[80] bg-slate-950/25 backdrop-blur-[2px]" (click)="cancelar()"></div>
 
-    <input class="border p-2 mb-2 w-full" type="number" step="0.01"
-           [(ngModel)]="formProducto.precioVenta" name="precioVenta"
-           placeholder="Precio Venta" required>
+  <div *ngIf="mostrarFormulario && puedeEscribir" class="fixed left-1/2 top-1/2 z-[90] max-h-[calc(100vh-2rem)] w-[calc(100%-1.5rem)] max-w-6xl overflow-y-auto rounded-lg border border-white/70 bg-white/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl sm:p-5"
+       [style.transform]="'translate(-50%, -50%)'">
+    <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-black uppercase tracking-[0.18em] text-violet-500">Formulario</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-gray-950">{{ editProducto ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+      </div>
+      <div class="rounded-lg bg-gradient-to-r from-sky-100 via-rose-50 to-emerald-50 px-4 py-2 text-sm font-black text-gray-700 shadow-sm max-[420px]:w-full max-[420px]:text-center">
+        Datos de catálogo
+      </div>
+    </div>
 
-    <input class="border p-2 mb-2 w-full" type="number" step="0.01"
-           [(ngModel)]="formProducto.precioCompra" name="precioCompra"
-           placeholder="Precio Compra" required>
+    <div *ngIf="errorFormulario" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+      {{ errorFormulario }}
+    </div>
 
-    <input class="border p-2 mb-2 w-full" type="text"
-           [(ngModel)]="formProducto.moneda" name="moneda"
-           placeholder="Moneda">
+    <form (ngSubmit)="guardar(productoForm)" #productoForm="ngForm" class="grid gap-3 md:grid-cols-2 xl:grid-cols-3" novalidate>
+      <label class="group relative block md:col-span-2 xl:col-span-1">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Categoría</span>
+        <input
+          #categoriaCtrl="ngModel"
+          type="text"
+          class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200"
+          placeholder="Buscar categoría..."
+          [(ngModel)]="busquedaCategoriaInput"
+          name="busquedaCategoriaInput"
+          (input)="actualizarCategoriasFiltradas()"
+          autocomplete="off"
+          required
+        />
+        <ul *ngIf="busquedaCategoriaInput && categoriasFiltradas.length" class="absolute left-0 right-0 z-30 mt-2 max-h-48 overflow-auto rounded-lg border border-white/80 bg-white/95 p-1 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+          <li *ngFor="let cat of categoriasFiltradas" class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-sky-50 hover:text-sky-700" (click)="seleccionarCategoria(cat)">
+            <span class="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-[11px] font-black text-sky-700">
+              <img *ngIf="cat.imagen; else opcionCategoriaIniciales"
+                   [src]="cat.imagen"
+                   [alt]="cat.nombre"
+                   class="h-full w-full object-cover">
+              <ng-template #opcionCategoriaIniciales>{{ getInicialesCategoria(cat.nombre) }}</ng-template>
+            </span>
+            <span class="truncate">{{ cat.nombre }}</span>
+          </li>
+        </ul>
+        <p *ngIf="(categoriaCtrl.invalid || !formProducto.categoriaId) && (categoriaCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          Este campo es obligatorio. Selecciona una categoría válida de la lista.
+        </p>
+      </label>
 
-    <!-- 🔥 STOCK -->
-    <input class="border p-2 mb-2 w-full" type="number"
-           [(ngModel)]="formProducto.stock" name="stock"
-           placeholder="Stock" required>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Código Interno</span>
+        <input #codigoCtrl="ngModel" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="formProducto.codigoInterno" name="codigoInterno" placeholder="PROD-001" required>
+        <p *ngIf="codigoCtrl.invalid && (codigoCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          Este campo es obligatorio.
+        </p>
+      </label>
 
-    <!-- Botones -->
-    <button class="bg-green-600 text-white px-4 py-2 rounded mr-2" type="submit">
-      Guardar
-    </button>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Nombre</span>
+        <input #nombreCtrl="ngModel" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="formProducto.nombre" name="nombre" placeholder="Nombre del producto" required>
+        <p *ngIf="(nombreCtrl.invalid || !formProducto.nombre.trim()) && (nombreCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          Este campo es obligatorio.
+        </p>
+      </label>
 
-    <button class="bg-red-600 text-white px-4 py-2 rounded" type="button" (click)="cancelar()">
-      Cancelar
-    </button>
+      <div class="rounded-lg border border-gray-200/80 bg-white/70 p-3 md:col-span-2 xl:col-span-3">
+        <span class="mb-3 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Imagen del producto</span>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div class="relative grid h-28 w-28 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xl font-black text-sky-700 shadow-inner shadow-sky-100">
+            <img *ngIf="formProducto.imagen; else productoPreviewIniciales"
+                 [src]="formProducto.imagen"
+                 [alt]="formProducto.nombre || 'Imagen del producto'"
+                 class="h-full w-full object-cover"
+                 (load)="imagenWebLista()"
+                 (error)="imagenWebError()">
+            <ng-template #productoPreviewIniciales>{{ getInicialesProducto(formProducto.nombre) }}</ng-template>
+            <div *ngIf="cargandoImagenWeb" class="ai-image-generating">
+              <span class="ai-image-glow"></span>
+              <span class="ai-image-ring"></span>
+              <span class="ai-image-scan"></span>
+              <span class="ai-image-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            </div>
+          </div>
 
-  </form>
-</div>
+          <div class="grid flex-1 gap-3">
+            <div class="grid gap-2 lg:grid-cols-[1fr_auto]">
+              <input
+                type="file"
+                accept="image/*"
+                class="block w-full rounded-lg border border-dashed border-sky-200 bg-white/80 px-4 py-3 text-sm font-semibold text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-50 file:px-4 file:py-2 file:text-sm file:font-black file:text-sky-700 hover:border-sky-300"
+                (change)="seleccionarImagen($event)">
+              <button
+                type="button"
+                class="h-12 rounded-lg bg-emerald-50 px-4 text-xs font-black text-emerald-700 transition-colors hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-70"
+                [disabled]="cargandoImagenWeb"
+                (click)="buscarImagenProductoWeb()">
+                {{ cargandoImagenWeb ? 'Generando...' : formProducto.imagen ? 'Regenerar' : 'Generar por nombre' }}
+              </button>
+            </div>
+            <span class="rounded-lg bg-gray-50 px-3 py-2 text-xs font-bold text-gray-500">PNG, JPG o WebP sin límite de peso</span>
+            <p *ngIf="mensajeImagenWeb" class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+              {{ mensajeImagenWeb }}
+            </p>
+            <button
+              *ngIf="formProducto.imagen"
+              type="button"
+              class="h-10 w-full rounded-lg bg-rose-50 px-4 text-sm font-black text-rose-700 transition-all duration-300 hover:bg-rose-100 sm:w-fit"
+              (click)="quitarImagen()">
+              Quitar imagen
+            </button>
+          </div>
+        </div>
+      </div>
 
-<!-- Tabla -->
-<table class="table-auto w-full mt-4 border">
-  <thead>
-  <tr class="bg-gray-200">
-    <th class="px-4 py-2">ID</th>
-    <th class="px-4 py-2">Categoría</th>
-    <th class="px-4 py-2">Código</th>
-    <th class="px-4 py-2">Nombre</th>
-    <th class="px-4 py-2">Precio Venta</th>
-    <th class="px-4 py-2">Precio Compra</th>
-    <th class="px-4 py-2">Moneda</th>
-    <th class="px-4 py-2">Stock</th>
-    <th class="px-4 py-2">Acciones</th>
-  </tr>
-  </thead>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Precio Venta</span>
+        <input #precioVentaCtrl="ngModel" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="number" min="0.01" step="0.01" [(ngModel)]="formProducto.precioVenta" name="precioVenta" placeholder="120.00" required>
+        <p *ngIf="precioVentaCtrl.invalid && (precioVentaCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          Este campo es obligatorio y debe ser mayor que 0.
+        </p>
+      </label>
 
-  <tbody>
-  <tr *ngFor="let producto of productosFiltrados" class="border-t">
-    <td class="px-4 py-2">{{ producto.id }}</td>
-    <td class="px-4 py-2">{{ getNombreCategoria(producto.categoriaId) }}</td>
-    <td class="px-4 py-2">{{ producto.codigoInterno }}</td>
-    <td class="px-4 py-2">{{ producto.nombre }}</td>
-    <td class="px-4 py-2">S/ {{ producto.precioVenta?.toFixed(2) }}</td>
-    <td class="px-4 py-2">S/ {{ producto.precioCompra?.toFixed(2) }}</td>
-    <td class="px-4 py-2">{{ producto.moneda }}</td>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Precio Compra</span>
+        <input #precioCompraCtrl="ngModel" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="number" min="0.01" step="0.01" [(ngModel)]="formProducto.precioCompra" name="precioCompra" placeholder="80.00" required>
+        <p *ngIf="precioCompraCtrl.invalid && (precioCompraCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          Este campo es obligatorio y debe ser mayor que 0.
+        </p>
+      </label>
 
-    <!-- 🔥 MOSTRAR STOCK -->
-    <td class="px-4 py-2 font-bold text-blue-600">
-      {{ producto.stock }}
-    </td>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Moneda</span>
+        <input class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="formProducto.moneda" name="moneda" placeholder="Soles">
+      </label>
 
-    <td class="px-4 py-2">
-      <button class="bg-green-600 text-white px-2 py-1 rounded mr-2"
-              (click)="editar(producto)">Editar</button>
+      <label class="group block">
+        <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Stock</span>
+        <input #stockCtrl="ngModel" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="number" min="1" step="1" [(ngModel)]="formProducto.stock" name="stock" placeholder="1" required>
+        <p *ngIf="(stockCtrl.invalid || stockDisponible(formProducto) <= 0) && (stockCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+          No se puede guardar con stock 0. Ingresa una cantidad mayor que 0.
+        </p>
+      </label>
 
-      <button class="bg-red-600 text-white px-2 py-1 rounded"
-              (click)="eliminarProducto(producto.id)">Eliminar</button>
-    </td>
-  </tr>
-  </tbody>
-</table>
+      <div class="grid gap-3 pt-2 sm:flex sm:flex-wrap md:col-span-2 xl:col-span-3">
+        <button class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" type="submit">Guardar</button>
+        <button class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" type="button" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="mensaje"
+       class="animate-soft-enter rounded-lg border px-5 py-4 text-sm font-black shadow-[0_18px_60px_rgba(15,23,42,0.08)]"
+       [ngClass]="mensaje.includes('No se pudo') || mensaje.includes('pero no') ? 'border-amber-200 bg-amber-50/90 text-amber-700' : 'border-emerald-200 bg-emerald-50/90 text-emerald-700'">
+    {{ mensaje }}
+  </div>
+
+  <div *ngIf="productosConAdvertenciaStock.length" class="animate-soft-enter rounded-lg border border-amber-200 bg-amber-50/90 px-5 py-4 text-sm font-black text-amber-800 shadow-[0_18px_60px_rgba(245,158,11,0.14)]">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="text-xs uppercase tracking-[0.18em] text-amber-600">Advertencia de stock</p>
+        <p class="mt-1">Hay {{ productosConAdvertenciaStock.length }} producto(s) sin stock o con menos de {{ stockCriticoMinimo }} unidades.</p>
+      </div>
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span *ngFor="let producto of productosConAdvertenciaStock.slice(0, 4)" class="rounded-full bg-white/80 px-3 py-1 text-amber-700 shadow-sm">
+          {{ producto.nombre }}: {{ stockDisponible(producto) }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-lg border border-white/70 bg-white/65 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-5">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-gray-400">Vista de productos</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-gray-950">Catálogo visual</h2>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-center max-[520px]:w-full">
+        <span class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-black text-sky-700">{{ productosFiltrados.length }} visibles</span>
+        <span class="rounded-lg bg-violet-50 px-3 py-2 text-xs font-black text-violet-700">{{ totalProductos }} total</span>
+        <span class="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">{{ productosConStock }} con stock</span>
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <article *ngFor="let producto of productosFiltrados" class="group overflow-hidden rounded-lg border border-white/80 bg-white shadow-[0_18px_60px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(15,23,42,0.14)]">
+        <div class="relative aspect-[4/3] overflow-hidden bg-[radial-gradient(circle_at_30%_20%,#dbeafe,transparent_34%),radial-gradient(circle_at_78%_18%,#fae8ff,transparent_30%),linear-gradient(135deg,#ecfeff,#f8fafc_52%,#fff7ed)]">
+          <img *ngIf="producto.imagen; else gridProductoIniciales"
+               [src]="producto.imagen"
+               [alt]="producto.nombre"
+               class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+          <ng-template #gridProductoIniciales>
+            <div class="grid h-full w-full place-items-center">
+              <span class="grid h-20 w-20 place-items-center rounded-lg border border-white/80 bg-white/75 text-3xl font-black text-sky-700 shadow-[0_18px_50px_rgba(14,165,233,0.18)] backdrop-blur-xl">
+                {{ getInicialesProducto(producto.nombre) }}
+              </span>
+            </div>
+          </ng-template>
+
+          <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/65 to-transparent"></div>
+          <span class="absolute right-3 top-3 rounded-full px-3 py-1 text-[11px] font-black shadow-sm"
+                [ngClass]="{
+                  'bg-emerald-50/95 text-emerald-700': estadoStock(producto) === 'ok',
+                  'bg-amber-50/95 text-amber-700': estadoStock(producto) === 'bajo',
+                  'bg-rose-50/95 text-rose-700': estadoStock(producto) === 'agotado'
+                }">
+            {{ textoStock(producto) }}
+          </span>
+          <div class="absolute bottom-3 left-3 right-3">
+            <p class="truncate text-lg font-black text-white drop-shadow">{{ producto.nombre }}</p>
+            <p class="mt-1 truncate text-xs font-bold text-white/75">{{ getNombreCategoria(producto.categoriaId) || 'Sin categoría' }}</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 p-4">
+          <div class="flex items-center gap-2">
+            <span *ngIf="getNombreCategoria(producto.categoriaId) as nombreCat" class="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-[10px] font-black text-sky-700">
+              <img *ngIf="getImagenCategoria(producto.categoriaId); else gridCategoriaIniciales"
+                   [src]="getImagenCategoria(producto.categoriaId)"
+                   [alt]="nombreCat"
+                   class="h-full w-full object-cover">
+              <ng-template #gridCategoriaIniciales>{{ getInicialesCategoria(nombreCat) }}</ng-template>
+            </span>
+            <div class="min-w-0">
+              <p class="truncate text-sm font-black text-gray-950">{{ producto.nombre }}</p>
+              <p class="truncate text-xs font-bold text-gray-500">{{ getNombreCategoria(producto.categoriaId) || 'Sin categoría' }}</p>
+              <p class="mt-1 truncate text-xs font-bold text-gray-400">{{ producto.codigoInterno || 'Sin código' }}</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-black">
+            <span class="rounded-lg bg-sky-50 px-2 py-2 text-sky-700">Venta<br>S/ {{ producto.precioVenta?.toFixed(2) }}</span>
+            <span class="rounded-lg bg-amber-50 px-2 py-2 text-amber-700">Compra<br>S/ {{ producto.precioCompra?.toFixed(2) }}</span>
+            <span class="rounded-lg px-2 py-2"
+                  [ngClass]="{
+                    'bg-emerald-50 text-emerald-700': estadoStock(producto) === 'ok',
+                    'bg-amber-50 text-amber-700': estadoStock(producto) === 'bajo',
+                    'bg-rose-50 text-rose-700': estadoStock(producto) === 'agotado'
+                  }">
+              Stock<br>{{ stockDisponible(producto) }}
+            </span>
+          </div>
+
+          <div *ngIf="tieneAdvertenciaStock(producto)" class="rounded-lg border px-3 py-2 text-xs font-black"
+               [ngClass]="estadoStock(producto) === 'agotado' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-amber-200 bg-amber-50 text-amber-700'">
+            {{ advertenciaStock(producto) }}
+          </div>
+
+          <div *ngIf="puedeEscribir" class="grid grid-cols-2 gap-2">
+            <button class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition-all duration-300 hover:bg-sky-100 active:scale-[0.98]" (click)="solicitarEditar(producto)">Editar</button>
+            <button class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 transition-all duration-300 hover:bg-rose-100 active:scale-[0.98]" (click)="solicitarEliminar(producto)">Eliminar</button>
+          </div>
+        </div>
+      </article>
+
+      <div *ngIf="!productosFiltrados.length" class="col-span-full rounded-lg border border-dashed border-sky-200 bg-white/70 px-5 py-10 text-center">
+        <p class="text-base font-black text-gray-900">No hay productos para mostrar.</p>
+        <p class="mt-1 text-sm font-semibold text-gray-500">Cambia la búsqueda o registra un producto nuevo.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-[110] bg-slate-950/30 backdrop-blur-[2px] transition-opacity duration-300"
+       [style.opacity]="accionPendiente ? '1' : '0'"
+       [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
+       (click)="cancelarConfirmacion()"></div>
+
+  <div class="fixed left-1/2 top-1/2 z-[120] w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-white/70 bg-white/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-all duration-300 sm:p-6"
+       [style.opacity]="accionPendiente ? '1' : '0'"
+       [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
+       [style.transform]="accionPendiente ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -46%) scale(0.96)'"
+       role="dialog"
+       aria-modal="true">
+    <div class="mb-4 flex items-start gap-4">
+      <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 via-rose-50 to-amber-100 text-amber-700 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        </svg>
+      </span>
+      <div class="min-w-0">
+        <h3 class="text-xl font-black tracking-tight text-gray-950">{{ tituloConfirmacion }}</h3>
+        <p class="mt-2 text-sm font-semibold text-gray-500">{{ mensajeConfirmacion }}</p>
+      </div>
+    </div>
+
+    <div class="grid gap-3 sm:grid-cols-2">
+      <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="cancelarConfirmacion()">Cancelar</button>
+      <button type="button" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" (click)="confirmarAccion()">Confirmar</button>
+    </div>
+  </div>
+</section>

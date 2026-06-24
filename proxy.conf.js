@@ -1,20 +1,14 @@
 module.exports = {
   '/api': {
-    target: 'https://mean-election-candle-joint.trycloudflare.com',
-    secure: true,
+    target: 'http://localhost:8080',
+    secure: false,
     changeOrigin: true,
     logLevel: 'debug',
-    headers: {
-      Origin: '',
-    },
   },
   '/auth': {
-    target: 'https://album-tested-cgi-dragon.trycloudflare.com',
-    secure: true,
+    target: 'http://localhost:8080',
+    secure: false,
     changeOrigin: true,
     logLevel: 'debug',
-    headers: {
-      Origin: '',
-    },
   },
 };

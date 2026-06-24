@@ -9,10 +9,10 @@ describe('ProveedorComponent', () => {
   let fixture: ComponentFixture<ProveedorComponent>;
   let httpMock: HttpTestingController;
 
-  const apiUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/proveedores';
+  const apiUrl = 'http://localhost:8080/api/proveedores';
   const proveedores = [
-    { id: 1, dniOrRuc: '20555555555', razonSocialONombre: 'Proveedor Uno', direccion: 'Lima', telefono: '911111111' },
-    { id: 2, dniOrRuc: '20666666666', razonSocialONombre: 'Proveedor Dos', direccion: 'Piura', telefono: '922222222' },
+    { id: 1, dniOrRuc: '20555555555', razonSocialONombre: 'Proveedor Uno', correoElectronico: 'uno@correo.com', telefono: '911111111' },
+    { id: 2, dniOrRuc: '20666666666', razonSocialONombre: 'Proveedor Dos', correoElectronico: 'dos@correo.com', telefono: '922222222' },
   ];
 
   beforeEach(async () => {
@@ -48,21 +48,37 @@ describe('ProveedorComponent', () => {
     expect(component.proveedoresFiltrados).toEqual([proveedores[1]]);
   });
 
-  it('should show a form with required fields when creating a provider', () => {
+  it('should filter providers by fallback name fields and ignore accents', () => {
+    component.proveedores = [
+      { id: 3, dniOrRuc: '20777777777', razonSocialONombre: '', nombre: 'José Repuestos', correoElectronico: 'jose@correo.com', telefono: '933333333' },
+      { id: 4, dniOrRuc: '20888888888', razonSocialONombre: '', razonSocial: 'Comercial Sur', correoElectronico: 'sur@correo.com', telefono: '944444444' },
+    ];
+
+    component.busqueda = 'jose';
+    expect(component.proveedoresFiltrados).toEqual([component.proveedores[0]]);
+
+    component.busqueda = 'sur';
+    expect(component.proveedoresFiltrados).toEqual([component.proveedores[1]]);
+  });
+
+  it('should show a form with required fields and optional name when creating a provider', () => {
     component.nuevoProveedor();
     fixture.detectChanges();
 
     const requiredInputs = fixture.nativeElement.querySelectorAll('form input[required]');
+    const nameInput = fixture.nativeElement.querySelector('form input[name="razonSocialONombre"]') as HTMLInputElement;
 
     expect(component.mostrarFormulario).toBeTrue();
-    expect(requiredInputs.length).toBe(4);
+    expect(requiredInputs.length).toBe(3);
+    expect(nameInput.required).toBeFalse();
+    expect(fixture.nativeElement.textContent).toContain('Opcional');
   });
 
   it('should call POST when saving a new provider', () => {
     component.formProveedor = {
       dniOrRuc: '20777777777',
       razonSocialONombre: 'Proveedor Nuevo',
-      direccion: 'Tacna',
+      correoElectronico: 'nuevo@correo.com',
       telefono: '933333333',
     };
 
@@ -74,18 +90,47 @@ describe('ProveedorComponent', () => {
     req.flush({ id: 3, ...component.formProveedor });
 
     httpMock.expectOne(apiUrl).flush(proveedores);
+
+    expect(component.mensajeExito).toBe('Proveedor agregado correctamente.');
   });
 
-  it('should call DELETE after confirming provider deletion', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+  it('should keep phone numeric and warn when removing invalid characters', () => {
+    component.formProveedor.telefono = '999abc-11122';
 
-    component.eliminarProveedor(2);
+    component.soloNumerosTelefono();
+
+    expect(component.formProveedor.telefono).toBe('99911122');
+    expect(component.telefonoAdvertencia).toBeTrue();
+  });
+
+  it('should validate Peruvian mobile phone format', () => {
+    component.formProveedor.telefono = '812345678';
+    expect(component.telefonoPeruInvalido).toBeTrue();
+
+    component.formProveedor.telefono = '912345678';
+    expect(component.telefonoPeruInvalido).toBeFalse();
+  });
+
+  it('should request and confirm provider deletion', () => {
+    component.solicitarEliminar(proveedores[1]);
+
+    expect(component.accionPendiente).toBe('eliminar');
+    expect(component.proveedorPendiente).toEqual(proveedores[1]);
+
+    component.cancelarConfirmacion();
+    expect(component.accionPendiente).toBeNull();
+
+    component.solicitarEliminar(proveedores[1]);
+    component.confirmarAccion();
 
     const req = httpMock.expectOne(`${apiUrl}/2`);
     expect(req.request.method).toBe('DELETE');
     req.flush({});
 
     httpMock.expectOne(apiUrl).flush(proveedores);
+
+    expect(component.accionPendiente).toBeNull();
+    expect(component.mensajeExito).toBe('Proveedor eliminado correctamente.');
   });
 
   it('should call PUT when editing a provider and reset the form', () => {
@@ -104,15 +149,25 @@ describe('ProveedorComponent', () => {
     expect(component.mostrarFormulario).toBeFalse();
   });
 
-  it('should guard or cancel provider deletion and cancel editing', () => {
-    const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
+  it('should request confirmation before editing a provider', () => {
+    component.solicitarEditar(proveedores[0]);
 
+    expect(component.accionPendiente).toBe('editar');
+    expect(component.proveedorPendiente).toEqual(proveedores[0]);
+
+    component.confirmarAccion();
+
+    expect(component.accionPendiente).toBeNull();
+    expect(component.editProveedor).toEqual(proveedores[0]);
+    expect(component.mostrarFormulario).toBeTrue();
+  });
+
+  it('should guard provider deletion and cancel editing', () => {
     component.eliminarProveedor(undefined);
-    component.eliminarProveedor(1);
-    component.editar(proveedores[0]);
+    component.solicitarEditar(proveedores[0]);
+    component.confirmarAccion();
     component.cancelar();
 
-    expect(confirmSpy).toHaveBeenCalledTimes(1);
     expect(component.editProveedor).toBeNull();
     expect(component.mostrarFormulario).toBeFalse();
     httpMock.expectNone(`${apiUrl}/1`);

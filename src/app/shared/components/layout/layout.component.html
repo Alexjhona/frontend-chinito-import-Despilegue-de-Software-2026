@@ -1,16 +1,13 @@
-<!-- component -->
-<div class="min-h-screen bg-gray-50/50">
-    <app-sidebar/>
-    <div class="p-4 xl:ml-80">
-      <nav class="block w-full max-w-full bg-transparent text-white shadow-none rounded-xl transition-all px-0 py-1">
-        <app-header/>
-      </nav>
-      <div class="mt-12">
-        <router-outlet/>
-      </div>
-      <div class="text-blue-gray-600">
-        <app-footer/>
-      </div>
+<div class="app-internal-shell min-h-screen overflow-x-hidden bg-[linear-gradient(135deg,#eff6ff_0%,#fff1f8_36%,#ecfdf5_68%,#fefce8_100%)] text-gray-950">
+  <div class="mx-auto max-w-7xl px-3 pb-8 pt-3 sm:px-6 sm:pt-4 lg:px-8">
+    <nav class="fixed left-3 right-3 top-3 z-30 mx-auto block max-w-7xl text-white sm:left-6 sm:right-6 sm:top-4 lg:left-8 lg:right-8">
+      <app-header/>
+    </nav>
+    <main class="app-page-shell pt-24 sm:pt-28">
+      <router-outlet/>
+    </main>
+    <div class="text-gray-500">
+      <app-footer/>
     </div>
   </div>
-  
+</div>

@@ -2,6 +2,7 @@
   <!-- Header / Logo -->
   <div class="relative border-b border-white/20">
     <a class="flex items-center gap-4 py-6 px-8" routerLink="/dashboard">
+      <img src="/logo.png" alt="Chinito Importaciones" class="h-11 w-11 shrink-0 rounded-lg object-contain shadow-lg shadow-black/20">
       <h6 class="block antialiased tracking-normal font-sans text-base font-semibold leading-relaxed text-white">Chinito Importaciones</h6>
     </a>
     <button class="middle none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-8 max-w-[32px] h-8 max-h-[32px] rounded-lg text-xs text-white hover:bg-white/10 active:bg-white/30 absolute right-0 top-0 grid rounded-br-none rounded-tl-none xl:hidden" type="button">
@@ -17,8 +18,22 @@
   <div class="m-4">
     <ul class="mb-4 flex flex-col gap-1">
 
+      <!-- Inicio / Dashboard -->
+      <li *ngIf="can('dashboard')">
+        <a routerLink="/dashboard">
+          <button routerLinkActive="bg-gradient-to-tr from-blue-600 to-sky-400 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/40 active:opacity-[0.85]"
+                  [routerLinkActiveOptions]="{ exact: true }"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5M5.25 9.75V21h13.5V9.75M9 21v-6h6v6" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">inicio</p>
+          </button>
+        </a>
+      </li>
+
       <!-- Cliente -->
-      <li>
+      <li *ngIf="can('clientes')">
         <a routerLink="/cliente">
           <button routerLinkActive="bg-gradient-to-tr from-green-600 to-green-400 shadow-md shadow-green-500/20 hover:shadow-lg hover:shadow-green-500/40 active:opacity-[0.85]"
                   class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
@@ -31,7 +46,7 @@
       </li>
 
       <!-- Proveedor -->
-      <li>
+      <li *ngIf="can('proveedores')">
         <a routerLink="/proveedor">
           <button routerLinkActive="bg-gradient-to-tr from-amber-600 to-amber-400 shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/40 active:opacity-[0.85]"
                   class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
@@ -44,7 +59,7 @@
       </li>
 
       <!-- Categoría -->
-      <li>
+      <li *ngIf="can('categorias')">
         <a routerLink="/categoria">
           <button routerLinkActive="bg-gradient-to-tr from-purple-600 to-purple-400 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/40 active:opacity-[0.85]"
                   class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
@@ -56,8 +71,21 @@
         </a>
       </li>
 
+      <!-- Agregar Categoría -->
+      <li *ngIf="can('categorias-write')">
+        <a routerLink="/agregar-categoria">
+          <button routerLinkActive="bg-gradient-to-tr from-purple-600 to-fuchsia-400 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">agregar categoría</p>
+          </button>
+        </a>
+      </li>
+
       <!-- Producto -->
-      <li>
+      <li *ngIf="can('productos')">
         <a routerLink="/producto">
           <button routerLinkActive="bg-gradient-to-tr from-pink-600 to-pink-400 shadow-md shadow-pink-500/20 hover:shadow-lg hover:shadow-pink-500/40 active:opacity-[0.85]"
                   class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
@@ -69,8 +97,21 @@
         </a>
       </li>
 
+      <!-- Agregar Productos -->
+      <li *ngIf="can('productos-write')">
+        <a routerLink="/agregar-productos">
+          <button routerLinkActive="bg-gradient-to-tr from-pink-600 to-rose-400 shadow-md shadow-pink-500/20 hover:shadow-lg hover:shadow-pink-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">agregar productos</p>
+          </button>
+        </a>
+      </li>
+
       <!-- Venta -->
-      <li>
+      <li *ngIf="can('ventas')">
         <a routerLink="/venta">
           <button routerLinkActive="bg-gradient-to-tr from-yellow-600 to-yellow-400 shadow-md shadow-yellow-500/20 hover:shadow-lg hover:shadow-yellow-500/40 active:opacity-[0.85]"
                   class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
@@ -80,6 +121,46 @@
               <circle cx="15" cy="20" r="1.5"/>
             </svg>
             <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">venta</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Trabajadores -->
+      <li *ngIf="can('trabajadores')">
+        <a routerLink="/trabajadores">
+          <button routerLinkActive="bg-gradient-to-tr from-sky-600 to-cyan-400 shadow-md shadow-sky-500/20 hover:shadow-lg hover:shadow-sky-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128A7.5 7.5 0 003 19.5M15 19.128a7.47 7.47 0 006-7.378 7.5 7.5 0 00-7.5-7.5A7.47 7.47 0 006.122 9M15 19.128V21m-9-1.5a4.5 4.5 0 019 0M8.25 7.5a3.75 3.75 0 107.5 0 3.75 3.75 0 00-7.5 0z" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">trabajadores</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Ajustes -->
+      <li *ngIf="can('ajustes')">
+        <a routerLink="/ajustes">
+          <button routerLinkActive="bg-gradient-to-tr from-slate-600 to-slate-400 shadow-md shadow-slate-500/20 hover:shadow-lg hover:shadow-slate-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.558-.94 1.107-.94h1.1c.55 0 1.017.398 1.107.94l.149.894c.07.424.348.778.737.96.112.052.222.109.33.17.368.208.817.207 1.175-.012l.755-.46a1.125 1.125 0 0 1 1.45.168l.778.778c.389.389.46.991.168 1.45l-.46.755c-.219.358-.22.807-.012 1.175.061.108.118.218.17.33.182.389.536.667.96.737l.894.149c.542.09.94.558.94 1.107v1.1c0 .55-.398 1.017-.94 1.107l-.894.149c-.424.07-.778.348-.96.737-.052.112-.109.222-.17.33-.208.368-.207.817.012 1.175l.46.755c.292.459.221 1.061-.168 1.45l-.778.778a1.125 1.125 0 0 1-1.45.168l-.755-.46c-.358-.219-.807-.22-1.175-.012a5.928 5.928 0 0 1-.33.17c-.389.182-.667.536-.737.96l-.149.894c-.09.542-.558.94-1.107.94h-1.1c-.55 0-1.017-.398-1.107-.94l-.149-.894c-.07-.424-.348-.778-.737-.96a5.928 5.928 0 0 1-.33-.17c-.368-.208-.817-.207-1.175.012l-.755.46a1.125 1.125 0 0 1-1.45-.168l-.778-.778a1.125 1.125 0 0 1-.168-1.45l.46-.755c.219-.358.22-.807.012-1.175a5.928 5.928 0 0 1-.17-.33c-.182-.389-.536-.667-.96-.737l-.894-.149a1.125 1.125 0 0 1-.94-1.107v-1.1c0-.55.398-1.017.94-1.107l.894-.149c.424-.07.778-.348.96-.737.052-.112.109-.222.17-.33.208-.368.207-.817-.012-1.175l-.46-.755a1.125 1.125 0 0 1 .168-1.45l.778-.778a1.125 1.125 0 0 1 1.45-.168l.755.46c.358.219.807.22 1.175.012.108-.061.218-.118.33-.17.389-.182.667-.536.737-.96l.149-.894Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">ajustes</p>
+          </button>
+        </a>
+      </li>
+
+      <!-- Edit -->
+      <li *ngIf="can('edit')">
+        <a routerLink="/edit">
+          <button routerLinkActive="bg-gradient-to-tr from-indigo-600 to-violet-400 shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/40 active:opacity-[0.85]"
+                  class="middle none font-sans font-bold center transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 rounded-lg text-white hover:bg-white/10 active:bg-white/30 flex w-full items-center gap-4 px-4 capitalize" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-inherit">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+            </svg>
+            <p class="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">edit</p>
           </button>
         </a>
       </li>

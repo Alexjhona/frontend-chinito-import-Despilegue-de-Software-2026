@@ -1,204 +1,540 @@
-<p class="text-lg font-bold mb-2">Ventas</p>
+<section class="space-y-5 sm:space-y-6">
+  <div class="flex justify-end">
+    <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30 active:translate-y-0 sm:w-auto" (click)="abrirFormulario()">
+      <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 hover:translate-x-full"></span>
+      <span class="relative">Registrar Venta</span>
+    </button>
+  </div>
 
-<button class="bg-blue-600 text-white px-4 py-2 rounded mb-4"
-        (click)="mostrarFormulario = true">
-  Registrar Nueva Venta
-</button>
-
-<div *ngIf="mensaje" class="mb-2 text-green-600 font-semibold">
-  {{ mensaje }}
-</div>
-
-<!-- FORMULARIO -->
-<div *ngIf="mostrarFormulario" class="bg-gray-100 p-4 rounded shadow mb-6">
-  <form (ngSubmit)="registrarVenta()" #ventaForm="ngForm">
-
-    <!-- CLIENTE -->
-    <div class="mb-3">
-      <label class="block font-semibold mb-1">Cliente:</label>
-
-      <div class="relative">
-        <input type="text"
-               class="border p-2 w-[340px]"
-               placeholder="Buscar cliente..."
-               [(ngModel)]="busquedaCliente"
-               name="busquedaCliente"
-               (input)="filtrarClientes()"
-               autocomplete="off"/>
-
-        <ul *ngIf="clientesFiltrados.length && busquedaCliente && !clienteSeleccionado"
-            class="absolute bg-white border w-[340px] max-h-40 overflow-y-auto z-10 shadow">
-
-          <li *ngFor="let cli of clientesFiltrados"
-              (click)="seleccionarCliente(cli)"
-              class="p-2 hover:bg-blue-100 cursor-pointer">
-
-            <div class="font-medium">{{ cli.razonSocialONombre }}</div>
-            <div class="text-xs text-gray-500">{{ cli.dniOrRuc }}</div>
-
-          </li>
-        </ul>
-      </div>
-
-      <div *ngIf="clienteSeleccionado" class="mt-2 bg-white p-2 border rounded">
-        {{ clienteSeleccionado.razonSocialONombre }}
+  <div class="grid gap-3 lg:grid-cols-[1fr_220px]">
+    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+      <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+        </svg>
+        <input
+          type="text"
+          class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+          placeholder="Buscar por cliente, ID o documento..."
+          [(ngModel)]="busqueda"
+        />
       </div>
     </div>
 
-    <!-- PRODUCTOS -->
-    <div class="mb-3">
-      <label class="block font-semibold mb-1">Productos:</label>
+    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+      <input
+        type="date"
+        class="h-14 w-full rounded-lg border border-white/80 bg-white/80 px-4 text-sm font-black text-gray-700 outline-none shadow-inner shadow-sky-100/60 transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+        [(ngModel)]="filtroFecha"
+      />
+    </div>
+  </div>
 
-      <button type="button"
-              class="bg-green-600 text-white px-2 py-1 rounded mb-2"
-              (click)="agregarItem()">
-        Agregar producto
-      </button>
+  <div *ngIf="mostrarFormulario" class="animate-soft-enter rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-5">
+    <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="text-sm font-black uppercase tracking-[0.18em] text-violet-500">Formulario</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-gray-950">Nueva Venta</h2>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-2">
+        <div class="rounded-lg bg-gradient-to-r from-sky-100 via-rose-50 to-emerald-50 px-4 py-2 text-sm font-black text-gray-700 shadow-sm max-[420px]:w-full max-[420px]:text-center">
+          Fecha auto: {{ fechaVentaAutomatica }}
+        </div>
+        <div class="rounded-lg bg-gradient-to-r from-sky-100 via-rose-50 to-emerald-50 px-4 py-2 text-sm font-black text-gray-700 shadow-sm max-[420px]:w-full max-[420px]:text-center">
+          Total S/ {{ totalVenta.toFixed(2) }}
+        </div>
+      </div>
+    </div>
 
-      <table class="table-auto w-full border">
-        <thead class="bg-gray-200">
-        <tr>
-          <th class="p-2">Producto</th>
-          <th class="p-2">Cantidad</th>
-          <th class="p-2">Precio</th>
-          <th class="p-2">Subtotal</th>
-          <th></th>
+    <div *ngIf="errorFormulario" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+      {{ errorFormulario }}
+    </div>
+
+    <form (ngSubmit)="registrarVenta(ventaForm)" #ventaForm="ngForm" class="space-y-5" novalidate>
+      <div class="grid gap-3 lg:grid-cols-[1fr_auto]">
+        <label class="group relative block">
+          <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Cliente</span>
+          <input
+            #clienteCtrl="ngModel"
+            type="text"
+            class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200"
+            placeholder="Buscar cliente..."
+            [(ngModel)]="busquedaCliente"
+            name="busquedaCliente"
+            (input)="filtrarClientes()"
+            autocomplete="off"
+            required
+          />
+          <ul *ngIf="clientesFiltrados.length && busquedaCliente && !clienteSeleccionado" class="absolute left-0 right-0 z-30 mt-2 max-h-52 overflow-auto rounded-lg border border-white/80 bg-white/95 p-1 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+            <li *ngFor="let cli of clientesFiltrados" (click)="seleccionarCliente(cli)" class="cursor-pointer rounded-lg px-4 py-3 transition-colors hover:bg-sky-50">
+              <div class="text-sm font-black text-gray-800">{{ getNombreCliente(cli) }}</div>
+              <div class="mt-1 text-xs font-bold text-gray-400">{{ cli.dniOrRuc }}</div>
+            </li>
+          </ul>
+          <div *ngIf="mostrarClienteNoRegistrado" class="mt-2 flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+            <div class="min-w-0">
+              <p class="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Cliente no registrado</p>
+              <p class="mt-1 truncate text-sm font-black text-gray-900">
+                {{ getNombreCliente(nuevoCliente) === 'Cliente sin nombre' ? dniBuscado : getNombreCliente(nuevoCliente) }}
+              </p>
+              <p *ngIf="mensajeDniCliente" class="mt-1 text-xs font-bold text-amber-700">{{ mensajeDniCliente }}</p>
+            </div>
+            <button type="button" class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 text-2xl font-black leading-none text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60" [disabled]="consultandoDniCliente" (click)="agregarClienteNoRegistrado()" aria-label="Agregar cliente">
+              +
+            </button>
+          </div>
+          <p *ngIf="(clienteCtrl.invalid || !nuevaVenta.clienteId) && (clienteCtrl.touched || ventaForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+            Este campo es obligatorio. Selecciona un cliente válido de la lista.
+          </p>
+          <div *ngIf="clienteSeleccionado" class="mt-3 rounded-lg border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-sm font-black text-emerald-700">
+            {{ getNombreCliente(clienteSeleccionado) }} seleccionado
+          </div>
+        </label>
+
+        <button type="button" class="h-12 self-end rounded-lg bg-white px-5 text-sm font-black text-sky-600 shadow-md shadow-sky-100/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-sky-800" (click)="mostrarNuevoCliente = !mostrarNuevoCliente">
+          Nuevo Cliente
+        </button>
+      </div>
+
+      <div *ngIf="mostrarNuevoCliente" class="animate-soft-enter rounded-lg border border-white/70 bg-white/70 p-4 shadow-inner shadow-sky-100/60">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-lg font-black tracking-tight text-gray-950">Crear cliente rápido</h3>
+          <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-black text-sky-600">DNI requerido</span>
+        </div>
+
+        <div *ngIf="errorNuevoCliente" class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+          {{ errorNuevoCliente }}
+        </div>
+        <div *ngIf="mensajeDniCliente" class="mb-3 rounded-lg border border-sky-100 bg-sky-50 px-4 py-3 text-sm font-bold text-sky-700">
+          {{ mensajeDniCliente }}
+        </div>
+
+        <div class="grid gap-3 md:grid-cols-2">
+          <label class="group block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">DNI</span>
+            <input class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" inputmode="numeric" maxlength="8" [(ngModel)]="nuevoCliente.dniOrRuc" name="nuevoClienteDni" placeholder="DNI 8 digitos" [ngModelOptions]="{ standalone: true }">
+          </label>
+
+          <label class="group block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Nombre</span>
+            <input class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="nuevoCliente.nombres" name="nuevoClienteNombres" placeholder="Nombres" [ngModelOptions]="{ standalone: true }">
+          </label>
+
+          <label class="group block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Apellido paterno</span>
+            <input class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="nuevoCliente.apellidoPaterno" name="nuevoClienteApellidoPaterno" placeholder="Apellido paterno" [ngModelOptions]="{ standalone: true }">
+          </label>
+
+          <label class="group block">
+            <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Apellido materno</span>
+            <input class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100 group-hover:border-sky-200" type="text" [(ngModel)]="nuevoCliente.apellidoMaterno" name="nuevoClienteApellidoMaterno" placeholder="Apellido materno" [ngModelOptions]="{ standalone: true }">
+          </label>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button type="button" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" (click)="crearCliente()">Guardar Cliente</button>
+          <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="mostrarNuevoCliente = false">Cerrar</button>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-lg font-black tracking-tight text-gray-950">Productos</h3>
+          <button type="button" class="rounded-lg bg-emerald-50 px-4 py-3 text-xs font-black text-emerald-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-100" (click)="agregarItem()">
+            Agregar producto
+          </button>
+        </div>
+
+        <div class="grid gap-3 md:hidden">
+          <article *ngFor="let item of nuevaVenta.items; let i = index" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+            <label class="relative block">
+              <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Producto</span>
+              <input
+                type="text"
+                class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                [(ngModel)]="item.busquedaProducto"
+                (input)="filtrarProductos(i)"
+                (focus)="mostrarProductos(i)"
+                name="busquedaProductoMobile-{{i}}"
+                placeholder="Buscar producto..."
+                autocomplete="off"
+                required
+              >
+              <ul *ngIf="item.productosFiltrados?.length" class="absolute left-0 right-0 z-30 mt-2 max-h-48 overflow-auto rounded-lg border border-white/80 bg-white/95 p-1 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+                <li *ngFor="let prod of item.productosFiltrados" (click)="seleccionarProducto(i, prod)" class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-sky-50">
+                  <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+                    <img *ngIf="prod.imagen; else productoOpcionInicialesMobile"
+                         [src]="prod.imagen"
+                         [alt]="prod.nombre"
+                         class="h-full w-full object-cover">
+                    <ng-template #productoOpcionInicialesMobile>{{ getInicialesProducto(prod.nombre) }}</ng-template>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-black text-gray-800">{{ prod.nombre }}</div>
+                    <div class="mt-1 flex min-w-0 items-center gap-2 text-xs font-bold text-gray-400">
+                      <span *ngIf="getCategoriaProducto(prod) as categoriaProd" class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-[9px] font-black text-sky-700">
+                        <img *ngIf="categoriaProd.imagen; else categoriaOpcionInicialesMobile"
+                             [src]="categoriaProd.imagen"
+                             [alt]="categoriaProd.nombre"
+                             class="h-full w-full object-cover">
+                        <ng-template #categoriaOpcionInicialesMobile>{{ getInicialesCategoria(categoriaProd.nombre) }}</ng-template>
+                      </span>
+                      <span class="truncate">{{ prod.codigoInterno }} | {{ getCategoriaProducto(prod)?.nombre || 'Sin categoria' }} | S/ {{ prod.precioVenta }}</span>
+                      <span class="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
+                            [ngClass]="{
+                              'bg-emerald-50 text-emerald-700': estadoStock(prod) === 'ok',
+                              'bg-amber-50 text-amber-700': estadoStock(prod) === 'bajo',
+                              'bg-rose-50 text-rose-700': estadoStock(prod) === 'agotado'
+                            }">
+                        {{ textoStock(prod) }}: {{ stockDisponible(prod) }}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+              <p *ngIf="errorProductoItem(item) && ventaForm.submitted" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700">
+                {{ errorProductoItem(item) }}
+              </p>
+            </label>
+
+            <div *ngIf="getProductoDeItem(item) as productoItem" class="mt-3 flex items-center gap-3 rounded-lg bg-sky-50/70 px-3 py-3">
+              <span class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+                <img *ngIf="getImagenProducto(item); else productoSeleccionadoInicialesMobile"
+                     [src]="getImagenProducto(item)"
+                     [alt]="productoItem.nombre"
+                     class="h-full w-full object-cover">
+                <ng-template #productoSeleccionadoInicialesMobile>{{ getInicialesProducto(productoItem.nombre) }}</ng-template>
+              </span>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-black text-gray-800">{{ productoItem.nombre }}</p>
+                <p class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700">
+                    <img *ngIf="getImagenCategoriaItem(item); else categoriaSeleccionadaInicialesMobile"
+                         [src]="getImagenCategoriaItem(item)"
+                         [alt]="getNombreCategoriaItem(item)"
+                         class="h-full w-full object-cover">
+                    <ng-template #categoriaSeleccionadaInicialesMobile>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
+                  </span>
+                  <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
+                </p>
+                <p *ngIf="tieneAdvertenciaStock(productoItem)" class="mt-2 rounded-lg px-3 py-2 text-xs font-black"
+                   [ngClass]="estadoStock(productoItem) === 'agotado' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'">
+                  {{ advertenciaStock(productoItem) }}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-2 gap-3">
+              <label class="block">
+                <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Cantidad</span>
+                <input type="number" min="1" class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100" [(ngModel)]="item.cantidad" (change)="onCantidadChange(i)" name="cantidadMobile-{{i}}" required>
+                <p *ngIf="errorCantidadItem(item) && ventaForm.submitted" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700">
+                  {{ errorCantidadItem(item) }}
+                </p>
+              </label>
+              <div class="rounded-lg bg-gradient-to-r from-sky-50 via-white to-violet-50 p-3">
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Subtotal</p>
+                <p class="mt-1 text-lg font-black text-gray-950">S/ {{ (item.precio * item.cantidad).toFixed(2) }}</p>
+              </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between gap-3">
+              <span class="text-sm font-bold text-gray-500">Precio S/ {{ item.precio.toFixed(2) }}</span>
+              <button type="button" class="rounded-lg bg-rose-50 px-4 py-3 text-xs font-black text-rose-700 transition-all duration-300 active:scale-[0.98]" (click)="eliminarItem(i)">Eliminar</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="hidden overflow-visible rounded-lg border border-white/70 bg-white/80 shadow-[0_18px_60px_rgba(15,23,42,0.08)] md:block">
+          <div class="overflow-visible">
+            <table class="w-full min-w-[820px] table-auto">
+              <thead>
+              <tr class="bg-white/70 text-left text-xs font-black uppercase tracking-[0.18em] text-gray-400">
+                <th class="px-5 py-4">Producto</th>
+                <th class="px-5 py-4">Cantidad</th>
+                <th class="px-5 py-4">Precio</th>
+                <th class="px-5 py-4">Subtotal</th>
+                <th class="px-5 py-4">Acción</th>
+              </tr>
+              </thead>
+
+              <tbody class="divide-y divide-gray-100">
+              <tr *ngFor="let item of nuevaVenta.items; let i = index" class="align-top">
+                <td class="relative px-5 py-4">
+                  <input
+                    type="text"
+                    class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    [(ngModel)]="item.busquedaProducto"
+                    (input)="filtrarProductos(i)"
+                    (focus)="mostrarProductos(i)"
+                    name="busquedaProducto-{{i}}"
+                    placeholder="Buscar producto..."
+                    autocomplete="off"
+                    required
+                  >
+                  <ul *ngIf="item.productosFiltrados?.length" class="absolute left-5 right-5 z-30 mt-2 max-h-48 overflow-auto rounded-lg border border-white/80 bg-white/95 p-1 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+                    <li *ngFor="let prod of item.productosFiltrados" (click)="seleccionarProducto(i, prod)" class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-sky-50">
+                      <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+                        <img *ngIf="prod.imagen; else productoOpcionIniciales"
+                             [src]="prod.imagen"
+                             [alt]="prod.nombre"
+                             class="h-full w-full object-cover">
+                        <ng-template #productoOpcionIniciales>{{ getInicialesProducto(prod.nombre) }}</ng-template>
+                      </span>
+                      <div class="min-w-0 flex-1">
+                        <div class="truncate text-sm font-black text-gray-800">{{ prod.nombre }}</div>
+                        <div class="mt-1 flex min-w-0 items-center gap-2 text-xs font-bold text-gray-400">
+                          <span *ngIf="getCategoriaProducto(prod) as categoriaProd" class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-[9px] font-black text-sky-700">
+                            <img *ngIf="categoriaProd.imagen; else categoriaOpcionIniciales"
+                                 [src]="categoriaProd.imagen"
+                                 [alt]="categoriaProd.nombre"
+                                 class="h-full w-full object-cover">
+                            <ng-template #categoriaOpcionIniciales>{{ getInicialesCategoria(categoriaProd.nombre) }}</ng-template>
+                          </span>
+                          <span class="truncate">{{ prod.codigoInterno }} | {{ getCategoriaProducto(prod)?.nombre || 'Sin categoria' }} | S/ {{ prod.precioVenta }}</span>
+                          <span class="shrink-0 rounded-full px-2 py-1 text-[10px] font-black"
+                                [ngClass]="{
+                                  'bg-emerald-50 text-emerald-700': estadoStock(prod) === 'ok',
+                                  'bg-amber-50 text-amber-700': estadoStock(prod) === 'bajo',
+                                  'bg-rose-50 text-rose-700': estadoStock(prod) === 'agotado'
+                                }">
+                            {{ textoStock(prod) }}: {{ stockDisponible(prod) }}
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                  <p *ngIf="errorProductoItem(item) && ventaForm.submitted" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700">
+                    {{ errorProductoItem(item) }}
+                  </p>
+                  <div *ngIf="getProductoDeItem(item) as productoItem" class="mt-3 flex items-center gap-3 rounded-lg bg-sky-50/70 px-3 py-3">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+                      <img *ngIf="getImagenProducto(item); else productoSeleccionadoIniciales"
+                           [src]="getImagenProducto(item)"
+                           [alt]="productoItem.nombre"
+                           class="h-full w-full object-cover">
+                      <ng-template #productoSeleccionadoIniciales>{{ getInicialesProducto(productoItem.nombre) }}</ng-template>
+                    </span>
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-black text-gray-800">{{ productoItem.nombre }}</p>
+                      <p class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
+                        <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700">
+                          <img *ngIf="getImagenCategoriaItem(item); else categoriaSeleccionadaIniciales"
+                               [src]="getImagenCategoriaItem(item)"
+                               [alt]="getNombreCategoriaItem(item)"
+                               class="h-full w-full object-cover">
+                          <ng-template #categoriaSeleccionadaIniciales>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
+                        </span>
+                        <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
+                      </p>
+                      <p *ngIf="tieneAdvertenciaStock(productoItem)" class="mt-2 rounded-lg px-3 py-2 text-xs font-black"
+                         [ngClass]="estadoStock(productoItem) === 'agotado' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'">
+                        {{ advertenciaStock(productoItem) }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-5 py-4">
+                  <input type="number" min="1" class="h-12 w-24 rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100" [(ngModel)]="item.cantidad" (change)="onCantidadChange(i)" name="cantidad-{{i}}" required>
+                  <p *ngIf="errorCantidadItem(item) && ventaForm.submitted" class="mt-2 max-w-48 rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700">
+                    {{ errorCantidadItem(item) }}
+                  </p>
+                </td>
+                <td class="px-5 py-4 text-sm font-black text-gray-700">S/ {{ item.precio.toFixed(2) }}</td>
+                <td class="px-5 py-4 text-sm font-black text-sky-700">S/ {{ (item.precio * item.cantidad).toFixed(2) }}</td>
+                <td class="px-5 py-4">
+                  <button type="button" class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-rose-100" (click)="eliminarItem(i)">Eliminar</button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-3 pt-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+        <div class="rounded-lg bg-gradient-to-r from-sky-50 via-white to-violet-50 px-5 py-4 shadow-inner shadow-sky-100/60">
+          <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Total de venta</p>
+          <p class="mt-1 text-2xl font-black text-gray-950">S/ {{ totalVenta.toFixed(2) }}</p>
+        </div>
+
+        <div class="grid gap-3 sm:flex sm:flex-wrap">
+          <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="cancelarFormulario()">Cancelar</button>
+          <button type="submit" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl">Registrar venta</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="mensaje"
+       class="animate-soft-enter rounded-lg border px-5 py-4 text-sm font-black shadow-[0_18px_60px_rgba(15,23,42,0.08)]"
+       [ngClass]="mensaje.includes('No se pudo') ? 'border-amber-200 bg-amber-50/90 text-amber-700' : 'border-emerald-200 bg-emerald-50/90 text-emerald-700'">
+    {{ mensaje }}
+  </div>
+
+  <div class="grid gap-3 md:hidden">
+    <article *ngFor="let venta of ventasFiltradas" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <p class="truncate text-base font-black text-gray-950">{{ venta.clienteNombre || ('Cliente ' + venta.clienteId) }}</p>
+          <p class="mt-1 text-xs font-black uppercase tracking-[0.16em] text-sky-500">Venta #{{ venta.id }}</p>
+        </div>
+        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">S/ {{ venta.total?.toFixed(2) || '0.00' }}</span>
+      </div>
+
+      <div class="mt-4 space-y-2 text-sm font-semibold text-gray-600">
+        <p class="flex items-start justify-between gap-3">
+          <span class="text-gray-400">Fecha</span>
+          <span class="text-right text-gray-800">{{ venta.fecha | date:'short' }}</span>
+        </p>
+        <p class="flex items-start justify-between gap-3">
+          <span class="text-gray-400">Productos</span>
+          <span class="text-right text-gray-800">{{ venta.items.length }}</span>
+        </p>
+      </div>
+
+      <div *ngIf="mostrarDetalles[venta.id!]" class="mt-4 rounded-lg bg-sky-50/70 p-3">
+        <div *ngFor="let item of venta.items" class="flex items-center justify-between gap-3 py-2 text-sm font-bold text-gray-700">
+          <span class="flex min-w-0 items-center gap-3">
+            <span class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-white text-xs font-black text-sky-700">
+              <img *ngIf="getImagenProducto(item); else detalleProductoInicialesMobile"
+                   [src]="getImagenProducto(item)"
+                   [alt]="item.productoNombre || 'Producto'"
+                   class="h-full w-full object-cover">
+              <ng-template #detalleProductoInicialesMobile>{{ getInicialesProducto(item.productoNombre) }}</ng-template>
+            </span>
+            <span class="min-w-0">
+              <span class="block truncate">{{ item.productoNombre }}</span>
+              <span class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
+                <span class="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[8px] font-black text-sky-700">
+                  <img *ngIf="getImagenCategoriaItem(item); else detalleCategoriaInicialesMobile"
+                       [src]="getImagenCategoriaItem(item)"
+                       [alt]="getNombreCategoriaItem(item)"
+                       class="h-full w-full object-cover">
+                  <ng-template #detalleCategoriaInicialesMobile>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
+                </span>
+                <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
+              </span>
+            </span>
+          </span>
+          <span>S/ {{ (item.precio * item.cantidad).toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-3 gap-2">
+        <button class="rounded-lg bg-sky-50 px-3 py-3 text-xs font-black text-sky-700 transition-all duration-300 active:scale-[0.98]" (click)="toggleDetalles(venta.id!)">Ver</button>
+        <button class="rounded-lg bg-violet-50 px-3 py-3 text-xs font-black text-violet-700 transition-all duration-300 active:scale-[0.98]" (click)="generarBoletaDesdeVenta(venta)">PDF</button>
+        <button class="rounded-lg bg-rose-50 px-3 py-3 text-xs font-black text-rose-700 transition-all duration-300 active:scale-[0.98]" (click)="solicitarEliminar(venta)">Eliminar</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="hidden overflow-hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl md:block">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[980px] table-auto">
+        <thead>
+        <tr class="bg-white/70 text-left text-xs font-black uppercase tracking-[0.18em] text-gray-400">
+          <th class="px-5 py-4">ID</th>
+          <th class="px-5 py-4">Cliente</th>
+          <th class="px-5 py-4">Fecha</th>
+          <th class="px-5 py-4">Total</th>
+          <th class="px-5 py-4">Detalles</th>
+          <th class="px-5 py-4">Acciones</th>
         </tr>
         </thead>
 
-        <tbody>
-        <tr *ngFor="let item of nuevaVenta.items; let i = index">
+        <tbody class="divide-y divide-gray-100">
+        <ng-container *ngFor="let venta of ventasFiltradas">
+          <tr class="transition-colors hover:bg-sky-50/50">
+            <td class="px-5 py-4 text-sm font-black text-gray-900">{{ venta.id || '-' }}</td>
+            <td class="px-5 py-4 text-sm font-semibold text-gray-700">{{ venta.clienteNombre || venta.clienteId }}</td>
+            <td class="px-5 py-4 text-sm font-medium text-gray-500">{{ venta.fecha | date:'short' }}</td>
+            <td class="px-5 py-4 text-sm font-black text-sky-700">S/ {{ venta.total?.toFixed(2) || '0.00' }}</td>
+            <td class="px-5 py-4">
+              <button class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-sky-100" (click)="toggleDetalles(venta.id!)">
+                {{ mostrarDetalles[venta.id!] ? 'Ocultar' : 'Ver' }}
+              </button>
+            </td>
+            <td class="px-5 py-4">
+              <div class="flex flex-wrap gap-2">
+                <button class="rounded-lg bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-violet-100" (click)="generarBoletaDesdeVenta(venta)">PDF</button>
+                <button class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-rose-100" (click)="solicitarEliminar(venta)">Eliminar</button>
+              </div>
+            </td>
+          </tr>
 
-          <!-- 🔥 PRODUCTO CON AUTOCOMPLETE -->
-          <td class="relative">
-            <input type="text"
-                   class="border p-2 w-full"
-                   [(ngModel)]="item.busquedaProducto"
-                   (input)="filtrarProductos(i)"
-                   name="busquedaProducto-{{i}}"
-                   placeholder="Buscar producto..."
-                   autocomplete="off">
-
-            <!-- 🔽 LISTA -->
-            <ul *ngIf="item.productosFiltrados?.length"
-                class="absolute bg-white border w-full max-h-40 overflow-y-auto z-50 shadow rounded">
-
-              <li *ngFor="let prod of item.productosFiltrados"
-                  (click)="seleccionarProducto(i, prod)"
-                  class="p-2 cursor-pointer hover:bg-blue-100">
-
-                <div class="font-medium">{{ prod.nombre }}</div>
-                <div class="text-xs text-gray-500">
-                  {{ prod.codigoInterno }} | S/ {{ prod.precioVenta }}
+          <tr *ngIf="mostrarDetalles[venta.id!]">
+            <td colspan="6" class="bg-sky-50/40 px-5 py-4">
+              <div class="grid gap-2">
+                <div *ngFor="let item of venta.items" class="grid gap-3 rounded-lg bg-white/80 px-4 py-3 text-sm font-bold text-gray-700 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
+                  <span class="flex min-w-0 items-center gap-3">
+                    <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+                      <img *ngIf="getImagenProducto(item); else detalleProductoIniciales"
+                           [src]="getImagenProducto(item)"
+                           [alt]="item.productoNombre || 'Producto'"
+                           class="h-full w-full object-cover">
+                      <ng-template #detalleProductoIniciales>{{ getInicialesProducto(item.productoNombre) }}</ng-template>
+                    </span>
+                    <span class="min-w-0">
+                      <span class="block truncate">{{ item.productoNombre }}</span>
+                      <span class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
+                        <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-sky-50 text-[9px] font-black text-sky-700">
+                          <img *ngIf="getImagenCategoriaItem(item); else detalleCategoriaIniciales"
+                               [src]="getImagenCategoriaItem(item)"
+                               [alt]="getNombreCategoriaItem(item)"
+                               class="h-full w-full object-cover">
+                          <ng-template #detalleCategoriaIniciales>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
+                        </span>
+                        <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
+                      </span>
+                    </span>
+                  </span>
+                  <span>Cant. {{ item.cantidad }}</span>
+                  <span>S/ {{ item.precio.toFixed(2) }}</span>
+                  <span class="text-sky-700">S/ {{ (item.precio * item.cantidad).toFixed(2) }}</span>
                 </div>
-
-              </li>
-            </ul>
-          </td>
-
-          <!-- CANTIDAD -->
-          <td>
-            <input type="number"
-                   class="border p-2 w-16"
-                   [(ngModel)]="item.cantidad"
-                   (change)="onCantidadChange(i)"
-                   name="cantidad-{{i}}">
-          </td>
-
-          <!-- PRECIO -->
-          <td class="text-center">
-            S/ {{ item.precio }}
-          </td>
-
-          <!-- SUBTOTAL -->
-          <td class="text-center">
-            S/ {{ item.precio * item.cantidad }}
-          </td>
-
-          <!-- ELIMINAR -->
-          <td>
-            <button type="button"
-                    class="bg-red-600 text-white px-2"
-                    (click)="eliminarItem(i)">
-              X
-            </button>
-          </td>
-
-        </tr>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
         </tbody>
       </table>
+    </div>
+  </div>
 
-      <div class="font-semibold mt-2">
-        Total: S/ {{ totalVenta }}
+  <div class="rounded-lg border border-white/70 bg-white/75 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <p class="text-sm font-black uppercase tracking-[0.16em] text-gray-400">Total filtrado</p>
+      <p class="text-2xl font-black text-gray-950">S/ {{ totalVentasFiltradas.toFixed(2) }}</p>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-[110] bg-slate-950/30 backdrop-blur-[2px] transition-opacity duration-300"
+       [style.opacity]="accionPendiente ? '1' : '0'"
+       [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
+       (click)="cancelarConfirmacion()"></div>
+
+  <div class="fixed left-1/2 top-1/2 z-[120] w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-white/70 bg-white/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-all duration-300 sm:p-6"
+       [style.opacity]="accionPendiente ? '1' : '0'"
+       [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
+       [style.transform]="accionPendiente ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -46%) scale(0.96)'"
+       role="dialog"
+       aria-modal="true">
+    <div class="mb-4 flex items-start gap-4">
+      <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 via-rose-50 to-amber-100 text-amber-700 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        </svg>
+      </span>
+      <div class="min-w-0">
+        <h3 class="text-xl font-black tracking-tight text-gray-950">{{ tituloConfirmacion }}</h3>
+        <p class="mt-2 text-sm font-semibold text-gray-500">{{ mensajeConfirmacion }}</p>
       </div>
     </div>
 
-    <button type="submit"
-            class="bg-blue-600 text-white px-4 py-2 rounded">
-      Registrar venta
-    </button>
-
-  </form>
-</div>
-
-<!-- LISTADO -->
-<table class="table-auto w-full mt-4 border">
-  <thead class="bg-gray-200">
-  <tr>
-    <th>ID</th>
-    <th>Cliente</th>
-    <th>Fecha</th>
-    <th>Total</th>
-    <th>Detalles</th>
-    <th>Eliminar</th>
-    <th>Boleta</th>
-  </tr>
-  </thead>
-
-  <tbody>
-  <ng-container *ngFor="let venta of ventasFiltradas">
-    <tr>
-      <td>{{ venta.id }}</td>
-      <td>{{ venta.clienteNombre || venta.clienteId }}</td>
-      <td>{{ venta.fecha | date:'short' }}</td>
-      <td>S/ {{ venta.total?.toFixed(2) }}</td>
-
-      <td>
-        <button (click)="toggleDetalles(venta.id!)"
-                class="bg-blue-600 text-white px-2 rounded">
-          Ver
-        </button>
-      </td>
-
-      <td>
-        <button (click)="eliminarVenta(venta.id)"
-                class="bg-red-600 text-white px-2 rounded">
-          Eliminar
-        </button>
-      </td>
-
-      <td>
-        <button (click)="generarBoletaDesdeVenta(venta)"
-                class="bg-purple-600 text-white px-2 rounded">
-          PDF
-        </button>
-      </td>
-    </tr>
-
-    <tr *ngIf="mostrarDetalles[venta.id!]">
-      <td colspan="7" class="bg-gray-100 p-2">
-
-        <table class="w-full border">
-          <tr *ngFor="let item of venta.items">
-            <td>{{ item.productoNombre }}</td>
-            <td>{{ item.cantidad }}</td>
-            <td>S/ {{ item.precio }}</td>
-            <td>S/ {{ item.precio * item.cantidad }}</td>
-          </tr>
-        </table>
-
-      </td>
-    </tr>
-  </ng-container>
-  </tbody>
-</table>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="cancelarConfirmacion()">Cancelar</button>
+      <button type="button" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" (click)="confirmarAccion()">Confirmar</button>
+    </div>
+  </div>
+</section>

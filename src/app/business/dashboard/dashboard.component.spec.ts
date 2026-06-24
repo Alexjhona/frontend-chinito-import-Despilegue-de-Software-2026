@@ -9,11 +9,11 @@ describe('DashboardComponent', () => {
   let fixture: ComponentFixture<DashboardComponent>;
   let httpMock: HttpTestingController;
 
-  const ventasUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/ventas';
-  const productosUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/productos';
-  const clientesUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/clientes';
-  const proveedoresUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/proveedores';
-  const stockUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/stock';
+  const ventasUrl = 'http://localhost:8080/api/ventas';
+  const productosUrl = 'http://localhost:8080/api/productos';
+  const clientesUrl = 'http://localhost:8080/api/clientes';
+  const proveedoresUrl = 'http://localhost:8080/api/proveedores';
+  const stockUrl = 'http://localhost:8080/api/stock';
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -42,11 +42,9 @@ describe('DashboardComponent', () => {
     ]);
     httpMock.expectOne(clientesUrl).flush([{ id: 1 }, { id: 2 }]);
     httpMock.expectOne(proveedoresUrl).flush([{ id: 1 }]);
-    httpMock.expectOne(stockUrl).flush([
-      { productoId: 10, cantidad: 0 },
-      { productoId: 11, cantidad: 4 },
-      { productoId: 12, cantidad: 20 },
-    ]);
+    httpMock.expectOne(`${stockUrl}/10`).flush({ cantidad: 0 });
+    httpMock.expectOne(`${stockUrl}/11`).flush({ cantidad: 2 });
+    httpMock.expectOne(`${stockUrl}/12`).flush({ cantidad: 20 });
 
     fixture.detectChanges();
 
@@ -63,7 +61,6 @@ describe('DashboardComponent', () => {
     httpMock.expectOne(productosUrl).flush(null, { status: 500, statusText: 'Error' });
     httpMock.expectOne(clientesUrl).flush(null, { status: 500, statusText: 'Error' });
     httpMock.expectOne(proveedoresUrl).flush(null, { status: 500, statusText: 'Error' });
-    httpMock.expectOne(stockUrl).flush(null, { status: 500, statusText: 'Error' });
 
     fixture.detectChanges();
 
@@ -83,10 +80,11 @@ describe('DashboardComponent', () => {
     ]);
     httpMock.expectOne(clientesUrl).flush([{ id: 1 }]);
     httpMock.expectOne(proveedoresUrl).flush([]);
-    httpMock.expectOne(stockUrl).flush([]);
+    httpMock.expectOne(`${stockUrl}/10`).flush(null, { status: 500, statusText: 'Error' });
+    httpMock.expectOne(`${stockUrl}/11`).flush(null, { status: 500, statusText: 'Error' });
 
     expect(component.montoTotalVendido).toBe(0);
-    expect(component.productosStockBajo.map(producto => producto.id)).toEqual([10]);
+    expect(component.productosStockBajo.map(producto => producto.id)).toEqual([]);
     expect(component.productosSinStock.map(producto => producto.id)).toEqual([11]);
     expect(component.ultimasVentas.map(venta => venta.id)).toEqual([1]);
     expect(component.aviso).toBe('');

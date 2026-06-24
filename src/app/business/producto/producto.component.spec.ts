@@ -1,6 +1,7 @@
 import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { ProductoComponent } from './producto.component';
 
@@ -9,16 +10,20 @@ describe('ProductoComponent', () => {
   let fixture: ComponentFixture<ProductoComponent>;
   let httpMock: HttpTestingController;
 
-  const productosUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/productos';
-  const categoriasUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/categorias';
-  const stockUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/stock';
-  const categorias = [{ id: 1, nombre: 'Zapatillas' }];
+  const productosUrl = 'http://localhost:8080/api/productos';
+  const categoriasUrl = 'http://localhost:8080/api/categorias';
+  const stockUrl = 'http://localhost:8080/api/stock';
+  const categorias = [
+    { id: 1, nombre: 'Zapatillas', imagen: 'data:image/png;base64,categoria-uno' },
+    { id: 2, nombre: 'Tecnología', imagen: 'data:image/png;base64,categoria-dos' },
+  ];
   const productos = [
     {
       id: 10,
       categoriaId: 1,
       codigoInterno: 'PROD-001',
       nombre: 'Zapatilla Urbana',
+      imagen: 'data:image/png;base64,producto-uno',
       precioVenta: 120,
       precioCompra: 80,
       moneda: 'Soles',
@@ -28,7 +33,7 @@ describe('ProductoComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductoComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     })
       .overrideComponent(ProductoComponent, {
         remove: { imports: [HttpClientModule] },
@@ -61,6 +66,8 @@ describe('ProductoComponent', () => {
     expect(compiled.textContent).toContain('Zapatilla Urbana');
     expect(compiled.textContent).toContain('Zapatillas');
     expect(compiled.textContent).toContain('15');
+    expect(compiled.querySelector('img[alt="Zapatilla Urbana"]')).not.toBeNull();
+    expect(compiled.querySelector('img[alt="Zapatillas"]')).not.toBeNull();
   });
 
   it('should filter products by category and product text', () => {
@@ -85,6 +92,7 @@ describe('ProductoComponent', () => {
       categoriaId: 1,
       codigoInterno: 'PROD-002',
       nombre: 'Polo Deportivo',
+      imagen: 'data:image/png;base64,producto-dos',
       precioVenta: 50,
       precioCompra: 25,
       moneda: 'Soles',
@@ -129,12 +137,48 @@ describe('ProductoComponent', () => {
   });
 
   it('should not call the backend when saving without a valid category', () => {
-    spyOn(window, 'alert');
     component.formProducto.categoriaId = null;
 
     component.guardar();
 
-    expect(window.alert).toHaveBeenCalledWith(jasmine.stringMatching(/categor/i));
+    expect(component.errorFormulario).toBe('Revisa los campos obligatorios antes de guardar.');
+    httpMock.expectNone(productosUrl);
+  });
+
+  it('should not call the backend when saving without a product name', () => {
+    component.formProducto = {
+      categoriaId: 1,
+      codigoInterno: 'PROD-003',
+      nombre: '   ',
+      imagen: '',
+      precioVenta: 60,
+      precioCompra: 30,
+      moneda: 'Soles',
+      stock: 10,
+    };
+
+    component.guardar();
+
+    expect(component.errorFormulario).toBe('Revisa los campos obligatorios antes de guardar.');
+    httpMock.expectNone(productosUrl);
+  });
+
+  it('should not call the backend when saving with zero stock', () => {
+    component.formProducto = {
+      categoriaId: 1,
+      codigoInterno: 'PROD-004',
+      nombre: 'Cable USB-C',
+      imagen: '',
+      precioVenta: 60,
+      precioCompra: 30,
+      moneda: 'Soles',
+      stock: 0,
+    };
+
+    component.guardar();
+
+    expect(component.errorFormulario).toBe('No se puede agregar un producto con stock 0. Ingresa una cantidad mayor que 0.');
+    httpMock.expectNone(productosUrl);
   });
 
   it('should use zero stock when the stock endpoint fails', () => {
@@ -146,6 +190,27 @@ describe('ProductoComponent', () => {
     httpMock.expectOne(`${stockUrl}/12`).flush(null, { status: 500, statusText: 'Error' });
 
     expect(component.productos[0].stock).toBe(0);
+  });
+
+  it('should warn only when stock is empty or lower than three units', () => {
+    expect(component.estadoStock({ ...productos[0], stock: 0 })).toBe('agotado');
+    expect(component.estadoStock({ ...productos[0], stock: 2 })).toBe('bajo');
+    expect(component.estadoStock({ ...productos[0], stock: 3 })).toBe('ok');
+    expect(component.advertenciaStock({ ...productos[0], stock: 2 })).toContain('quedan 2');
+  });
+
+  it('should generate a product image using the product name as the main prompt subject', () => {
+    component.formProducto.nombre = 'Airpods';
+    component.formProducto.categoriaId = 2;
+
+    component.buscarImagenProductoWeb();
+
+    const decodedUrl = decodeURIComponent(component.formProducto.imagen || '');
+    expect(decodedUrl).toContain('Airpods');
+    expect(decodedUrl).toContain('Main subject: Airpods');
+    expect(decodedUrl).toContain('model=flux');
+    expect(component.mensajeImagenWeb).toContain('Generando');
+    expect(component.cargandoImagenWeb).toBeTrue();
   });
 
   it('should show an error when product creation fails', () => {
@@ -189,24 +254,39 @@ describe('ProductoComponent', () => {
   });
 
   it('should delete a product after confirmation and refresh products', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    component.solicitarEliminar(component.productos[0]);
+    expect(component.accionPendiente).toBe('eliminar');
+    expect(component.mensajeConfirmacion).toContain('Zapatilla Urbana');
 
-    component.eliminarProducto(10);
+    component.confirmarAccion();
 
     const deleteReq = httpMock.expectOne(`${productosUrl}/10`);
     expect(deleteReq.request.method).toBe('DELETE');
     deleteReq.flush({});
     httpMock.expectOne(productosUrl).flush([]);
+    expect(component.mensaje).toBe('Producto eliminado correctamente');
   });
 
   it('should not delete a product without an id or when confirmation is cancelled', () => {
-    const confirmSpy = spyOn(window, 'confirm').and.returnValue(false);
-
     component.eliminarProducto(undefined);
-    component.eliminarProducto(10);
+    component.solicitarEliminar(component.productos[0]);
+    component.cancelarConfirmacion();
 
-    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(component.accionPendiente).toBeNull();
     httpMock.expectNone(`${productosUrl}/10`);
+  });
+
+  it('should ask before editing a product', () => {
+    component.solicitarEditar(component.productos[0]);
+
+    expect(component.accionPendiente).toBe('editar');
+    expect(component.tituloConfirmacion).toBe('Editar producto');
+
+    component.confirmarAccion();
+
+    expect(component.accionPendiente).toBeNull();
+    expect(component.editProducto).toEqual(component.productos[0]);
+    expect(component.mostrarFormulario).toBeTrue();
   });
 
   it('should update category autocomplete for blank, exact and partial values', () => {
@@ -221,6 +301,11 @@ describe('ProductoComponent', () => {
     expect(component.formProducto.categoriaId).toBe(1);
     expect(component.busquedaCategoriaInput).toBe('Zapatillas');
     expect(component.categoriasFiltradas).toEqual([]);
+
+    component.busquedaCategoriaInput = 'tecnologia';
+    component.actualizarCategoriasFiltradas();
+    expect(component.formProducto.categoriaId).toBe(2);
+    expect(component.busquedaCategoriaInput).toBe('Tecnología');
 
     component.busquedaCategoriaInput = 'ropa';
     component.actualizarCategoriasFiltradas();
@@ -244,7 +329,7 @@ describe('ProductoComponent', () => {
       ...component.productos,
       {
         id: 11,
-        categoriaId: 999,
+        categoriaId: 2,
         codigoInterno: 'CODE-002',
         nombre: 'Polo',
         precioVenta: 30,
@@ -255,6 +340,9 @@ describe('ProductoComponent', () => {
     component.busquedaCategoria = 'zapatillas';
     component.busquedaProducto = '';
     expect(component.productosFiltrados.map(producto => producto.id)).toEqual([10]);
+
+    component.busquedaCategoria = 'tecnologia';
+    expect(component.productosFiltrados.map(producto => producto.id)).toEqual([11]);
 
     component.busquedaCategoria = '';
     component.busquedaProducto = 'code-002';

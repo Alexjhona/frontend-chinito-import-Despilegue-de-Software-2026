@@ -9,7 +9,7 @@ describe('ClienteComponent', () => {
   let fixture: ComponentFixture<ClienteComponent>;
   let httpMock: HttpTestingController;
 
-  const apiUrl = 'https://mean-election-candle-joint.trycloudflare.com/api/clientes';
+  const apiUrl = 'http://localhost:8080/api/clientes';
   const clientes = [
     { id: 1, dniOrRuc: '20111111111', razonSocialONombre: 'Cliente Uno', direccion: 'Lima', telefono: '999111222' },
     { id: 2, dniOrRuc: '20222222222', razonSocialONombre: 'Cliente Dos', direccion: 'Cusco', telefono: '999333444' },
@@ -55,66 +55,128 @@ describe('ClienteComponent', () => {
     expect(component.clientesFiltrados).toEqual([clientes[1]]);
   });
 
-  it('should show a form with required fields when creating a client', () => {
+  it('should filter clients by fallback name fields and ignore accents', () => {
+    component.clientes = [
+      { id: 3, dniOrRuc: '20333333333', razonSocialONombre: '', nombre: 'José Álvarez', direccion: 'Lima', telefono: '912345678' },
+      { id: 4, dniOrRuc: '20444444444', razonSocialONombre: '', razonSocial: 'Comercial Norte', direccion: 'Piura', telefono: '923456789' },
+    ];
+
+    component.busqueda = 'jose';
+    expect(component.clientesFiltrados).toEqual([component.clientes[0]]);
+
+    component.busqueda = 'norte';
+    expect(component.clientesFiltrados).toEqual([component.clientes[1]]);
+  });
+
+  it('should show a form with required fields and optional name when creating a client', () => {
     component.nuevoCliente();
     fixture.detectChanges();
 
     const requiredInputs = fixture.nativeElement.querySelectorAll('form input[required]');
+    const nameInput = fixture.nativeElement.querySelector('form input[name="nombres"]') as HTMLInputElement;
 
     expect(component.mostrarFormulario).toBeTrue();
     expect(requiredInputs.length).toBe(4);
+    expect(nameInput.required).toBeTrue();
+    expect(fixture.nativeElement.textContent).toContain('Apellido paterno');
+    expect(fixture.nativeElement.textContent).toContain('Apellido materno');
+    expect(fixture.nativeElement.textContent).not.toContain('Dirección');
+    expect(fixture.nativeElement.textContent).not.toContain('Teléfono');
   });
 
   it('should call POST when saving a new client and refresh the list', () => {
     component.formCliente = {
-      dniOrRuc: '20333333333',
-      razonSocialONombre: 'Cliente Nuevo',
-      direccion: 'Arequipa',
-      telefono: '988777666',
+      dniOrRuc: '12345678',
+      razonSocialONombre: '',
+      direccion: '',
+      telefono: '',
+      nombres: 'Cliente',
+      apellidoPaterno: 'Nuevo',
+      apellidoMaterno: 'Prueba',
     };
 
     component.guardar();
 
     const postReq = httpMock.expectOne(apiUrl);
     expect(postReq.request.method).toBe('POST');
-    expect(postReq.request.body).toEqual(component.formCliente);
+    expect(postReq.request.body.razonSocialONombre).toBe('Cliente Nuevo Prueba');
+    expect(postReq.request.body.direccion).toBe('');
+    expect(postReq.request.body.telefono).toBe('');
     postReq.flush({ id: 3, ...component.formCliente });
 
     const refreshReq = httpMock.expectOne(apiUrl);
     expect(refreshReq.request.method).toBe('GET');
     refreshReq.flush(clientes);
+
+    expect(component.mensajeExito).toBe('Cliente agregado correctamente.');
+  });
+
+  it('should keep phone numeric and warn when removing invalid characters', () => {
+    component.formCliente.telefono = '999abc-11122';
+
+    component.soloNumerosTelefono();
+
+    expect(component.formCliente.telefono).toBe('99911122');
+    expect(component.telefonoAdvertencia).toBeTrue();
+  });
+
+  it('should validate Peruvian mobile phone format', () => {
+    component.formCliente.telefono = '812345678';
+    expect(component.telefonoPeruInvalido).toBeTrue();
+
+    component.formCliente.telefono = '912345678';
+    expect(component.telefonoPeruInvalido).toBeFalse();
   });
 
   it('should call PUT when editing a client', () => {
     component.editar(clientes[0]);
-    component.formCliente.telefono = '900000000';
+    component.formCliente.dniOrRuc = '12345678';
+    component.formCliente.nombres = 'Cliente';
+    component.formCliente.apellidoPaterno = 'Editado';
+    component.formCliente.apellidoMaterno = 'Uno';
 
     component.guardar();
 
     const putReq = httpMock.expectOne(`${apiUrl}/1`);
     expect(putReq.request.method).toBe('PUT');
-    expect(putReq.request.body.telefono).toBe('900000000');
-    putReq.flush({ ...clientes[0], telefono: '900000000' });
+    expect(putReq.request.body.razonSocialONombre).toBe('Cliente Editado Uno');
+    expect(putReq.request.body.telefono).toBe('');
+    putReq.flush({ ...clientes[0], razonSocialONombre: 'Cliente Editado Uno', telefono: '' });
 
     httpMock.expectOne(apiUrl).flush(clientes);
   });
 
-  it('should guard, cancel and confirm client deletion', () => {
-    const confirmSpy = spyOn(window, 'confirm').and.returnValues(false, true);
-
+  it('should guard, request and confirm client deletion', () => {
     component.eliminarCliente(undefined);
-    component.eliminarCliente(2);
-    httpMock.expectNone(`${apiUrl}/2`);
-    component.eliminarCliente(1);
+    component.solicitarEliminar(clientes[0]);
+
+    expect(component.accionPendiente).toBe('eliminar');
+    expect(component.clientePendiente).toEqual(clientes[0]);
+
+    component.cancelarConfirmacion();
+    expect(component.accionPendiente).toBeNull();
+
+    component.solicitarEliminar(clientes[0]);
+    component.confirmarAccion();
+
     httpMock.expectOne(`${apiUrl}/1`).flush({});
     httpMock.expectOne(apiUrl).flush(clientes);
 
-    component.editar(clientes[0]);
-    component.cancelar();
+    expect(component.accionPendiente).toBeNull();
+    expect(component.mensajeExito).toBe('Cliente eliminado correctamente.');
+  });
 
-    expect(confirmSpy).toHaveBeenCalledTimes(2);
-    expect(component.editCliente).toBeNull();
-    expect(component.mostrarFormulario).toBeFalse();
+  it('should request confirmation before editing a client', () => {
+    component.solicitarEditar(clientes[0]);
+
+    expect(component.accionPendiente).toBe('editar');
+    expect(component.clientePendiente).toEqual(clientes[0]);
+
+    component.confirmarAccion();
+
+    expect(component.accionPendiente).toBeNull();
+    expect(component.editCliente).toEqual(clientes[0]);
+    expect(component.mostrarFormulario).toBeTrue();
   });
 
   it('should return all clients for blank search and filter by DNI/RUC', () => {

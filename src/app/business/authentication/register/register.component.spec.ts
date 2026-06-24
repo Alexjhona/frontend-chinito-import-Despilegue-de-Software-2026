@@ -13,7 +13,7 @@ describe('RegisterComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['register']);
+    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['activateWorker']);
 
     await TestBed.configureTestingModule({
       imports: [RegisterComponent],
@@ -34,64 +34,79 @@ describe('RegisterComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should block registration without an invitation link', () => {
+    component.register();
+
+    expect(component.errorMessage).toBe('El registro solo está disponible desde una invitación enviada al correo.');
+    expect(authServiceSpy.activateWorker).not.toHaveBeenCalled();
+  });
+
   it('should validate required fields before registering', () => {
+    component.esInvitacionTrabajador = true;
     component.register();
 
     expect(component.errorMessage).toBe('Completa todos los campos');
-    expect(authServiceSpy.register).not.toHaveBeenCalled();
+    expect(authServiceSpy.activateWorker).not.toHaveBeenCalled();
   });
 
   it('should validate matching passwords', () => {
+    component.esInvitacionTrabajador = true;
     component.user = 'nuevo';
+    component.email = 'nuevo@mail.com';
     component.password = 'secret';
     component.confirmPassword = 'different';
 
     component.register();
 
     expect(component.errorMessage).toBe('Las contraseñas no coinciden');
-    expect(authServiceSpy.register).not.toHaveBeenCalled();
+    expect(authServiceSpy.activateWorker).not.toHaveBeenCalled();
   });
 
-  it('should call AuthService and navigate to login after successful register', fakeAsync(() => {
+  it('should activate worker password when opened from an invitation link', fakeAsync(() => {
     const navigateSpy = spyOn(router, 'navigate').and.resolveTo(true);
-    authServiceSpy.register.and.returnValue(of({ id: 1, userName: 'nuevo' }));
-    component.user = 'nuevo';
+    authServiceSpy.activateWorker.and.returnValue(of({ id: 2, correo: 'trabajador@correo.com' }));
+    component.esInvitacionTrabajador = true;
+    component.user = 'trabajador1';
+    component.email = 'trabajador@correo.com';
     component.password = 'secret';
     component.confirmPassword = 'secret';
 
     component.register();
     tick(2000);
 
-    expect(component.successMessage).toBe('Usuario registrado correctamente. Ahora puedes iniciar sesion.');
-    expect(authServiceSpy.register).toHaveBeenCalledWith('nuevo', 'secret');
+    expect(authServiceSpy.activateWorker).toHaveBeenCalledWith('trabajador@correo.com', 'secret', 'trabajador1');
     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
   }));
 
-  it('should show an error when register fails', () => {
+  it('should show an error when invitation register fails', () => {
     spyOn(console, 'error');
-    authServiceSpy.register.and.returnValue(throwError(() => new HttpErrorResponse({ status: 400 })));
+    authServiceSpy.activateWorker.and.returnValue(throwError(() => new HttpErrorResponse({ status: 400 })));
+    component.esInvitacionTrabajador = true;
     component.user = 'nuevo';
+    component.email = 'nuevo@mail.com';
     component.password = 'secret';
     component.confirmPassword = 'secret';
 
     component.register();
 
-    expect(component.errorMessage).toBe('No se pudo registrar el usuario. Puede que ya exista o que los datos no sean validos.');
+    expect(component.errorMessage).toBe('No se pudo registrar la contraseña. Puede que el correo ya este activo o que los datos no sean validos.');
   });
 
   it('should distinguish backend connection errors from unexpected errors', () => {
     spyOn(console, 'error');
+    component.esInvitacionTrabajador = true;
     component.user = 'nuevo';
+    component.email = 'nuevo@mail.com';
     component.password = 'secret';
     component.confirmPassword = 'secret';
 
-    authServiceSpy.register.and.returnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    authServiceSpy.activateWorker.and.returnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
     component.register();
     expect(component.errorMessage).toContain('No hay conexion con el backend');
 
-    authServiceSpy.register.and.returnValue(throwError(() => new Error('Unexpected')));
+    authServiceSpy.activateWorker.and.returnValue(throwError(() => new Error('Unexpected')));
     component.register();
-    expect(component.errorMessage).toBe('No se pudo registrar el usuario. Revisa la consola o intenta nuevamente.');
+    expect(component.errorMessage).toBe('No se pudo registrar la contraseña. Revisa la consola o intenta nuevamente.');
     expect(component.isLoading).toBeFalse();
   });
 });
