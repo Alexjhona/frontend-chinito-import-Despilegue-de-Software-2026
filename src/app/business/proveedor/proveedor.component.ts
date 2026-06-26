@@ -46,8 +46,8 @@ export class ProveedorComponent implements OnDestroy {
   telefonoAdvertencia = false;
   accionPendiente: 'editar' | 'eliminar' | null = null;
   proveedorPendiente: Proveedor | null = null;
-  private apiUrl = 'http://localhost:8080/api/proveedores';
-  private consultaRucUrl = 'http://localhost:8080/api/proveedores/ruc';
+  private readonly apiUrl = 'http://localhost:8080/api/proveedores';
+  private readonly consultaRucUrl = 'http://localhost:8080/api/proveedores/ruc';
   private readonly refreshSub: Subscription;
 
   constructor(

@@ -73,9 +73,9 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   formTrabajador: Trabajador = this.crearTrabajadorVacio();
-  private apiUrl = 'http://localhost:8080/auth/trabajadores';
-  private correoInvitacionUrl = 'http://localhost:8080/auth/trabajadores/enviar-invitacion';
-  private consultaDniUrl = 'http://localhost:8080/auth/dni';
+  private readonly apiUrl = 'http://localhost:8080/auth/trabajadores';
+  private readonly correoInvitacionUrl = 'http://localhost:8080/auth/trabajadores/enviar-invitacion';
+  private readonly consultaDniUrl = 'http://localhost:8080/auth/dni';
   private readonly refreshSub: Subscription;
 
   constructor(

@@ -33,11 +33,11 @@ interface ActivateWorkerResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private LOGIN_URL = 'http://localhost:8080/auth/login';
-  private ACTIVATE_WORKER_URL = 'http://localhost:8080/auth/trabajadores/activar';
-  private WORKERS_URL = 'http://localhost:8080/auth/trabajadores';
-  private tokenKey = 'authToken';
-  private ownerTokenKey = 'ownerAuthToken';
+  private readonly LOGIN_URL = 'http://localhost:8080/auth/login';
+  private readonly ACTIVATE_WORKER_URL = 'http://localhost:8080/auth/trabajadores/activar';
+  private readonly WORKERS_URL = 'http://localhost:8080/auth/trabajadores';
+  private readonly tokenKey = 'authToken';
+  private readonly ownerTokenKey = 'ownerAuthToken';
 
   constructor(
     private httpClient: HttpClient,

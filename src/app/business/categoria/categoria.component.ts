@@ -33,7 +33,7 @@ export class CategoriaComponent implements OnDestroy {
   private imagenGeneradaIntentos = 0;
   accionPendiente: 'editar' | 'eliminar' | null = null;
   categoriaPendiente: Categoria | null = null;
-  private apiUrl = 'http://localhost:8080/api/categorias';
+  private readonly apiUrl = 'http://localhost:8080/api/categorias';
   private readonly refreshSub: Subscription;
 
   constructor(

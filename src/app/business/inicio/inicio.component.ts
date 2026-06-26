@@ -107,9 +107,9 @@ export class InicioComponent implements OnDestroy {
     return slide.imagen;
   }
 
-  private productoUrl = 'http://localhost:8080/api/productos';
-  private categoriaUrl = 'http://localhost:8080/api/categorias';
-  private stockUrl = 'http://localhost:8080/api/stock';
+  private readonly productoUrl = 'http://localhost:8080/api/productos';
+  private readonly categoriaUrl = 'http://localhost:8080/api/categorias';
+  private readonly stockUrl = 'http://localhost:8080/api/stock';
   private readonly subs = new Subscription();
   private sliderTimer: ReturnType<typeof setInterval> | null = null;
 

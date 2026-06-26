@@ -48,8 +48,8 @@ export class ClienteComponent implements OnDestroy {
   telefonoAdvertencia = false;
   accionPendiente: 'editar' | 'eliminar' | null = null;
   clientePendiente: Cliente | null = null;
-  private apiUrl = 'http://localhost:8080/api/clientes';
-  private consultaDniUrl = 'http://localhost:8080/auth/dni';
+  private readonly apiUrl = 'http://localhost:8080/api/clientes';
+  private readonly consultaDniUrl = 'http://localhost:8080/auth/dni';
   private consultaDniId = 0;
   private readonly refreshSub: Subscription;
 

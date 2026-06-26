@@ -97,12 +97,12 @@ export class VentaComponent implements OnDestroy {
   filtroFecha: string = '';
   mostrarDetalles: { [key: number]: boolean } = {};
 
-  private apiVentas = 'http://localhost:8080/api/ventas';
-  private apiClientes = 'http://localhost:8080/api/clientes';
-  private apiProductos = 'http://localhost:8080/api/productos';
-  private apiCategorias = 'http://localhost:8080/api/categorias';
-  private apiStock = 'http://localhost:8080/api/stock';
-  private consultaDniUrl = 'http://localhost:8080/auth/dni';
+  private readonly apiVentas = 'http://localhost:8080/api/ventas';
+  private readonly apiClientes = 'http://localhost:8080/api/clientes';
+  private readonly apiProductos = 'http://localhost:8080/api/productos';
+  private readonly apiCategorias = 'http://localhost:8080/api/categorias';
+  private readonly apiStock = 'http://localhost:8080/api/stock';
+  private readonly consultaDniUrl = 'http://localhost:8080/auth/dni';
   readonly stockCriticoMinimo = 3;
   private readonly refreshSub: Subscription;
 

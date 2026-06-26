@@ -56,9 +56,9 @@ export class ProductoComponent implements OnDestroy {
 
   formProducto: Producto = this.crearProductoVacio();
 
-  private apiUrl = 'http://localhost:8080/api/productos';
-  private categoriaUrl = 'http://localhost:8080/api/categorias';
-  private stockUrl = 'http://localhost:8080/api/stock';
+  private readonly apiUrl = 'http://localhost:8080/api/productos';
+  private readonly categoriaUrl = 'http://localhost:8080/api/categorias';
+  private readonly stockUrl = 'http://localhost:8080/api/stock';
   private readonly refreshSub: Subscription;
 
   readonly stockCriticoMinimo = 3;
