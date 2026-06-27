@@ -12,11 +12,26 @@ const TRACKED_PREFIXES = [
   '/auth/trabajadores',
 ];
 
+interface ResourceActions {
+  path: string;
+  created: string;
+  updated: string;
+  deleted: string;
+}
+
+const RESOURCE_ACTIONS: ResourceActions[] = [
+  { path: '/productos', created: 'Producto creado', updated: 'Producto editado', deleted: 'Producto eliminado' },
+  { path: '/ventas', created: 'Venta realizada', updated: 'Venta editada', deleted: 'Venta eliminada' },
+  { path: '/clientes', created: 'Cliente registrado', updated: 'Cliente editado', deleted: 'Cliente eliminado' },
+  { path: '/trabajadores', created: 'Trabajador creado', updated: 'Trabajador editado', deleted: 'Trabajador eliminado' },
+  { path: '/categorias', created: 'Categoría creada', updated: 'Categoría editada', deleted: 'Categoría eliminada' },
+  { path: '/proveedores', created: 'Proveedor creado', updated: 'Proveedor editado', deleted: 'Proveedor eliminado' },
+];
+
 export const dataRefreshInterceptor: HttpInterceptorFn = (request, next) => {
   const refreshService = inject(DataRefreshService);
   const auditService = inject(AuditService);
-  const shouldNotify = MUTATION_METHODS.includes(request.method.toUpperCase()) &&
-    TRACKED_PREFIXES.some(prefix => request.url.startsWith(prefix));
+  const shouldNotify = debeNotificar(request.method, request.url);
 
   return next(request).pipe(
     tap(event => {
@@ -28,16 +43,20 @@ export const dataRefreshInterceptor: HttpInterceptorFn = (request, next) => {
   );
 };
 
+function debeNotificar(method: string, url: string): boolean {
+  return MUTATION_METHODS.includes(method.toUpperCase()) &&
+    TRACKED_PREFIXES.some(prefix => url.startsWith(prefix));
+}
+
 function describirAccion(method: string, url: string): string {
   const accion = method.toUpperCase();
-  const recurso = url.toLowerCase();
+  const recurso = RESOURCE_ACTIONS.find(item => url.toLowerCase().includes(item.path));
 
-  if (recurso.includes('/productos')) return accion === 'POST' ? 'Producto creado' : accion === 'PUT' || accion === 'PATCH' ? 'Producto editado' : 'Producto eliminado';
-  if (recurso.includes('/ventas')) return accion === 'POST' ? 'Venta realizada' : accion === 'DELETE' ? 'Venta eliminada' : 'Venta editada';
-  if (recurso.includes('/clientes')) return accion === 'POST' ? 'Cliente registrado' : accion === 'DELETE' ? 'Cliente eliminado' : 'Cliente editado';
-  if (recurso.includes('/trabajadores')) return accion === 'POST' ? 'Trabajador creado' : accion === 'DELETE' ? 'Trabajador eliminado' : 'Trabajador editado';
-  if (recurso.includes('/categorias')) return accion === 'POST' ? 'Categoría creada' : accion === 'DELETE' ? 'Categoría eliminada' : 'Categoría editada';
-  if (recurso.includes('/proveedores')) return accion === 'POST' ? 'Proveedor creado' : accion === 'DELETE' ? 'Proveedor eliminado' : 'Proveedor editado';
+  return recurso ? obtenerDescripcion(recurso, accion) : `Cambio ${accion}`;
+}
 
-  return `Cambio ${accion}`;
+function obtenerDescripcion(recurso: ResourceActions, accion: string): string {
+  if (accion === 'POST') return recurso.created;
+  if (accion === 'DELETE') return recurso.deleted;
+  return recurso.updated;
 }

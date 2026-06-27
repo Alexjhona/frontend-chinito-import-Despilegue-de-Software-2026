@@ -283,8 +283,8 @@ export class CategoriaComponent implements OnDestroy {
     let hash = 0;
 
     for (const caracter of valor) {
-      hash = ((hash << 5) - hash) + caracter.charCodeAt(0);
-      hash |= 0;
+      hash = Math.imul(hash, 31) + caracter.charCodeAt(0);
+      if (hash > 0x7fffffff) hash -= 0x100000000;
     }
 
     return Math.abs(hash % 9000) + 1000;

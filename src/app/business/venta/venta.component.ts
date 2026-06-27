@@ -268,16 +268,7 @@ export class VentaComponent implements OnDestroy {
     this.http.get<Producto[]>(this.apiProductos).subscribe({
       next: data => {
         this.productos = data;
-        this.productos.forEach(producto => {
-          this.http.get<{ cantidad: number }>(`${this.apiStock}/${producto.id}`).subscribe({
-            next: stockData => {
-              producto.stock = stockData.cantidad;
-            },
-            error: () => {
-              producto.stock = 0;
-            }
-          });
-        });
+        this.productos.forEach(producto => this.cargarStockProducto(producto));
 
       // 🔥 IMPORTANTE: cargar ventas después
         this.cargarVentas();
@@ -286,6 +277,13 @@ export class VentaComponent implements OnDestroy {
         this.productos = [];
         this.cargarVentas();
       }
+    });
+  }
+
+  private cargarStockProducto(producto: Producto): void {
+    this.http.get<{ cantidad: number }>(`${this.apiStock}/${producto.id}`).subscribe({
+      next: stockData => producto.stock = stockData.cantidad,
+      error: () => producto.stock = 0,
     });
   }
 

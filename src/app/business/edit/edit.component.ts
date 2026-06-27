@@ -214,13 +214,20 @@ export class EditComponent implements OnDestroy {
   }
 
   get estadoPanelActivo(): string {
-    if (this.panelActivo === 'visibilidad') return `${this.config.categoriasOcultas.length + this.config.productosOcultos.length} ocultos`;
-    if (this.panelActivo === 'catalogo') return this.config.mostrarCatalogo ? 'Visible' : 'Oculto';
-    if (this.panelActivo === 'productos') return this.config.mostrarProductos ? 'Visible' : 'Oculto';
-    if (this.panelActivo === 'servicios') return this.config.mostrarServicios ? 'Visible' : 'Oculto';
-    if (this.panelActivo === 'header') return this.config.mostrarHeader ? 'Visible' : 'Oculto';
-    if (this.panelActivo === 'hero') return this.config.mostrarVitrina ? 'Vitrina activa' : 'Sin vitrina';
-    return 'Activo';
+    const estados: Record<PanelEditor, string> = {
+      visibilidad: `${this.config.categoriasOcultas.length + this.config.productosOcultos.length} ocultos`,
+      catalogo: this.estadoVisibilidad(this.config.mostrarCatalogo),
+      productos: this.estadoVisibilidad(this.config.mostrarProductos),
+      servicios: this.estadoVisibilidad(this.config.mostrarServicios),
+      header: this.estadoVisibilidad(this.config.mostrarHeader),
+      hero: this.config.mostrarVitrina ? 'Vitrina activa' : 'Sin vitrina',
+      beneficios: 'Activo',
+    };
+    return estados[this.panelActivo];
+  }
+
+  private estadoVisibilidad(visible: boolean): string {
+    return visible ? 'Visible' : 'Oculto';
   }
 
   previewProducto(index: number): ProductoEditor | null {

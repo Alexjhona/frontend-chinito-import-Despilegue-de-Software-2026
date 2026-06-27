@@ -278,24 +278,43 @@ export class TrabajadorComponent implements OnDestroy {
   errorCampoTrabajador(campo: 'nombre' | 'apellido' | 'dni' | 'celular' | 'correo' | 'rol'): string {
     const valor = this.formTrabajador[campo];
 
-    if (campo === 'nombre' && !String(valor || '').trim()) return 'El nombre es obligatorio.';
-    if (campo === 'apellido' && !String(valor || '').trim()) return 'El apellido es obligatorio.';
-    if (campo === 'dni') {
-      if (!this.formTrabajador.dni) return 'El DNI es obligatorio.';
-      if (this.formTrabajador.dni.length !== 8) return 'El DNI debe tener 8 dígitos.';
+    switch (campo) {
+      case 'nombre': return String(valor || '').trim() ? '' : 'El nombre es obligatorio.';
+      case 'apellido': return String(valor || '').trim() ? '' : 'El apellido es obligatorio.';
+      case 'dni': return this.errorDniTrabajador();
+      case 'celular': return this.errorCelularTrabajador();
+      case 'correo': return this.errorCorreoTrabajador();
+      case 'rol': return this.formTrabajador.rol ? '' : 'Selecciona un rol.';
     }
-    if (campo === 'celular') {
-      if (!this.formTrabajador.celular) return 'El celular es obligatorio.';
-      if (this.formTrabajador.celular.length !== 9) return 'El celular debe tener 9 dígitos.';
-      if (!this.formTrabajador.celular.startsWith('9')) return 'El celular debe comenzar con 9.';
-    }
-    if (campo === 'correo') {
-      if (!this.formTrabajador.correo) return 'El correo es obligatorio.';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.formTrabajador.correo)) return 'Ingresa un correo válido.';
-    }
-    if (campo === 'rol' && !this.formTrabajador.rol) return 'Selecciona un rol.';
+  }
 
-    return '';
+  private errorDniTrabajador(): string {
+    if (!this.formTrabajador.dni) return 'El DNI es obligatorio.';
+    return this.formTrabajador.dni.length === 8 ? '' : 'El DNI debe tener 8 dígitos.';
+  }
+
+  private errorCelularTrabajador(): string {
+    const celular = this.formTrabajador.celular;
+    if (!celular) return 'El celular es obligatorio.';
+    if (celular.length !== 9) return 'El celular debe tener 9 dígitos.';
+    return celular.startsWith('9') ? '' : 'El celular debe comenzar con 9.';
+  }
+
+  private errorCorreoTrabajador(): string {
+    const correo = this.formTrabajador.correo;
+    if (!correo) return 'El correo es obligatorio.';
+    return this.esCorreoValido(correo) ? '' : 'Ingresa un correo válido.';
+  }
+
+  private esCorreoValido(correo: string): boolean {
+    if (Array.from(correo).some(caracter => caracter.trim() === '')) return false;
+
+    const arroba = correo.indexOf('@');
+    if (arroba <= 0 || arroba !== correo.lastIndexOf('@')) return false;
+
+    const dominio = correo.slice(arroba + 1);
+    const punto = dominio.indexOf('.');
+    return punto > 0 && punto < dominio.length - 1;
   }
 
   private primerErrorTrabajador(form?: NgForm): string {
@@ -521,15 +540,9 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   private generarPasswordTemporal(): string {
-    const base = `${this.formTrabajador.correo}-${Date.now()}-${Math.random()}`;
-    let hash = 0;
-
-    for (const caracter of base) {
-      hash = ((hash << 5) - hash) + caracter.charCodeAt(0);
-      hash |= 0;
-    }
-
-    return `Temp-${Math.abs(hash)}-${this.formTrabajador.dni}`;
+    const valorAleatorio = new Uint32Array(1);
+    crypto.getRandomValues(valorAleatorio);
+    return `Temp-${valorAleatorio[0]}-${this.formTrabajador.dni}`;
   }
 
   private prepararInvitacion(trabajador: Trabajador, tipo: 'registro' | 'reset' = 'registro') {
