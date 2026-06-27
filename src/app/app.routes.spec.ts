@@ -13,10 +13,13 @@ describe('App routes', () => {
   it('should configure the main frontend routes without errors', () => {
     const router = TestBed.inject(Router);
     const routePaths = router.config.map(route => route.path);
-    const businessChildren = router.config[2].children?.map(route => route.path);
+    const businessChildren = router.config.find(route => route.children)?.children?.map(route => route.path);
 
     expect(routePaths).toContain('');
     expect(routePaths).toContain('inicio');
+    expect(routePaths).toContain('catalogo');
+    expect(routePaths).toContain('productos');
+    expect(routePaths).toContain('servicios');
     expect(routePaths).toContain('login');
     expect(routePaths).toContain('register');
     expect(routePaths).toContain('registro-trabajador');
@@ -31,13 +34,20 @@ describe('App routes', () => {
       'agregar-productos',
       'venta',
       'trabajadores',
+      'ajustes',
+      'edit',
       '',
     ]);
   });
 
   it('should load every lazy frontend component', async () => {
-    const businessRoutes = routes[2].children?.filter(route => route.loadComponent) ?? [];
-    const lazyRoutes = [routes[1], routes[2], ...businessRoutes, routes[3], routes[5]];
+    const layoutRoute = routes.find(route => route.children);
+    const businessRoutes = layoutRoute?.children?.filter(route => route.loadComponent) ?? [];
+    const lazyRoutes = [
+      ...routes.filter(route => route.loadComponent && !route.children),
+      layoutRoute,
+      ...businessRoutes,
+    ].filter((route): route is NonNullable<typeof route> => Boolean(route));
 
     const loadedComponents = await Promise.all(
       lazyRoutes.map(route => Promise.resolve(route.loadComponent?.()))

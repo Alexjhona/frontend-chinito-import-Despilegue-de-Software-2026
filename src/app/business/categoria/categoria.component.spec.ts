@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { AuthService } from '../../core/services/auth.service';
 import { CategoriaComponent } from './categoria.component';
 
 describe('CategoriaComponent', () => {
@@ -20,7 +21,12 @@ describe('CategoriaComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CategoriaComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: AuthService, useValue: { hasPermission: () => true } },
+      ],
     })
       .overrideComponent(CategoriaComponent, {
         remove: { imports: [HttpClientModule] },

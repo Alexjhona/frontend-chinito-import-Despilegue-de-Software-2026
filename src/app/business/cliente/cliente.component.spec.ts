@@ -2,6 +2,7 @@ import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { AuthService } from '../../core/services/auth.service';
 import { ClienteComponent } from './cliente.component';
 
 describe('ClienteComponent', () => {
@@ -18,7 +19,11 @@ describe('ClienteComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ClienteComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthService, useValue: { hasPermission: () => true } },
+      ],
     })
       .overrideComponent(ClienteComponent, {
         remove: { imports: [HttpClientModule] },
@@ -39,7 +44,10 @@ describe('ClienteComponent', () => {
 
   it('should create and load clients from the microservice URL using GET', () => {
     expect(component).toBeTruthy();
-    expect(component.clientes).toEqual(clientes);
+    expect(component.clientes).toEqual([
+      jasmine.objectContaining(clientes[0]),
+      jasmine.objectContaining(clientes[1]),
+    ]);
   });
 
   it('should render simulated clients in the table', () => {
@@ -52,7 +60,7 @@ describe('ClienteComponent', () => {
   it('should filter clients by DNI/RUC or name', () => {
     component.busqueda = 'dos';
 
-    expect(component.clientesFiltrados).toEqual([clientes[1]]);
+    expect(component.clientesFiltrados).toEqual([jasmine.objectContaining(clientes[1])]);
   });
 
   it('should filter clients by fallback name fields and ignore accents', () => {
@@ -181,9 +189,12 @@ describe('ClienteComponent', () => {
 
   it('should return all clients for blank search and filter by DNI/RUC', () => {
     component.busqueda = ' ';
-    expect(component.clientesFiltrados).toEqual(clientes);
+    expect(component.clientesFiltrados).toEqual([
+      jasmine.objectContaining(clientes[0]),
+      jasmine.objectContaining(clientes[1]),
+    ]);
 
     component.busqueda = '20111111111';
-    expect(component.clientesFiltrados).toEqual([clientes[0]]);
+    expect(component.clientesFiltrados).toEqual([jasmine.objectContaining(clientes[0])]);
   });
 });

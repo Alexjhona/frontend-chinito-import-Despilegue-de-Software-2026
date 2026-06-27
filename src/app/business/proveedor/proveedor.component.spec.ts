@@ -2,6 +2,7 @@ import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { AuthService } from '../../core/services/auth.service';
 import { ProveedorComponent } from './proveedor.component';
 
 describe('ProveedorComponent', () => {
@@ -18,7 +19,11 @@ describe('ProveedorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProveedorComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthService, useValue: { hasPermission: () => true } },
+      ],
     })
       .overrideComponent(ProveedorComponent, {
         remove: { imports: [HttpClientModule] },

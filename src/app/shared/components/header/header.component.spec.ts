@@ -3,14 +3,22 @@ import { provideRouter } from '@angular/router';
 
 import { HeaderComponent } from './header.component';
 import { AuthService } from '../../../core/services/auth.service';
+import { AuditService } from '../../../core/services/audit.service';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
+  let auditServiceSpy: jasmine.SpyObj<AuditService>;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['logout', 'hasPermission', 'isImpersonating', 'returnToOwnerSession']);
+    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', [
+      'logout',
+      'hasPermission',
+      'isImpersonating',
+      'returnToOwnerSession',
+    ]);
+    auditServiceSpy = jasmine.createSpyObj<AuditService>('AuditService', ['registrar']);
     authServiceSpy.hasPermission.and.returnValue(false);
     authServiceSpy.isImpersonating.and.returnValue(false);
 
@@ -19,6 +27,7 @@ describe('HeaderComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: authServiceSpy },
+        { provide: AuditService, useValue: auditServiceSpy },
       ],
     })
     .compileComponents();

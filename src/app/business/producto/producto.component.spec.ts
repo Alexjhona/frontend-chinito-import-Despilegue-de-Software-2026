@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { AuthService } from '../../core/services/auth.service';
 import { ProductoComponent } from './producto.component';
 
 describe('ProductoComponent', () => {
@@ -33,7 +34,12 @@ describe('ProductoComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductoComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: AuthService, useValue: { hasPermission: () => true } },
+      ],
     })
       .overrideComponent(ProductoComponent, {
         remove: { imports: [HttpClientModule] },
@@ -137,6 +143,16 @@ describe('ProductoComponent', () => {
   });
 
   it('should not call the backend when saving without a valid category', () => {
+    component.formProducto = {
+      categoriaId: null,
+      codigoInterno: 'PROD-003',
+      nombre: 'Producto valido',
+      imagen: '',
+      precioVenta: 60,
+      precioCompra: 30,
+      moneda: 'Soles',
+      stock: 10,
+    };
     component.formProducto.categoriaId = null;
 
     component.guardar();

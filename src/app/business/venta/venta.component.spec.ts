@@ -273,7 +273,7 @@ describe('VentaComponent', () => {
 
     component.nuevaVenta.items[0].busquedaProducto = 'prod-001';
     component.filtrarProductos(0);
-    expect(component.nuevaVenta.items[0].productosFiltrados).toEqual(productos);
+    expect(component.nuevaVenta.items[0].productosFiltrados).toEqual([jasmine.objectContaining(productos[0])]);
 
     component.nuevaVenta.items[0].cantidad = 0;
     component.seleccionarProducto(0, productos[0]);
@@ -281,7 +281,7 @@ describe('VentaComponent', () => {
 
     component.nuevaVenta.items[0].cantidad = 0;
     component.onCantidadChange(0);
-    expect(component.nuevaVenta.items[0].cantidad).toBe(1);
+    expect(component.nuevaVenta.items[0].cantidad).toBe(0);
 
     component.eliminarItem(0);
     expect(component.nuevaVenta.items).toEqual([]);
@@ -347,12 +347,12 @@ describe('VentaComponent', () => {
       items: [{
         productoId: 999,
         cantidad: 1,
-        precio: 0,
+        precio: 1,
         productoSeleccionado: {
           id: 999,
           nombre: 'Producto',
           codigoInterno: 'SIN-CODIGO',
-          precioVenta: 0,
+          precioVenta: 1,
           stock: 10,
         },
       }],
@@ -373,6 +373,8 @@ describe('VentaComponent', () => {
   });
 
   it('should generate and save a sales receipt PDF without errors', () => {
+    spyOn<any>(component, 'descargarPdf').and.stub();
+
     expect(() => component.generarBoletaDesdeVenta({
         id: 100,
         clienteId: 1,

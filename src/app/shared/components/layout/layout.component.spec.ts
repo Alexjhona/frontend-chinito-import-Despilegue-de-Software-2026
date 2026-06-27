@@ -10,7 +10,14 @@ describe('LayoutComponent', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', ['logout']);
+    authServiceSpy = jasmine.createSpyObj<AuthService>('AuthService', [
+      'logout',
+      'hasPermission',
+      'isImpersonating',
+      'returnToOwnerSession',
+    ]);
+    authServiceSpy.hasPermission.and.returnValue(false);
+    authServiceSpy.isImpersonating.and.returnValue(false);
 
     await TestBed.configureTestingModule({
       imports: [LayoutComponent],
