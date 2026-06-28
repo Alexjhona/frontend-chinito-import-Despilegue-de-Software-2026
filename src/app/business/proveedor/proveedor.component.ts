@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { DataRefreshService } from '../../core/services/data-refresh.service';
@@ -13,6 +13,7 @@ interface Proveedor {
   nombre?: string;
   razonSocial?: string;
   correoElectronico: string;
+  direccion: string;
   telefono: string;
 }
 
@@ -30,7 +31,6 @@ interface RucConsulta {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './proveedor.component.html',
-  styleUrl: './proveedor.component.css',
 })
 export class ProveedorComponent implements OnDestroy {
   proveedores: Proveedor[] = [];
@@ -46,14 +46,14 @@ export class ProveedorComponent implements OnDestroy {
   telefonoAdvertencia = false;
   accionPendiente: 'editar' | 'eliminar' | null = null;
   proveedorPendiente: Proveedor | null = null;
-  private readonly apiUrl = 'http://localhost:8080/api/proveedores';
-  private readonly consultaRucUrl = 'http://localhost:8080/api/proveedores/ruc';
+  private readonly apiUrl = '/api/proveedores';
+  private readonly consultaRucUrl = '/api/proveedores/ruc';
   private readonly refreshSub: Subscription;
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private dataRefresh: DataRefreshService,
+    private readonly http: HttpClient,
+    private readonly authService: AuthService,
+    private readonly dataRefresh: DataRefreshService,
   ) {
     this.cargarProveedores();
     this.refreshSub = this.dataRefresh.refresh$.subscribe(() => this.cargarProveedores());
@@ -68,7 +68,9 @@ export class ProveedorComponent implements OnDestroy {
   }
 
   cargarProveedores() {
-    this.http.get<Proveedor[]>(this.apiUrl).subscribe(data => this.proveedores = data);
+    this.http.get<Proveedor[]>(this.apiUrl).subscribe(data => {
+      this.proveedores = data.map(proveedor => this.normalizarProveedor(proveedor));
+    });
   }
 
   // NUEVO: filtro para la tabla
@@ -105,26 +107,66 @@ export class ProveedorComponent implements OnDestroy {
     this.prepararProveedorParaGuardar();
     this.soloNumerosTelefono();
 
-    if (form?.invalid || !this.formProveedor.dniOrRuc || !this.formProveedor.correoElectronico || !this.formProveedor.telefono || this.telefonoPeruInvalido) {
+    if (
+      form?.invalid ||
+      this.rucProveedorInvalido ||
+      !this.formProveedor.razonSocialONombre ||
+      !this.formProveedor.correoElectronico ||
+      !this.formProveedor.direccion ||
+      !this.formProveedor.telefono ||
+      this.telefonoPeruInvalido
+    ) {
       this.errorFormulario = 'Revisa los campos obligatorios antes de guardar.';
       return;
     }
 
-    if (this.editProveedor && this.editProveedor.id) {
+    if (this.editProveedor?.id) {
       // Editar
-      this.http.put<Proveedor>(`${this.apiUrl}/${this.editProveedor.id}`, this.formProveedor).subscribe(() => {
-        this.cargarProveedores();
-        this.resetFormulario();
-        this.mensajeExito = 'Proveedor actualizado correctamente.';
+      this.http.put<Proveedor>(`${this.apiUrl}/${this.editProveedor.id}`, this.proveedorParaGuardar()).subscribe({
+        next: () => {
+          this.cargarProveedores();
+          this.resetFormulario();
+          this.mensajeExito = 'Proveedor actualizado correctamente.';
+        },
+        error: error => this.mostrarErrorGuardado(error),
       });
     } else {
       // Nuevo
-      this.http.post<Proveedor>(this.apiUrl, this.formProveedor).subscribe(() => {
-        this.cargarProveedores();
-        this.resetFormulario();
-        this.mensajeExito = 'Proveedor agregado correctamente.';
+      this.http.post<Proveedor>(this.apiUrl, this.proveedorParaGuardar()).subscribe({
+        next: () => {
+          this.cargarProveedores();
+          this.resetFormulario();
+          this.mensajeExito = 'Proveedor agregado correctamente.';
+        },
+        error: error => this.mostrarErrorGuardado(error),
       });
     }
+  }
+
+  private mostrarErrorGuardado(error: HttpErrorResponse): void {
+    const detalle = this.detalleErrorGuardado(error);
+    this.errorFormulario = `No se pudo guardar el proveedor (HTTP ${error.status || 0}).${detalle}`;
+  }
+
+  private detalleErrorGuardado(error: HttpErrorResponse): string {
+    if (typeof error.error === 'string' && error.error.trim()) {
+      return ` ${error.error.trim()}`;
+    }
+
+    const errores = error.error?.errores;
+    if (errores && typeof errores === 'object') {
+      const mensajes = Object.entries(errores)
+        .map(([campo, mensaje]) => `${campo}: ${mensaje}`)
+        .join(', ');
+
+      if (mensajes) return ` ${mensajes}`;
+    }
+
+    if (typeof error.error?.mensaje === 'string' && error.error.mensaje.trim()) {
+      return ` ${error.error.mensaje.trim()}`;
+    }
+
+    return '';
   }
 
   consultarRucProveedor() {
@@ -185,6 +227,11 @@ export class ProveedorComponent implements OnDestroy {
   get telefonoPeruInvalido(): boolean {
     const telefono = this.formProveedor.telefono;
     return telefono.length > 0 && (telefono.length !== 9 || !telefono.startsWith('9'));
+  }
+
+  get rucProveedorInvalido(): boolean {
+    const ruc = this.formProveedor.dniOrRuc || '';
+    return ruc.length !== 11;
   }
 
   get tituloConfirmacion(): string {
@@ -252,6 +299,7 @@ export class ProveedorComponent implements OnDestroy {
       dniOrRuc: proveedor.dniOrRuc || '',
       razonSocialONombre: this.getNombreProveedor(proveedor),
       correoElectronico: proveedor.correoElectronico || '',
+      direccion: proveedor.direccion || '',
       telefono: proveedor.telefono || '',
     };
     this.ultimoRucConsultado = proveedor.dniOrRuc || '';
@@ -280,6 +328,7 @@ export class ProveedorComponent implements OnDestroy {
       dniOrRuc: '',
       razonSocialONombre: '',
       correoElectronico: '',
+      direccion: '',
       telefono: '',
     };
   }
@@ -288,7 +337,35 @@ export class ProveedorComponent implements OnDestroy {
     this.formProveedor.dniOrRuc = (this.formProveedor.dniOrRuc || '').replace(/\D/g, '').slice(0, 11);
     this.formProveedor.razonSocialONombre = (this.formProveedor.razonSocialONombre || '').trim();
     this.formProveedor.correoElectronico = (this.formProveedor.correoElectronico || '').trim();
+    this.formProveedor.direccion = (this.formProveedor.direccion || '').trim();
     this.formProveedor.telefono = (this.formProveedor.telefono || '').trim();
+  }
+
+  private proveedorParaGuardar(): Proveedor {
+    const nombre = this.formProveedor.razonSocialONombre || this.formProveedor.nombre || this.formProveedor.razonSocial || '';
+
+    return {
+      ...this.formProveedor,
+      razonSocialONombre: nombre,
+      nombre,
+      razonSocial: nombre,
+    };
+  }
+
+  private normalizarProveedor(proveedor: Proveedor): Proveedor {
+    const nombre = this.getNombreProveedor(proveedor);
+
+    return {
+      ...this.crearProveedorVacio(),
+      ...proveedor,
+      dniOrRuc: proveedor.dniOrRuc || '',
+      razonSocialONombre: nombre,
+      nombre: proveedor.nombre || nombre,
+      razonSocial: proveedor.razonSocial || nombre,
+      correoElectronico: proveedor.correoElectronico || '',
+      direccion: proveedor.direccion || '',
+      telefono: proveedor.telefono || '',
+    };
   }
 
   private resetFormulario() {

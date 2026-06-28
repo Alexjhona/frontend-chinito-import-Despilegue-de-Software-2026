@@ -10,7 +10,6 @@ import { AuditService } from '../../../core/services/audit.service';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
 })
 export class HeaderComponent implements OnDestroy {
   isMenuOpen = false;
@@ -19,9 +18,9 @@ export class HeaderComponent implements OnDestroy {
   private routeSubscription: Subscription;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private auditService: AuditService,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly auditService: AuditService,
   ) {
     this.actualizarTitulo(this.router.url);
     this.routeSubscription = this.router.events
@@ -61,7 +60,11 @@ export class HeaderComponent implements OnDestroy {
 
   confirmarLogout(): void {
     this.mostrarConfirmacionLogout = false;
-    this.auditService.registrar('Cierre de sesión');
+    try {
+      this.auditService.registrar('Cierre de sesión');
+    } catch {
+      // El cierre de sesión no debe depender de que el registro local esté disponible.
+    }
     this.authService.logout();
   }
 

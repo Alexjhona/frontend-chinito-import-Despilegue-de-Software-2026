@@ -397,6 +397,10 @@
 }
 
 .servicio-card {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  text-align: left;
   overflow: hidden;
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 22px;
@@ -494,11 +498,11 @@
 }
 
 .payment-yape {
-  background: linear-gradient(135deg, #5f22d9, #12c7bd);
+  background: linear-gradient(135deg, #4c1d95, #0f766e);
 }
 
 .payment-plin {
-  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+  background: linear-gradient(135deg, #0e7490, #6d28d9);
 }
 
 .payment-cash {

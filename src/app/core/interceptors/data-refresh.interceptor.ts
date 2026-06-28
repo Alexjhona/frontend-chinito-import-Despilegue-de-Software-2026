@@ -4,7 +4,7 @@ import { tap } from 'rxjs';
 import { DataRefreshService } from '../services/data-refresh.service';
 import { AuditService } from '../services/audit.service';
 
-const MUTATION_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
+const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const TRACKED_PREFIXES = [
   'http://localhost:8080/api/',
   'http://localhost:8080/auth/trabajadores',
@@ -44,7 +44,7 @@ export const dataRefreshInterceptor: HttpInterceptorFn = (request, next) => {
 };
 
 function debeNotificar(method: string, url: string): boolean {
-  return MUTATION_METHODS.includes(method.toUpperCase()) &&
+  return MUTATION_METHODS.has(method.toUpperCase()) &&
     TRACKED_PREFIXES.some(prefix => url.startsWith(prefix));
 }
 

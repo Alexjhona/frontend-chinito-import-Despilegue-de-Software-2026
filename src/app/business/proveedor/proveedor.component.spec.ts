@@ -10,11 +10,16 @@ describe('ProveedorComponent', () => {
   let fixture: ComponentFixture<ProveedorComponent>;
   let httpMock: HttpTestingController;
 
-  const apiUrl = 'http://localhost:8080/api/proveedores';
+  const apiUrl = '/api/proveedores';
   const proveedores = [
-    { id: 1, dniOrRuc: '20555555555', razonSocialONombre: 'Proveedor Uno', correoElectronico: 'uno@correo.com', telefono: '911111111' },
-    { id: 2, dniOrRuc: '20666666666', razonSocialONombre: 'Proveedor Dos', correoElectronico: 'dos@correo.com', telefono: '922222222' },
+    { id: 1, dniOrRuc: '20555555555', razonSocialONombre: 'Proveedor Uno', correoElectronico: 'uno@correo.com', direccion: 'Av. Uno 123', telefono: '911111111' },
+    { id: 2, dniOrRuc: '20666666666', razonSocialONombre: 'Proveedor Dos', correoElectronico: 'dos@correo.com', direccion: 'Av. Dos 456', telefono: '922222222' },
   ];
+  const proveedoresNormalizados = proveedores.map(proveedor => ({
+    ...proveedor,
+    nombre: proveedor.razonSocialONombre,
+    razonSocial: proveedor.razonSocialONombre,
+  }));
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -44,19 +49,19 @@ describe('ProveedorComponent', () => {
 
   it('should create and load providers from the microservice URL using GET', () => {
     expect(component).toBeTruthy();
-    expect(component.proveedores).toEqual(proveedores);
+    expect(component.proveedores).toEqual(proveedoresNormalizados);
   });
 
   it('should filter providers by DNI/RUC or name', () => {
     component.busqueda = 'dos';
 
-    expect(component.proveedoresFiltrados).toEqual([proveedores[1]]);
+    expect(component.proveedoresFiltrados).toEqual([proveedoresNormalizados[1]]);
   });
 
   it('should filter providers by fallback name fields and ignore accents', () => {
     component.proveedores = [
-      { id: 3, dniOrRuc: '20777777777', razonSocialONombre: '', nombre: 'José Repuestos', correoElectronico: 'jose@correo.com', telefono: '933333333' },
-      { id: 4, dniOrRuc: '20888888888', razonSocialONombre: '', razonSocial: 'Comercial Sur', correoElectronico: 'sur@correo.com', telefono: '944444444' },
+      { id: 3, dniOrRuc: '20777777777', razonSocialONombre: '', nombre: 'José Repuestos', correoElectronico: 'jose@correo.com', direccion: 'Jr. Norte 111', telefono: '933333333' },
+      { id: 4, dniOrRuc: '20888888888', razonSocialONombre: '', razonSocial: 'Comercial Sur', correoElectronico: 'sur@correo.com', direccion: 'Jr. Sur 222', telefono: '944444444' },
     ];
 
     component.busqueda = 'jose';
@@ -66,7 +71,7 @@ describe('ProveedorComponent', () => {
     expect(component.proveedoresFiltrados).toEqual([component.proveedores[1]]);
   });
 
-  it('should show a form with required fields and optional name when creating a provider', () => {
+  it('should show a form with required provider fields when creating a provider', () => {
     component.nuevoProveedor();
     fixture.detectChanges();
 
@@ -74,9 +79,23 @@ describe('ProveedorComponent', () => {
     const nameInput = fixture.nativeElement.querySelector('form input[name="razonSocialONombre"]') as HTMLInputElement;
 
     expect(component.mostrarFormulario).toBeTrue();
-    expect(requiredInputs.length).toBe(3);
-    expect(nameInput.required).toBeFalse();
-    expect(fixture.nativeElement.textContent).toContain('Opcional');
+    expect(requiredInputs.length).toBe(5);
+    expect(nameInput.required).toBeTrue();
+  });
+
+  it('should not call POST when the provider name is missing', () => {
+    component.formProveedor = {
+      dniOrRuc: '20777777777',
+      razonSocialONombre: '',
+      correoElectronico: 'nuevo@correo.com',
+      direccion: 'Av. Nueva 789',
+      telefono: '933333333',
+    };
+
+    component.guardar();
+
+    expect(component.errorFormulario).toBe('Revisa los campos obligatorios antes de guardar.');
+    httpMock.expectNone(apiUrl);
   });
 
   it('should call POST when saving a new provider', () => {
@@ -84,6 +103,7 @@ describe('ProveedorComponent', () => {
       dniOrRuc: '20777777777',
       razonSocialONombre: 'Proveedor Nuevo',
       correoElectronico: 'nuevo@correo.com',
+      direccion: 'Av. Nueva 789',
       telefono: '933333333',
     };
 
@@ -91,12 +111,58 @@ describe('ProveedorComponent', () => {
 
     const req = httpMock.expectOne(apiUrl);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual(component.formProveedor);
+    expect(req.request.body).toEqual({
+      ...component.formProveedor,
+      nombre: 'Proveedor Nuevo',
+      razonSocial: 'Proveedor Nuevo',
+    });
     req.flush({ id: 3, ...component.formProveedor });
 
     httpMock.expectOne(apiUrl).flush(proveedores);
 
     expect(component.mensajeExito).toBe('Proveedor agregado correctamente.');
+  });
+
+  it('should show the provider save error when the microservice rejects the request', () => {
+    component.formProveedor = {
+      dniOrRuc: '20777777777',
+      razonSocialONombre: 'Proveedor Nuevo',
+      correoElectronico: 'nuevo@correo.com',
+      direccion: 'Av. Nueva 789',
+      telefono: '933333333',
+    };
+
+    component.guardar();
+
+    const req = httpMock.expectOne(apiUrl);
+    expect(req.request.method).toBe('POST');
+    req.flush('RUC invalido', { status: 400, statusText: 'Bad Request' });
+
+    expect(component.errorFormulario).toBe('No se pudo guardar el proveedor (HTTP 400). RUC invalido');
+    httpMock.expectNone(apiUrl);
+  });
+
+  it('should show backend validation details when saving a provider fails', () => {
+    component.formProveedor = {
+      dniOrRuc: '20777777777',
+      razonSocialONombre: 'Proveedor Nuevo',
+      correoElectronico: 'nuevo@correo.com',
+      direccion: 'Av. Nueva 789',
+      telefono: '933333333',
+    };
+
+    component.guardar();
+
+    const req = httpMock.expectOne(apiUrl);
+    req.flush({
+      mensaje: 'Se encontraron errores de validación',
+      errores: {
+        direccion: 'Campo obligatorio',
+      },
+    }, { status: 400, statusText: 'Bad Request' });
+
+    expect(component.errorFormulario).toBe('No se pudo guardar el proveedor (HTTP 400). direccion: Campo obligatorio');
+    httpMock.expectNone(apiUrl);
   });
 
   it('should keep phone numeric and warn when removing invalid characters', () => {
@@ -147,6 +213,7 @@ describe('ProveedorComponent', () => {
     const req = httpMock.expectOne(`${apiUrl}/1`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body.telefono).toBe('900000000');
+    expect(req.request.body.nombre).toBe('Proveedor Uno');
     req.flush({ ...component.formProveedor });
     httpMock.expectOne(apiUrl).flush(proveedores);
 
@@ -180,9 +247,9 @@ describe('ProveedorComponent', () => {
 
   it('should return all providers for blank search and filter by DNI/RUC', () => {
     component.busqueda = ' ';
-    expect(component.proveedoresFiltrados).toEqual(proveedores);
+    expect(component.proveedoresFiltrados).toEqual(proveedoresNormalizados);
 
     component.busqueda = '20555555555';
-    expect(component.proveedoresFiltrados).toEqual([proveedores[0]]);
+    expect(component.proveedoresFiltrados).toEqual([proveedoresNormalizados[0]]);
   });
 });

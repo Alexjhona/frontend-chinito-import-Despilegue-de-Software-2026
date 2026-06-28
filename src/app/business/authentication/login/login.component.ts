@@ -21,9 +21,9 @@ export class LoginComponent {
   private readonly credentialCheckDelayMs = 1400;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private auditService: AuditService,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly auditService: AuditService,
   ) {}
 
   login(): void {

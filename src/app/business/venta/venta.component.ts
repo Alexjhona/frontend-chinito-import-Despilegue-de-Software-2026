@@ -65,7 +65,6 @@ interface Venta {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './venta.component.html',
-  styleUrl: './venta.component.css',
 })
 export class VentaComponent implements OnDestroy {
 
@@ -80,8 +79,12 @@ export class VentaComponent implements OnDestroy {
   errorFormulario = '';
   errorNuevoCliente = '';
   mostrarFormulario = false;
+  cerrandoFormulario = false;
   accionPendiente: 'eliminar' | null = null;
   ventaPendiente: Venta | null = null;
+  mostrarDetalleVenta = false;
+  cerrandoDetalleVenta = false;
+  ventaDetalleSeleccionada: Venta | null = null;
 
   busquedaCliente: string = '';
   clientesFiltrados: Cliente[] = [];
@@ -105,6 +108,9 @@ export class VentaComponent implements OnDestroy {
   private readonly consultaDniUrl = 'http://localhost:8080/auth/dni';
   readonly stockCriticoMinimo = 3;
   private readonly refreshSub: Subscription;
+  private readonly duracionSalidaFormulario = 260;
+  private cierreFormularioTimer: ReturnType<typeof setTimeout> | null = null;
+  private cierreDetalleVentaTimer: ReturnType<typeof setTimeout> | null = null;
 
   get fechaVentaAutomatica(): string {
     return new Date().toLocaleString('es-PE', {
@@ -115,8 +121,8 @@ export class VentaComponent implements OnDestroy {
 
   // 🔥 SOLO CAMBIO: orden correcto
   constructor(
-    private http: HttpClient,
-    private dataRefresh: DataRefreshService,
+    private readonly http: HttpClient,
+    private readonly dataRefresh: DataRefreshService,
   ) {
     this.cargarCategorias();
     this.cargarProductos(); // primero productos
@@ -130,6 +136,12 @@ export class VentaComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.cierreFormularioTimer) {
+      clearTimeout(this.cierreFormularioTimer);
+    }
+    if (this.cierreDetalleVentaTimer) {
+      clearTimeout(this.cierreDetalleVentaTimer);
+    }
     this.refreshSub.unsubscribe();
   }
 
@@ -164,7 +176,7 @@ export class VentaComponent implements OnDestroy {
       ? []
       : this.clientes.filter(c =>
         this.normalizarTexto(this.getNombreCliente(c)).includes(texto) ||
-        (c.dniOrRuc && c.dniOrRuc.includes(texto))
+        c.dniOrRuc?.includes(texto)
       );
 
     if (dni.length === 8 && !this.clienteRegistradoPorDni(dni)) {
@@ -311,15 +323,35 @@ export class VentaComponent implements OnDestroy {
   }
 
   seleccionarProducto(i: number, prod: Producto) {
-    this.nuevaVenta.items[i].productoId = prod.id;
-    this.nuevaVenta.items[i].productoNombre = prod.nombre;
-    this.nuevaVenta.items[i].precio = prod.precioVenta;
-    this.nuevaVenta.items[i].productoSeleccionado = prod;
-    this.nuevaVenta.items[i].busquedaProducto = prod.nombre;
-    this.nuevaVenta.items[i].productosFiltrados = [];
+    const itemActual = this.nuevaVenta.items[i];
+    if (!itemActual) return;
 
-    if (this.nuevaVenta.items[i].cantidad < 1) {
-      this.nuevaVenta.items[i].cantidad = 1;
+    const itemExistenteIndex = this.nuevaVenta.items.findIndex((item, index) =>
+      index !== i && item.productoId === prod.id
+    );
+
+    if (itemExistenteIndex >= 0) {
+      const itemExistente = this.nuevaVenta.items[itemExistenteIndex];
+      itemExistente.cantidad = Number(itemExistente.cantidad || 0) + Math.max(1, Number(itemActual.cantidad || 1));
+      itemExistente.productoId = prod.id;
+      itemExistente.productoNombre = prod.nombre;
+      itemExistente.precio = prod.precioVenta;
+      itemExistente.productoSeleccionado = prod;
+      itemExistente.busquedaProducto = prod.nombre;
+      itemExistente.productosFiltrados = [];
+      this.nuevaVenta.items.splice(i, 1);
+      return;
+    }
+
+    itemActual.productoId = prod.id;
+    itemActual.productoNombre = prod.nombre;
+    itemActual.precio = prod.precioVenta;
+    itemActual.productoSeleccionado = prod;
+    itemActual.busquedaProducto = prod.nombre;
+    itemActual.productosFiltrados = [];
+
+    if (itemActual.cantidad < 1) {
+      itemActual.cantidad = 1;
     }
   }
 
@@ -472,14 +504,7 @@ export class VentaComponent implements OnDestroy {
 
   agregarItem() {
     this.errorFormulario = '';
-    this.nuevaVenta.items.push({
-      productoId: null,
-      cantidad: 1,
-      precio: 0,
-      busquedaProducto: '',
-      productosFiltrados: [],
-      productoSeleccionado: undefined
-    });
+    this.nuevaVenta.items.unshift(this.crearItemVacio());
   }
 
   eliminarItem(i: number) {
@@ -487,49 +512,75 @@ export class VentaComponent implements OnDestroy {
   }
 
   // ================= VENTAS =================
-  cargarVentas() {
-    this.http.get<Venta[]>(this.apiVentas).subscribe(data => {
-      data.forEach(venta => {
-        venta.items.forEach(item => {
-
-          // 🔥 mejora sin romper tu lógica
-          const prod = this.productos.find(p => p.id === item.productoId);
-
-          if (prod) {
-            item.productoNombre = prod.nombre;
-            item.precio = item.precio ?? prod.precioVenta;
-          } else {
-            item.productoNombre = item.productoNombre || 'Producto';
-            item.precio = item.precio ?? 0;
-          }
-
-        });
-      });
-
-      this.ventas = data;
+  cargarVentas(): void {
+    this.http.get<Venta[]>(this.apiVentas).subscribe({
+      next: data => {
+        this.ventas = data.map(venta => this.enriquecerVenta(venta));
+      },
+      error: () => {
+        this.ventas = [];
+      },
     });
   }
 
   private prepararVentaParaVista(venta: Venta): Venta {
     venta.fecha = venta.fecha || new Date().toISOString();
 
-    venta.items.forEach(item => {
-      const prod = this.productos.find(p => p.id === item.productoId);
+    return this.enriquecerVenta(venta);
+  }
 
-      if (prod) {
-        item.productoNombre = prod.nombre;
-        item.precio = item.precio ?? prod.precioVenta;
-      } else {
-        item.productoNombre = item.productoNombre || 'Producto';
-        item.precio = item.precio ?? 0;
-      }
-    });
-
+  private enriquecerVenta(venta: Venta): Venta {
+    venta.items.forEach(item => this.enriquecerItem(item));
     return venta;
   }
 
+  private enriquecerItem(item: ItemVenta): void {
+    const producto = this.buscarProductoDeItem(item);
+    if (producto) {
+      item.productoNombre = producto.nombre;
+      item.precio = item.precio ?? producto.precioVenta;
+      return;
+    }
+
+    item.productoNombre = item.productoNombre || 'Producto';
+    item.precio = item.precio ?? 0;
+  }
+
+  private buscarProductoDeItem(item: ItemVenta): Producto | undefined {
+    return this.productos.find(producto => producto.id === item.productoId);
+  }
+
   toggleDetalles(id: number) {
-    this.mostrarDetalles[id] = !this.mostrarDetalles[id];
+    const venta = this.ventas.find(item => item.id === id);
+    if (!venta) return;
+
+    if (this.cierreDetalleVentaTimer) {
+      clearTimeout(this.cierreDetalleVentaTimer);
+      this.cierreDetalleVentaTimer = null;
+    }
+
+    this.ventaDetalleSeleccionada = venta;
+    this.cerrandoDetalleVenta = false;
+    this.mostrarDetalleVenta = true;
+    this.mostrarDetalles = { [id]: true };
+  }
+
+  cerrarDetalleVenta() {
+    if (!this.mostrarDetalleVenta || this.cerrandoDetalleVenta) return;
+
+    this.cerrandoDetalleVenta = true;
+
+    if (this.cierreDetalleVentaTimer) {
+      clearTimeout(this.cierreDetalleVentaTimer);
+    }
+
+    this.cierreDetalleVentaTimer = setTimeout(() => {
+      this.mostrarDetalleVenta = false;
+      this.cerrandoDetalleVenta = false;
+      this.ventaDetalleSeleccionada = null;
+      this.mostrarDetalles = {};
+      this.cierreDetalleVentaTimer = null;
+    }, this.duracionSalidaFormulario);
   }
 
   eliminarVenta(id: number | undefined) {
@@ -537,6 +588,11 @@ export class VentaComponent implements OnDestroy {
     this.http.delete(`${this.apiVentas}/${id}`).subscribe({
       next: () => {
         delete this.mostrarDetalles[id];
+        if (this.ventaDetalleSeleccionada?.id === id) {
+          this.mostrarDetalleVenta = false;
+          this.cerrandoDetalleVenta = false;
+          this.ventaDetalleSeleccionada = null;
+        }
         this.mensaje = 'Venta eliminada correctamente';
         this.cargarVentas();
       },
@@ -551,17 +607,46 @@ export class VentaComponent implements OnDestroy {
   }
 
   abrirFormulario() {
+    if (this.cierreFormularioTimer) {
+      clearTimeout(this.cierreFormularioTimer);
+      this.cierreFormularioTimer = null;
+    }
+
     this.mensaje = '';
     this.errorFormulario = '';
+    this.errorNuevoCliente = '';
+    this.nuevaVenta = this.crearVentaVacia();
+    this.busquedaCliente = '';
+    this.clienteSeleccionado = null;
+    this.clientesFiltrados = [];
+    this.mostrarNuevoCliente = false;
+    this.nuevoCliente = this.crearClienteVacio();
+    this.cerrandoFormulario = false;
     this.mostrarFormulario = true;
-
-    if (this.nuevaVenta.items.length === 0) {
-      this.agregarItem();
-    }
   }
 
   cancelarFormulario() {
-    this.mostrarFormulario = false;
+    this.cerrarFormularioConAnimacion();
+  }
+
+  private cerrarFormularioConAnimacion() {
+    if (!this.mostrarFormulario || this.cerrandoFormulario) return;
+
+    this.cerrandoFormulario = true;
+
+    if (this.cierreFormularioTimer) {
+      clearTimeout(this.cierreFormularioTimer);
+    }
+
+    this.cierreFormularioTimer = setTimeout(() => {
+      this.mostrarFormulario = false;
+      this.cerrandoFormulario = false;
+      this.cierreFormularioTimer = null;
+      this.limpiarFormularioVenta();
+    }, this.duracionSalidaFormulario);
+  }
+
+  private limpiarFormularioVenta() {
     this.errorFormulario = '';
     this.errorNuevoCliente = '';
     this.nuevaVenta = this.crearVentaVacia();
@@ -600,10 +685,7 @@ export class VentaComponent implements OnDestroy {
         const ventaParaBoleta = this.prepararVentaParaVista(ventaCreada);
         this.generarBoletaDesdeVenta(ventaParaBoleta);
         this.cargarVentas();
-        this.nuevaVenta = this.crearVentaVacia();
-        this.busquedaCliente = '';
-        this.clienteSeleccionado = null;
-        this.mostrarFormulario = false;
+        this.cerrarFormularioConAnimacion();
         this.mensaje = 'Venta registrada correctamente';
       },
       error: () => {
@@ -852,7 +934,18 @@ export class VentaComponent implements OnDestroy {
   private crearVentaVacia(): Venta {
     return {
       clienteId: null,
-      items: [],
+      items: [this.crearItemVacio()],
+    };
+  }
+
+  private crearItemVacio(): ItemVenta {
+    return {
+      productoId: null,
+      cantidad: 1,
+      precio: 0,
+      busquedaProducto: '',
+      productosFiltrados: [],
+      productoSeleccionado: undefined,
     };
   }
 

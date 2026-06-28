@@ -30,7 +30,6 @@ interface Producto {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './producto.component.html',
-  styleUrl: './producto.component.css',
 })
 export class ProductoComponent implements OnDestroy {
   productos: Producto[] = [];
@@ -64,10 +63,10 @@ export class ProductoComponent implements OnDestroy {
   readonly stockCriticoMinimo = 3;
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private router: Router,
-    private dataRefresh: DataRefreshService,
+    private readonly http: HttpClient,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly dataRefresh: DataRefreshService,
   ) {
     this.cargarProductos();
     this.cargarCategorias();
@@ -144,7 +143,7 @@ export class ProductoComponent implements OnDestroy {
       return;
     }
 
-    if (this.editProducto && this.editProducto.id) {
+    if (this.editProducto?.id) {
       this.http.put<Producto>(`${this.apiUrl}/${this.editProducto.id}`, this.formProducto)
         .subscribe({
           next: () => {

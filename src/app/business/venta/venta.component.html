@@ -6,31 +6,15 @@
     </button>
   </div>
 
-  <div class="grid gap-3 lg:grid-cols-[1fr_220px]">
-    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
-      <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-        </svg>
-        <input
-          type="text"
-          class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
-          placeholder="Buscar por cliente, ID o documento..."
-          [(ngModel)]="busqueda"
-        />
-      </div>
-    </div>
+  <div *ngIf="mostrarFormulario"
+       class="venta-modal-backdrop fixed inset-0 z-[80] bg-slate-950/25 backdrop-blur-[2px]"
+       [class.venta-modal-backdrop-out]="cerrandoFormulario"
+       (click)="cancelarFormulario()"></div>
 
-    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
-      <input
-        type="date"
-        class="h-14 w-full rounded-lg border border-white/80 bg-white/80 px-4 text-sm font-black text-gray-700 outline-none shadow-inner shadow-sky-100/60 transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
-        [(ngModel)]="filtroFecha"
-      />
-    </div>
-  </div>
-
-  <div *ngIf="mostrarFormulario" class="animate-soft-enter rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-5">
+  <div *ngIf="mostrarFormulario"
+       class="venta-modal-panel fixed left-1/2 top-1/2 z-[90] max-h-[calc(100vh-2rem)] w-[calc(100%-1.5rem)] max-w-6xl overflow-y-auto rounded-lg border border-white/70 bg-white/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl sm:p-5"
+       [class.venta-modal-panel-out]="cerrandoFormulario"
+       [style.transform]="'translate(-50%, -50%)'">
     <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
       <div>
         <p class="text-sm font-black uppercase tracking-[0.18em] text-violet-500">Formulario</p>
@@ -145,9 +129,10 @@
           </button>
         </div>
 
-        <div class="grid gap-3 md:hidden">
+        <div class="grid gap-3 md:hidden"
+             [ngClass]="nuevaVenta.items.length > 3 ? 'max-h-[48vh] overflow-y-auto pr-1' : 'overflow-visible'">
           <article *ngFor="let item of nuevaVenta.items; let i = index" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
-            <label class="relative block">
+            <label *ngIf="!getProductoDeItem(item)" class="relative block">
               <span class="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Producto</span>
               <input
                 type="text"
@@ -197,18 +182,30 @@
               </p>
             </label>
 
-            <div *ngIf="getProductoDeItem(item) as productoItem" class="mt-3 flex items-center gap-3 rounded-lg bg-sky-50/70 px-3 py-3">
-              <span class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+            <div *ngIf="getProductoDeItem(item) as productoItem" class="rounded-lg border border-sky-100/80 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-3 shadow-inner shadow-sky-100/70">
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <span class="text-[10px] font-black uppercase tracking-[0.16em] text-sky-600">Seleccionado</span>
+                <span class="rounded-full px-2 py-1 text-[10px] font-black"
+                      [ngClass]="{
+                        'bg-emerald-100 text-emerald-700': estadoStock(productoItem) === 'ok',
+                        'bg-amber-100 text-amber-700': estadoStock(productoItem) === 'bajo',
+                        'bg-rose-100 text-rose-700': estadoStock(productoItem) === 'agotado'
+                      }">
+                  {{ textoStock(productoItem) }}: {{ stockDisponible(productoItem) }}
+                </span>
+              </div>
+              <div class="flex items-center gap-3">
+              <span class="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-white bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700 shadow-sm">
                 <img *ngIf="getImagenProducto(item); else productoSeleccionadoInicialesMobile"
                      [src]="getImagenProducto(item)"
                      [alt]="productoItem.nombre"
                      class="h-full w-full object-cover">
                 <ng-template #productoSeleccionadoInicialesMobile>{{ getInicialesProducto(productoItem.nombre) }}</ng-template>
               </span>
-              <div class="min-w-0">
+              <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-black text-gray-800">{{ productoItem.nombre }}</p>
                 <p class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
-                  <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700">
+                  <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700 shadow-sm">
                     <img *ngIf="getImagenCategoriaItem(item); else categoriaSeleccionadaInicialesMobile"
                          [src]="getImagenCategoriaItem(item)"
                          [alt]="getNombreCategoriaItem(item)"
@@ -221,6 +218,7 @@
                    [ngClass]="estadoStock(productoItem) === 'agotado' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'">
                   {{ advertenciaStock(productoItem) }}
                 </p>
+              </div>
               </div>
             </div>
 
@@ -245,11 +243,12 @@
           </article>
         </div>
 
-        <div class="hidden overflow-visible rounded-lg border border-white/70 bg-white/80 shadow-[0_18px_60px_rgba(15,23,42,0.08)] md:block">
-          <div class="overflow-visible">
+        <div class="hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_18px_60px_rgba(15,23,42,0.08)] md:block"
+             [ngClass]="nuevaVenta.items.length > 3 ? 'max-h-[52vh] overflow-auto' : 'overflow-visible'">
+          <div class="min-w-[820px]">
             <table class="w-full min-w-[820px] table-auto">
-              <thead>
-              <tr class="bg-white/70 text-left text-xs font-black uppercase tracking-[0.18em] text-gray-400">
+              <thead class="sticky top-0 z-20 bg-white/95 backdrop-blur-xl">
+              <tr class="text-left text-xs font-black uppercase tracking-[0.18em] text-gray-400">
                 <th class="px-5 py-4">Producto</th>
                 <th class="px-5 py-4">Cantidad</th>
                 <th class="px-5 py-4">Precio</th>
@@ -261,6 +260,7 @@
               <tbody class="divide-y divide-gray-100">
               <tr *ngFor="let item of nuevaVenta.items; let i = index" class="align-top">
                 <td class="relative px-5 py-4">
+                  <ng-container *ngIf="!getProductoDeItem(item)">
                   <input
                     type="text"
                     class="h-12 w-full rounded-lg border border-gray-200/80 bg-white/80 px-4 text-sm font-semibold outline-none transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
@@ -307,18 +307,31 @@
                   <p *ngIf="errorProductoItem(item) && ventaForm.submitted" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700">
                     {{ errorProductoItem(item) }}
                   </p>
-                  <div *ngIf="getProductoDeItem(item) as productoItem" class="mt-3 flex items-center gap-3 rounded-lg bg-sky-50/70 px-3 py-3">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
+                  </ng-container>
+                  <div *ngIf="getProductoDeItem(item) as productoItem" class="rounded-lg border border-sky-100/80 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-3 shadow-inner shadow-sky-100/70">
+                    <div class="mb-2 flex items-center justify-between gap-3">
+                      <span class="text-[10px] font-black uppercase tracking-[0.16em] text-sky-600">Seleccionado</span>
+                      <span class="rounded-full px-2 py-1 text-[10px] font-black"
+                            [ngClass]="{
+                              'bg-emerald-100 text-emerald-700': estadoStock(productoItem) === 'ok',
+                              'bg-amber-100 text-amber-700': estadoStock(productoItem) === 'bajo',
+                              'bg-rose-100 text-rose-700': estadoStock(productoItem) === 'agotado'
+                            }">
+                        {{ textoStock(productoItem) }}: {{ stockDisponible(productoItem) }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                    <span class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-white bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700 shadow-sm">
                       <img *ngIf="getImagenProducto(item); else productoSeleccionadoIniciales"
                            [src]="getImagenProducto(item)"
                            [alt]="productoItem.nombre"
                            class="h-full w-full object-cover">
                       <ng-template #productoSeleccionadoIniciales>{{ getInicialesProducto(productoItem.nombre) }}</ng-template>
                     </span>
-                    <div class="min-w-0">
+                    <div class="min-w-0 flex-1">
                       <p class="truncate text-sm font-black text-gray-800">{{ productoItem.nombre }}</p>
                       <p class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
-                        <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700">
+                        <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700 shadow-sm">
                           <img *ngIf="getImagenCategoriaItem(item); else categoriaSeleccionadaIniciales"
                                [src]="getImagenCategoriaItem(item)"
                                [alt]="getNombreCategoriaItem(item)"
@@ -331,6 +344,7 @@
                          [ngClass]="estadoStock(productoItem) === 'agotado' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700'">
                         {{ advertenciaStock(productoItem) }}
                       </p>
+                    </div>
                     </div>
                   </div>
                 </td>
@@ -352,7 +366,8 @@
         </div>
       </div>
 
-      <div class="grid gap-3 pt-2 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+      <div class="-mx-4 -mb-4 mt-2 grid gap-3 border-t border-white/70 bg-white/95 px-4 pb-4 pt-3 sm:-mx-5 sm:-mb-5 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:px-5 sm:pb-5"
+           [ngClass]="nuevaVenta.items.length > 3 ? 'sticky bottom-0 z-30 shadow-[0_-18px_50px_rgba(15,23,42,0.08)] backdrop-blur-2xl' : ''">
         <div class="rounded-lg bg-gradient-to-r from-sky-50 via-white to-violet-50 px-5 py-4 shadow-inner shadow-sky-100/60">
           <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Total de venta</p>
           <p class="mt-1 text-2xl font-black text-gray-950">S/ {{ totalVenta.toFixed(2) }}</p>
@@ -370,6 +385,40 @@
        class="animate-soft-enter rounded-lg border px-5 py-4 text-sm font-black shadow-[0_18px_60px_rgba(15,23,42,0.08)]"
        [ngClass]="mensaje.includes('No se pudo') ? 'border-amber-200 bg-amber-50/90 text-amber-700' : 'border-emerald-200 bg-emerald-50/90 text-emerald-700'">
     {{ mensaje }}
+  </div>
+
+  <div class="rounded-lg border border-white/70 bg-white/75 p-4 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p class="text-sm font-black uppercase tracking-[0.16em] text-gray-400">Ventas registradas</p>
+        <p class="mt-1 text-lg font-black text-gray-950">Historial de ventas</p>
+      </div>
+      <p class="text-sm font-black text-sky-700">Total filtrado S/ {{ totalVentasFiltradas.toFixed(2) }}</p>
+    </div>
+
+    <div class="grid gap-3 lg:grid-cols-[1fr_220px]">
+      <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-inner shadow-sky-100/60 sm:p-4">
+        <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+          </svg>
+          <input
+            type="text"
+            class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+            placeholder="Buscar por cliente, ID o documento..."
+            [(ngModel)]="busqueda"
+          />
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-inner shadow-sky-100/60 sm:p-4">
+        <input
+          type="date"
+          class="h-14 w-full rounded-lg border border-white/80 bg-white/80 px-4 text-sm font-black text-gray-700 outline-none shadow-inner shadow-sky-100/60 transition-all focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+          [(ngModel)]="filtroFecha"
+        />
+      </div>
+    </div>
   </div>
 
   <div class="grid gap-3 md:hidden">
@@ -391,34 +440,6 @@
           <span class="text-gray-400">Productos</span>
           <span class="text-right text-gray-800">{{ venta.items.length }}</span>
         </p>
-      </div>
-
-      <div *ngIf="mostrarDetalles[venta.id!]" class="mt-4 rounded-lg bg-sky-50/70 p-3">
-        <div *ngFor="let item of venta.items" class="flex items-center justify-between gap-3 py-2 text-sm font-bold text-gray-700">
-          <span class="flex min-w-0 items-center gap-3">
-            <span class="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-white text-xs font-black text-sky-700">
-              <img *ngIf="getImagenProducto(item); else detalleProductoInicialesMobile"
-                   [src]="getImagenProducto(item)"
-                   [alt]="item.productoNombre || 'Producto'"
-                   class="h-full w-full object-cover">
-              <ng-template #detalleProductoInicialesMobile>{{ getInicialesProducto(item.productoNombre) }}</ng-template>
-            </span>
-            <span class="min-w-0">
-              <span class="block truncate">{{ item.productoNombre }}</span>
-              <span class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
-                <span class="grid h-5 w-5 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[8px] font-black text-sky-700">
-                  <img *ngIf="getImagenCategoriaItem(item); else detalleCategoriaInicialesMobile"
-                       [src]="getImagenCategoriaItem(item)"
-                       [alt]="getNombreCategoriaItem(item)"
-                       class="h-full w-full object-cover">
-                  <ng-template #detalleCategoriaInicialesMobile>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
-                </span>
-                <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
-              </span>
-            </span>
-          </span>
-          <span>S/ {{ (item.precio * item.cantidad).toFixed(2) }}</span>
-        </div>
       </div>
 
       <div class="mt-4 grid grid-cols-3 gap-2">
@@ -452,7 +473,7 @@
             <td class="px-5 py-4 text-sm font-black text-sky-700">S/ {{ venta.total?.toFixed(2) || '0.00' }}</td>
             <td class="px-5 py-4">
               <button class="rounded-lg bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 transition-all duration-300 hover:-translate-y-0.5 hover:bg-sky-100" (click)="toggleDetalles(venta.id!)">
-                {{ mostrarDetalles[venta.id!] ? 'Ocultar' : 'Ver' }}
+                Ver
               </button>
             </td>
             <td class="px-5 py-4">
@@ -463,49 +484,83 @@
             </td>
           </tr>
 
-          <tr *ngIf="mostrarDetalles[venta.id!]">
-            <td colspan="6" class="bg-sky-50/40 px-5 py-4">
-              <div class="grid gap-2">
-                <div *ngFor="let item of venta.items" class="grid gap-3 rounded-lg bg-white/80 px-4 py-3 text-sm font-bold text-gray-700 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
-                  <span class="flex min-w-0 items-center gap-3">
-                    <span class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700">
-                      <img *ngIf="getImagenProducto(item); else detalleProductoIniciales"
-                           [src]="getImagenProducto(item)"
-                           [alt]="item.productoNombre || 'Producto'"
-                           class="h-full w-full object-cover">
-                      <ng-template #detalleProductoIniciales>{{ getInicialesProducto(item.productoNombre) }}</ng-template>
-                    </span>
-                    <span class="min-w-0">
-                      <span class="block truncate">{{ item.productoNombre }}</span>
-                      <span class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
-                        <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-sky-50 text-[9px] font-black text-sky-700">
-                          <img *ngIf="getImagenCategoriaItem(item); else detalleCategoriaIniciales"
-                               [src]="getImagenCategoriaItem(item)"
-                               [alt]="getNombreCategoriaItem(item)"
-                               class="h-full w-full object-cover">
-                          <ng-template #detalleCategoriaIniciales>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
-                        </span>
-                        <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
-                      </span>
-                    </span>
-                  </span>
-                  <span>Cant. {{ item.cantidad }}</span>
-                  <span>S/ {{ item.precio.toFixed(2) }}</span>
-                  <span class="text-sky-700">S/ {{ (item.precio * item.cantidad).toFixed(2) }}</span>
-                </div>
-              </div>
-            </td>
-          </tr>
         </ng-container>
         </tbody>
       </table>
     </div>
   </div>
 
-  <div class="rounded-lg border border-white/70 bg-white/75 px-5 py-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <p class="text-sm font-black uppercase tracking-[0.16em] text-gray-400">Total filtrado</p>
-      <p class="text-2xl font-black text-gray-950">S/ {{ totalVentasFiltradas.toFixed(2) }}</p>
+  <div *ngIf="mostrarDetalleVenta"
+       class="venta-modal-backdrop fixed inset-0 z-[100] bg-slate-950/25 backdrop-blur-[2px]"
+       [class.venta-modal-backdrop-out]="cerrandoDetalleVenta"
+       (click)="cerrarDetalleVenta()"></div>
+
+  <div *ngIf="mostrarDetalleVenta && ventaDetalleSeleccionada as ventaDetalle"
+       class="venta-modal-panel fixed left-1/2 top-1/2 z-[105] max-h-[calc(100vh-2rem)] w-[calc(100%-1.5rem)] max-w-4xl overflow-y-auto rounded-lg border border-white/70 bg-white/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl sm:p-5"
+       [class.venta-modal-panel-out]="cerrandoDetalleVenta"
+       [style.transform]="'translate(-50%, -50%)'"
+       role="dialog"
+       aria-modal="true"
+       aria-label="Detalle de venta">
+    <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-sm font-black uppercase tracking-[0.18em] text-violet-500">Detalle de venta</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-gray-950">Venta #{{ ventaDetalle.id || '-' }}</h2>
+        <p class="mt-2 text-sm font-bold text-gray-500">{{ ventaDetalle.clienteNombre || ('Cliente ' + ventaDetalle.clienteId) }}</p>
+      </div>
+      <button type="button"
+              class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white text-xl font-black text-gray-500 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950"
+              (click)="cerrarDetalleVenta()"
+              aria-label="Cerrar detalle de venta">
+        x
+      </button>
+    </div>
+
+    <div class="mb-5 grid gap-3 md:grid-cols-3">
+      <div class="rounded-lg bg-gradient-to-r from-sky-50 via-white to-violet-50 px-4 py-3 shadow-inner shadow-sky-100/60">
+        <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Fecha</p>
+        <p class="mt-1 text-sm font-black text-gray-800">{{ ventaDetalle.fecha | date:'short' }}</p>
+      </div>
+      <div class="rounded-lg bg-gradient-to-r from-sky-50 via-white to-emerald-50 px-4 py-3 shadow-inner shadow-sky-100/60">
+        <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Productos</p>
+        <p class="mt-1 text-sm font-black text-gray-800">{{ ventaDetalle.items.length }}</p>
+      </div>
+      <div class="rounded-lg bg-gradient-to-r from-sky-100 via-rose-50 to-emerald-50 px-4 py-3 shadow-inner shadow-sky-100/60">
+        <p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Total</p>
+        <p class="mt-1 text-xl font-black text-sky-700">S/ {{ ventaDetalle.total?.toFixed(2) || '0.00' }}</p>
+      </div>
+    </div>
+
+    <div class="max-h-[52vh] overflow-y-auto rounded-lg border border-white/70 bg-white/80 p-3 shadow-inner shadow-sky-100/60">
+      <div class="grid gap-3">
+        <div *ngFor="let item of ventaDetalle.items" class="grid gap-3 rounded-lg border border-sky-100/70 bg-gradient-to-r from-sky-50 via-white to-emerald-50 px-4 py-3 text-sm font-bold text-gray-700 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
+          <span class="flex min-w-0 items-center gap-3">
+            <span class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-white bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xs font-black text-sky-700 shadow-sm">
+              <img *ngIf="getImagenProducto(item); else detalleModalProductoIniciales"
+                   [src]="getImagenProducto(item)"
+                   [alt]="item.productoNombre || 'Producto'"
+                   class="h-full w-full object-cover">
+              <ng-template #detalleModalProductoIniciales>{{ getInicialesProducto(item.productoNombre) }}</ng-template>
+            </span>
+            <span class="min-w-0">
+              <span class="block truncate text-gray-900">{{ item.productoNombre }}</span>
+              <span class="mt-1 flex items-center gap-2 text-xs font-bold text-gray-500">
+                <span class="grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-md bg-white text-[9px] font-black text-sky-700 shadow-sm">
+                  <img *ngIf="getImagenCategoriaItem(item); else detalleModalCategoriaIniciales"
+                       [src]="getImagenCategoriaItem(item)"
+                       [alt]="getNombreCategoriaItem(item)"
+                       class="h-full w-full object-cover">
+                  <ng-template #detalleModalCategoriaIniciales>{{ getInicialesCategoria(getNombreCategoriaItem(item)) }}</ng-template>
+                </span>
+                <span class="truncate">{{ getNombreCategoriaItem(item) }}</span>
+              </span>
+            </span>
+          </span>
+          <span class="rounded-lg bg-white/70 px-3 py-2 text-gray-600">Cant. {{ item.cantidad }}</span>
+          <span class="rounded-lg bg-white/70 px-3 py-2 text-gray-600">S/ {{ item.precio.toFixed(2) }}</span>
+          <span class="rounded-lg bg-sky-50 px-3 py-2 text-sky-700">S/ {{ (item.precio * item.cantidad).toFixed(2) }}</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -519,7 +574,8 @@
        [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
        [style.transform]="accionPendiente ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -46%) scale(0.96)'"
        role="dialog"
-       aria-modal="true">
+       aria-modal="true"
+       aria-label="Confirmar acción sobre venta">
     <div class="mb-4 flex items-start gap-4">
       <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 via-rose-50 to-amber-100 text-amber-700 shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

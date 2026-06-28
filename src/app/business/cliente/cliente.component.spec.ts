@@ -119,6 +119,23 @@ describe('ClienteComponent', () => {
     expect(component.mensajeExito).toBe('Cliente agregado correctamente.');
   });
 
+  it('should keep the client form open and expose the HTTP status when saving fails', () => {
+    component.formCliente = {
+      dniOrRuc: '20260627',
+      razonSocialONombre: '',
+      direccion: '',
+      telefono: '',
+      nombres: 'CODEX_E2E_20260627',
+      apellidoPaterno: 'LAB',
+      apellidoMaterno: 'CLIENTE',
+    };
+
+    component.guardar();
+    httpMock.expectOne(apiUrl).flush(null, { status: 403, statusText: 'Forbidden' });
+
+    expect(component.errorFormulario).toBe('No se pudo guardar el cliente (HTTP 403).');
+  });
+
   it('should keep phone numeric and warn when removing invalid characters', () => {
     component.formCliente.telefono = '999abc-11122';
 

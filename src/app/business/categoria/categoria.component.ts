@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { Subscription } from 'rxjs';
@@ -18,7 +18,6 @@ interface Categoria {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './categoria.component.html',
-  styleUrl: './categoria.component.css',
 })
 export class CategoriaComponent implements OnDestroy {
   categorias: Categoria[] = [];
@@ -37,10 +36,10 @@ export class CategoriaComponent implements OnDestroy {
   private readonly refreshSub: Subscription;
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private router: Router,
-    private dataRefresh: DataRefreshService,
+    private readonly http: HttpClient,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly dataRefresh: DataRefreshService,
   ) {
     this.cargarCategorias();
     this.refreshSub = this.dataRefresh.refresh$.subscribe(() => this.cargarCategorias());
@@ -67,7 +66,7 @@ export class CategoriaComponent implements OnDestroy {
     if (!texto) return this.categorias;
     return this.categorias.filter(c =>
       this.normalizarTexto(c.nombre).includes(texto) ||
-      (c.id !== undefined && c.id.toString().includes(texto))
+      c.id?.toString().includes(texto)
     );
   }
 
@@ -87,19 +86,29 @@ export class CategoriaComponent implements OnDestroy {
       return;
     }
 
-    if (this.editCategoria && this.editCategoria.id) {
-      this.http.put<Categoria>(`${this.apiUrl}/${this.editCategoria.id}`, this.formCategoria).subscribe(() => {
-        this.cargarCategorias();
-        this.resetFormulario();
-        this.mensajeExito = 'Categoría actualizada correctamente.';
+    if (this.editCategoria?.id) {
+      this.http.put<Categoria>(`${this.apiUrl}/${this.editCategoria.id}`, this.formCategoria).subscribe({
+        next: () => {
+          this.cargarCategorias();
+          this.resetFormulario();
+          this.mensajeExito = 'Categoría actualizada correctamente.';
+        },
+        error: error => this.mostrarErrorGuardado(error),
       });
     } else {
-      this.http.post<Categoria>(this.apiUrl, this.formCategoria).subscribe(() => {
-        this.cargarCategorias();
-        this.resetFormulario();
-        this.mensajeExito = 'Categoría agregada correctamente.';
+      this.http.post<Categoria>(this.apiUrl, this.formCategoria).subscribe({
+        next: () => {
+          this.cargarCategorias();
+          this.resetFormulario();
+          this.mensajeExito = 'Categoría agregada correctamente.';
+        },
+        error: error => this.mostrarErrorGuardado(error),
       });
     }
+  }
+
+  private mostrarErrorGuardado(error: HttpErrorResponse): void {
+    this.errorFormulario = `No se pudo guardar la categoría (HTTP ${error.status || 0}).`;
   }
 
   eliminarCategoria(id: number | undefined) {

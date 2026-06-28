@@ -68,6 +68,14 @@ describe('HeaderComponent', () => {
     expect(authServiceSpy.logout).not.toHaveBeenCalled();
   });
 
+  it('should logout even when the audit entry cannot be stored', () => {
+    auditServiceSpy.registrar.and.throwError('storage unavailable');
+
+    expect(() => component.confirmarLogout()).not.toThrow();
+    expect(component.mostrarConfirmacionLogout).toBeFalse();
+    expect(authServiceSpy.logout).toHaveBeenCalled();
+  });
+
   it('should return to owner session', () => {
     component.volverAMiRol();
 

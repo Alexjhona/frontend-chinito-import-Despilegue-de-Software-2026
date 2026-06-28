@@ -319,15 +319,21 @@ export class AjustesComponent {
     }
 
     const columnas = Array.from(new Set(datos.flatMap(item => Object.keys(item))));
-    const filas = datos.map(item =>
-      `<tr>${columnas.map(columna => `<td>${this.valorHtml(item[columna])}</td>`).join('')}</tr>`
-    );
+    const encabezados = columnas
+      .map(columna => this.celdaHtml('th', this.valorHtml(columna)))
+      .join('');
+    const filas = datos.map(item => {
+      const celdas = columnas
+        .map(columna => this.celdaHtml('td', this.valorHtml(item[columna])))
+        .join('');
+      return `<tr>${celdas}</tr>`;
+    });
     const tabla = `
       <html>
         <head><meta charset="UTF-8"></head>
         <body>
           <table>
-            <thead><tr>${columnas.map(columna => `<th>${this.valorHtml(columna)}</th>`).join('')}</tr></thead>
+            <thead><tr>${encabezados}</tr></thead>
             <tbody>${filas.join('')}</tbody>
           </table>
         </body>
@@ -345,6 +351,10 @@ export class AjustesComponent {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  private celdaHtml(etiqueta: 'td' | 'th', contenido: string): string {
+    return `<${etiqueta}>${contenido}</${etiqueta}>`;
   }
 
   private descargarArchivo(contenido: string, nombre: string, tipo: string): void {

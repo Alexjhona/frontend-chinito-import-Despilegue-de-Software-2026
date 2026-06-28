@@ -11,7 +11,6 @@ import { Observable } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
 })
 export class RegisterComponent {
   user: string = '';
@@ -27,9 +26,9 @@ export class RegisterComponent {
   esRestablecimiento = false;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute
   ) {
     this.route.queryParamMap.subscribe(params => {
       const correo = (params.get('correo') || '').trim().toLowerCase();

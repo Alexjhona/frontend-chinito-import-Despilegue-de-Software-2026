@@ -114,11 +114,11 @@ export class InicioComponent implements OnDestroy {
   private sliderTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
-    private http: HttpClient,
-    private router: Router,
-    private route: ActivatedRoute,
-    private publicContent: PublicContentService,
-    private dataRefresh: DataRefreshService,
+    private readonly http: HttpClient,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly publicContent: PublicContentService,
+    private readonly dataRefresh: DataRefreshService,
   ) {
     this.contenido = this.publicContent.config;
     this.cargarCatalogo();

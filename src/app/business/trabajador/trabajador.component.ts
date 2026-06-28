@@ -40,7 +40,7 @@ export class TrabajadorComponent implements OnDestroy {
   trabajadores: Trabajador[] = [];
   mostrarFormulario = false;
   editTrabajador: Trabajador | null = null;
-  accionPendiente: 'editar' | 'estado' | 'eliminar' | 'reset' | 'impersonar' | null = null;
+  accionPendiente: 'editar' | 'eliminar' | 'reset' | 'impersonar' | null = null;
   trabajadorPendiente: Trabajador | null = null;
   busqueda = '';
   mensaje = '';
@@ -57,8 +57,8 @@ export class TrabajadorComponent implements OnDestroy {
   readonly correoRemitenteInvitacion = 'guerrycastillo9@gmail.com';
   readonly roles: RolTrabajador[] = ['SUB_ADMIN', 'VENDEDOR', 'CAJERO', 'ALMACENERO', 'COMPRAS'];
   readonly permisosPorRol: Record<string, string[]> = {
-    OWNER: ['Acceso total', 'Trabajadores', 'Crear usuarios', 'Editar/eliminar/desactivar'],
-    ADMIN: ['Acceso total', 'Trabajadores', 'Crear usuarios', 'Editar/eliminar/desactivar'],
+    OWNER: ['Acceso total', 'Trabajadores', 'Crear usuarios', 'Editar/eliminar'],
+    ADMIN: ['Acceso total', 'Trabajadores', 'Crear usuarios', 'Editar/eliminar'],
     SUB_ADMIN: ['Clientes', 'Proveedores', 'Categorías', 'Productos', 'Ventas', 'Sin trabajadores'],
     VENDEDOR: ['Clientes crear/ver', 'Productos solo ver', 'Ventas registrar', 'Boleta/PDF'],
     CAJERO: ['Ver clientes', 'Ver productos', 'Registrar ventas/cobros'],
@@ -79,10 +79,10 @@ export class TrabajadorComponent implements OnDestroy {
   private readonly refreshSub: Subscription;
 
   constructor(
-    private http: HttpClient,
-    private dataRefresh: DataRefreshService,
-    private authService: AuthService,
-    private router: Router,
+    private readonly http: HttpClient,
+    private readonly dataRefresh: DataRefreshService,
+    private readonly authService: AuthService,
+    private readonly router: Router,
   ) {
     this.cargarTrabajadores();
     this.refreshSub = this.dataRefresh.refresh$.subscribe(() => this.cargarTrabajadores());
@@ -122,11 +122,6 @@ export class TrabajadorComponent implements OnDestroy {
 
   get tituloConfirmacion(): string {
     if (this.accionPendiente === 'editar') return '¿Editar este trabajador?';
-    if (this.accionPendiente === 'estado') {
-      return !this.estaActivo(this.trabajadorPendiente)
-        ? '¿Activar este trabajador?'
-        : '¿Desactivar este trabajador?';
-    }
     if (this.accionPendiente === 'reset') return '¿Restablecer contraseña?';
     if (this.accionPendiente === 'impersonar') return '¿Entrar como este trabajador?';
     return '¿Eliminar este trabajador?';
@@ -137,12 +132,6 @@ export class TrabajadorComponent implements OnDestroy {
 
     if (this.accionPendiente === 'editar') {
       return `Vas a abrir la edición de ${nombre}.`;
-    }
-
-    if (this.accionPendiente === 'estado') {
-      return !this.estaActivo(this.trabajadorPendiente)
-        ? `${nombre} podrá iniciar sesión y usar los módulos de su rol.`
-        : `${nombre} ya no podrá iniciar sesión mientras esté inactivo.`;
     }
 
     if (this.accionPendiente === 'reset') {
@@ -166,11 +155,6 @@ export class TrabajadorComponent implements OnDestroy {
     this.trabajadorPendiente = trabajador;
   }
 
-  solicitarCambiarEstado(trabajador: Trabajador) {
-    this.accionPendiente = 'estado';
-    this.trabajadorPendiente = trabajador;
-  }
-
   solicitarEliminar(trabajador: Trabajador) {
     this.accionPendiente = 'eliminar';
     this.trabajadorPendiente = trabajador;
@@ -191,8 +175,6 @@ export class TrabajadorComponent implements OnDestroy {
 
     if (this.accionPendiente === 'editar') {
       this.editar(this.trabajadorPendiente);
-    } else if (this.accionPendiente === 'estado') {
-      this.cambiarEstado(this.trabajadorPendiente);
     } else if (this.accionPendiente === 'reset') {
       this.restablecerPassword(this.trabajadorPendiente);
     } else if (this.accionPendiente === 'impersonar') {
@@ -402,18 +384,6 @@ export class TrabajadorComponent implements OnDestroy {
     });
   }
 
-  cambiarEstado(trabajador: Trabajador) {
-    if (!trabajador.id) return;
-    const activo = !this.estaActivo(trabajador);
-    this.http.patch<Trabajador>(`${this.apiUrl}/${trabajador.id}/estado?activo=${activo}`, {}).subscribe({
-      next: () => {
-        this.mensaje = activo ? 'Trabajador activado.' : 'Trabajador desactivado.';
-        this.cargarTrabajadores();
-      },
-      error: () => this.mensaje = 'No se pudo cambiar el estado.',
-    });
-  }
-
   eliminar(trabajador: Trabajador) {
     if (!trabajador.id) return;
     this.http.delete(`${this.apiUrl}/${trabajador.id}`).subscribe({
@@ -424,7 +394,7 @@ export class TrabajadorComponent implements OnDestroy {
       error: error => {
         this.mensaje = error?.status === 403
           ? 'No tienes permiso para eliminar trabajadores. Ingresa con un usuario ADMIN.'
-          : 'No se pudo eliminar el trabajador. Intenta desactivarlo si tiene movimientos asociados.';
+          : 'No se pudo eliminar el trabajador. Revisa si tiene movimientos asociados.';
       },
     });
   }
@@ -645,6 +615,29 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   estaActivo(trabajador: Trabajador | null | undefined): boolean {
-    return trabajador?.activo !== false;
+    if (!trabajador || !this.authService.isAuthenticated()) return false;
+
+    const payload = this.authService.getPayload();
+    if (!payload) return false;
+
+    const idSesion = String(payload.id || payload.userId || payload.trabajadorId || payload.workerId || '');
+    const idTrabajador = trabajador.id ? String(trabajador.id) : '';
+    if (idSesion && idTrabajador && idSesion === idTrabajador) return true;
+
+    const identificadoresSesion = [
+      payload.correo,
+      payload.email,
+      payload.userName,
+      payload.username,
+      payload.preferred_username,
+      payload.sub,
+    ].map(valor => this.normalizarCorreo(String(valor || ''))).filter(Boolean);
+
+    const identificadoresTrabajador = [
+      trabajador.correo,
+      trabajador.userName,
+    ].map(valor => this.normalizarCorreo(valor)).filter(Boolean);
+
+    return identificadoresTrabajador.some(valor => identificadoresSesion.includes(valor));
   }
 }

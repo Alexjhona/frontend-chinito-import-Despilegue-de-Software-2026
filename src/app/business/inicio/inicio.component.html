@@ -231,7 +231,7 @@
       </div>
 
       <div class="servicios-grid">
-        <article *ngFor="let servicio of serviciosInicio" class="servicio-card" [class.active]="servicioActivo === servicio.id" role="button" tabindex="0" (click)="alternarServicio(servicio.id)" (keydown.enter)="alternarServicio(servicio.id)" (keydown.space)="alternarServicio(servicio.id)">
+        <button type="button" *ngFor="let servicio of serviciosInicio" class="servicio-card" [class.active]="servicioActivo === servicio.id" (click)="alternarServicio(servicio.id)">
           <div class="servicio-image">
             <img [src]="servicio.imagen" [alt]="servicio.titulo">
           </div>
@@ -256,18 +256,18 @@
               <li *ngFor="let punto of servicio.puntos">{{ punto }}</li>
             </ul>
           </div>
-        </article>
+        </button>
       </div>
 
       <div *ngIf="servicioActivo" class="servicio-modal-backdrop" (click)="cerrarServicio()"></div>
-      <div *ngIf="servicioActivo" class="servicio-modal" role="dialog" aria-modal="true">
+      <div *ngIf="servicioActivo" class="servicio-modal" role="dialog" aria-modal="true" aria-labelledby="servicio-modal-title">
         <button type="button" class="servicio-modal-close" aria-label="Cerrar" (click)="cerrarServicio()">×</button>
 
         <div *ngIf="servicioActivoConfig as servicio" class="servicio-formulario">
           <img [src]="servicio.imagen" [alt]="servicio.titulo">
           <div>
             <span class="servicio-icon">{{ servicio.icono }}</span>
-            <h3>{{ servicio.titulo }}</h3>
+            <h3 id="servicio-modal-title">{{ servicio.titulo }}</h3>
             <p>{{ servicio.modalDescripcion }}</p>
             <div class="servicio-tags">
               <span *ngIf="servicio.id === 'pagos'" class="logo-badge payment-yape" aria-label="Yape">Yape</span>

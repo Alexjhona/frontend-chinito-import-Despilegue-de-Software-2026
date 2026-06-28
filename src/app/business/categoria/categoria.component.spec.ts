@@ -112,6 +112,17 @@ describe('CategoriaComponent', () => {
     expect(component.mensajeExito).toBe('Categoría agregada correctamente.');
   });
 
+  it('should keep the category form open and expose the HTTP status when saving fails', () => {
+    component.nuevaCategoria();
+    component.formCategoria.nombre = 'CODEX_E2E_20260627';
+
+    component.guardar();
+    httpMock.expectOne(apiUrl).flush(null, { status: 403, statusText: 'Forbidden' });
+
+    expect(component.mostrarFormulario).toBeTrue();
+    expect(component.errorFormulario).toBe('No se pudo guardar la categoría (HTTP 403).');
+  });
+
   it('should guard category deletion, delete after confirmation and cancel editing', () => {
     component.eliminarCategoria(undefined);
     httpMock.expectNone(`${apiUrl}/undefined`);

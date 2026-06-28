@@ -15,7 +15,7 @@
             <p class="text-xs font-black uppercase tracking-[0.22em] text-sky-600">Panel administrativo</p>
             <h1 class="mt-1 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl">Ajustes</h1>
             <p class="mt-2 max-w-3xl text-sm font-semibold leading-6 text-gray-500">
-              Controla apariencia, respaldos, estado del sistema y actividad reciente desde un solo lugar.
+              Personaliza la apariencia del sistema y revisa la actividad reciente desde un solo lugar.
             </p>
           </div>
         </div>
@@ -33,21 +33,6 @@
             </svg>
             Aplicar tema
           </button>
-        </div>
-      </div>
-
-      <div class="mt-6 grid gap-3 md:grid-cols-3">
-        <div class="rounded-lg border border-emerald-100 bg-emerald-50/80 p-4">
-          <p class="text-xs font-black uppercase tracking-[0.16em] text-emerald-600">Servidor</p>
-          <p class="mt-2 text-xl font-black text-gray-950">{{ estadoServidor === 'Activo' ? 'Activo' : estadoServidor }}</p>
-        </div>
-        <div class="rounded-lg border border-sky-100 bg-sky-50/80 p-4">
-          <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-600">Base de datos</p>
-          <p class="mt-2 text-xl font-black text-gray-950">{{ estadoBaseDatos === 'Conectada' ? 'Conectada' : estadoBaseDatos }}</p>
-        </div>
-        <div class="rounded-lg border border-violet-100 bg-violet-50/80 p-4">
-          <p class="text-xs font-black uppercase tracking-[0.16em] text-violet-600">Último respaldo</p>
-          <p class="mt-2 truncate text-xl font-black text-gray-950">{{ ultimoRespaldo }}</p>
         </div>
       </div>
 
@@ -124,40 +109,6 @@
       </section>
 
       <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p class="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">Base de datos</p>
-            <h2 class="mt-1 text-2xl font-black text-gray-950">Respaldos, Excel e importación</h2>
-          </div>
-          <div class="grid gap-2 sm:grid-cols-3">
-            <button type="button" class="rounded-lg bg-emerald-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-emerald-500/20 transition hover:-translate-y-0.5 hover:bg-emerald-700" (click)="crearRespaldo()">Crear general</button>
-            <button type="button" class="rounded-lg bg-sky-600 px-4 py-3 text-xs font-black text-white shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:bg-sky-700" (click)="descargarRespaldo()">Descargar</button>
-            <label class="grid cursor-pointer place-items-center rounded-lg bg-amber-50 px-4 py-3 text-center text-xs font-black text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-100">
-              {{ restaurando ? 'Restaurando...' : 'Restaurar' }}
-              <input type="file" accept=".json" class="hidden" (change)="restaurarRespaldo($event)">
-            </label>
-          </div>
-        </div>
-
-        <div class="mt-5 grid gap-3">
-          <article *ngFor="let modulo of modulosRespaldo" class="grid gap-3 rounded-lg border border-gray-100 bg-gray-50/70 p-4 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <p class="text-base font-black text-gray-950">{{ modulo.nombre }}</p>
-              <p class="mt-1 text-sm font-semibold text-gray-500">{{ modulo.descripcion }}</p>
-            </div>
-            <div class="grid gap-2 sm:grid-cols-3">
-              <button type="button" class="rounded-lg bg-gray-950 px-4 py-3 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-gray-800" (click)="exportarModuloExcel(modulo.id)">Excel</button>
-              <button type="button" class="rounded-lg bg-emerald-50 px-4 py-3 text-xs font-black text-emerald-700 transition hover:-translate-y-0.5 hover:bg-emerald-100" (click)="crearRespaldoModulo(modulo.id)">JSON</button>
-              <label class="cursor-pointer rounded-lg bg-amber-50 px-4 py-3 text-center text-xs font-black text-amber-700 transition hover:-translate-y-0.5 hover:bg-amber-100">
-                Cargar
-                <input type="file" accept=".json,.csv" class="hidden" (change)="cargarRespaldoModulo($event, modulo.id)">
-              </label>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Auditoría</p>
@@ -221,19 +172,6 @@
         </div>
       </section>
 
-      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-        <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Sistema</p>
-        <h2 class="mt-1 text-2xl font-black text-gray-950">Estado general</h2>
-
-        <div class="mt-5 space-y-3">
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Versión</span><span class="text-sm font-black text-gray-950">{{ versionSistema }}</span></div>
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Instalación</span><span class="text-sm font-black text-gray-950">{{ fechaInstalacion }}</span></div>
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Servidor</span><span class="text-sm font-black text-gray-950">{{ estadoServidor === 'Activo' ? 'Activo' : estadoServidor === 'Comprobando' ? 'Comprobando' : 'Inactivo' }}</span></div>
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Base de datos</span><span class="text-sm font-black text-gray-950">{{ estadoBaseDatos === 'Conectada' ? 'Conectada' : estadoBaseDatos === 'Comprobando' ? 'Comprobando' : 'Sin conexión' }}</span></div>
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Espacio</span><span class="text-sm font-black text-gray-950">{{ espacioUtilizado }}</span></div>
-          <div class="flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/70 px-4 py-3"><span class="text-sm font-black text-gray-500">Respaldo</span><span class="truncate text-right text-sm font-black text-gray-950">{{ ultimoRespaldo }}</span></div>
-        </div>
-      </section>
     </aside>
   </div>
 </section>

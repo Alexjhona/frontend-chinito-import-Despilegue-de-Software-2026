@@ -1,6 +1,6 @@
 import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { VentaComponent } from './venta.component';
 
@@ -97,7 +97,6 @@ describe('VentaComponent', () => {
   });
 
   it('should add a sale item, select a product and calculate total', () => {
-    component.agregarItem();
     component.seleccionarProducto(0, productos[0]);
     component.nuevaVenta.items[0].cantidad = 2;
 
@@ -105,6 +104,20 @@ describe('VentaComponent', () => {
     expect(component.getImagenProducto(component.nuevaVenta.items[0])).toBe('data:image/png;base64,producto-uno');
     expect(component.getNombreCategoriaItem(component.nuevaVenta.items[0])).toBe('Zapatillas');
     expect(component.totalVenta).toBe(240);
+  });
+
+  it('should merge repeated products instead of keeping duplicate sale rows', () => {
+    component.seleccionarProducto(0, productos[0]);
+    component.nuevaVenta.items[0].cantidad = 2;
+    component.agregarItem();
+    component.nuevaVenta.items[0].cantidad = 3;
+
+    component.seleccionarProducto(0, productos[0]);
+
+    expect(component.nuevaVenta.items.length).toBe(1);
+    expect(component.nuevaVenta.items[0].productoId).toBe(10);
+    expect(component.nuevaVenta.items[0].cantidad).toBe(5);
+    expect(component.totalVenta).toBe(600);
   });
 
   it('should validate customer and items before registering a sale', () => {
@@ -117,7 +130,6 @@ describe('VentaComponent', () => {
     spyOn(component, 'generarBoletaDesdeVenta').and.stub();
 
     component.seleccionarCliente(clientes[0]);
-    component.agregarItem();
     component.seleccionarProducto(0, productos[0]);
     component.nuevaVenta.items[0].cantidad = 2;
 
@@ -284,6 +296,7 @@ describe('VentaComponent', () => {
     expect(component.nuevaVenta.items[0].cantidad).toBe(0);
 
     component.eliminarItem(0);
+    component.eliminarItem(0);
     expect(component.nuevaVenta.items).toEqual([]);
   });
 
@@ -302,11 +315,59 @@ describe('VentaComponent', () => {
     expect(component.ventas[0].items[0].precio).toBe(0);
   });
 
-  it('should toggle details and show an error when deletion fails', () => {
+  it('should enrich known products while preserving an already defined price', () => {
+    component.productos = productos;
+    component.cargarVentas();
+
+    httpMock.expectOne(ventasUrl).flush([{
+      id: 102,
+      clienteId: 1,
+      items: [
+        { productoId: 10, cantidad: 1, precio: 99 },
+        { productoId: 10, cantidad: 1, precio: undefined },
+      ],
+    }]);
+
+    expect(component.ventas[0].items[0].productoNombre).toBe('Zapatilla Urbana');
+    expect(component.ventas[0].items[0].precio).toBe(99);
+    expect(component.ventas[0].items[1].precio).toBe(120);
+  });
+
+  it('should preserve a fallback name and handle sales with no items', () => {
+    component.cargarVentas();
+
+    httpMock.expectOne(ventasUrl).flush([
+      { id: 103, clienteId: 1, items: [{ productoId: 999, cantidad: 1, precio: null, productoNombre: 'Descontinuado' }] },
+      { id: 104, clienteId: 1, items: [] },
+    ]);
+
+    expect(component.ventas[0].items[0].productoNombre).toBe('Descontinuado');
+    expect(component.ventas[0].items[0].precio).toBe(0);
+    expect(component.ventas[1].items).toEqual([]);
+  });
+
+  it('should handle an empty response and clear stale sales after a loading error', () => {
+    component.cargarVentas();
+    httpMock.expectOne(ventasUrl).flush([]);
+    expect(component.ventas).toEqual([]);
+
+    component.ventas = ventas;
+    component.cargarVentas();
+    httpMock.expectOne(ventasUrl).flush(null, { status: 500, statusText: 'Error' });
+    expect(component.ventas).toEqual([]);
+  });
+
+  it('should open sale details in a modal, close it with animation and show an error when deletion fails', fakeAsync(() => {
     component.toggleDetalles(100);
     expect(component.mostrarDetalles[100]).toBeTrue();
-    component.toggleDetalles(100);
-    expect(component.mostrarDetalles[100]).toBeFalse();
+    expect(component.mostrarDetalleVenta).toBeTrue();
+    expect(component.ventaDetalleSeleccionada?.id).toBe(100);
+
+    component.cerrarDetalleVenta();
+    expect(component.cerrandoDetalleVenta).toBeTrue();
+    tick(260);
+    expect(component.mostrarDetalleVenta).toBeFalse();
+    expect(component.mostrarDetalles).toEqual({});
 
     component.eliminarVenta(undefined);
     component.solicitarEliminar(ventas[0]);
@@ -314,7 +375,7 @@ describe('VentaComponent', () => {
     httpMock.expectOne(`${ventasUrl}/100`).flush(null, { status: 500, statusText: 'Error' });
 
     expect(component.mensaje).toBe('No se pudo eliminar la venta');
-  });
+  }));
 
   it('should reject a sale with an invalid product or quantity', () => {
     component.nuevaVenta = {

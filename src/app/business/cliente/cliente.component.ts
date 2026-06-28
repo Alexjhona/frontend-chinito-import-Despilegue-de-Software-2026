@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { DataRefreshService } from '../../core/services/data-refresh.service';
@@ -32,7 +32,6 @@ interface DniConsulta {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './cliente.component.html',
-  styleUrl: './cliente.component.css',
 })
 export class ClienteComponent implements OnDestroy {
   clientes: Cliente[] = [];
@@ -54,9 +53,9 @@ export class ClienteComponent implements OnDestroy {
   private readonly refreshSub: Subscription;
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private dataRefresh: DataRefreshService,
+    private readonly http: HttpClient,
+    private readonly authService: AuthService,
+    private readonly dataRefresh: DataRefreshService,
   ) {
     this.cargarClientes();
     this.refreshSub = this.dataRefresh.refresh$.subscribe(() => this.cargarClientes());
@@ -121,21 +120,31 @@ export class ClienteComponent implements OnDestroy {
       return;
     }
 
-    if (this.editCliente && this.editCliente.id) {
+    if (this.editCliente?.id) {
       // Editar
-      this.http.put<Cliente>(`${this.apiUrl}/${this.editCliente.id}`, this.formCliente).subscribe(() => {
-        this.cargarClientes();
-        this.resetFormulario();
-        this.mensajeExito = 'Cliente actualizado correctamente.';
+      this.http.put<Cliente>(`${this.apiUrl}/${this.editCliente.id}`, this.formCliente).subscribe({
+        next: () => {
+          this.cargarClientes();
+          this.resetFormulario();
+          this.mensajeExito = 'Cliente actualizado correctamente.';
+        },
+        error: error => this.mostrarErrorGuardado(error),
       });
     } else {
       // Nuevo
-      this.http.post<Cliente>(this.apiUrl, this.formCliente).subscribe(() => {
-        this.cargarClientes();
-        this.resetFormulario();
-        this.mensajeExito = 'Cliente agregado correctamente.';
+      this.http.post<Cliente>(this.apiUrl, this.formCliente).subscribe({
+        next: () => {
+          this.cargarClientes();
+          this.resetFormulario();
+          this.mensajeExito = 'Cliente agregado correctamente.';
+        },
+        error: error => this.mostrarErrorGuardado(error),
       });
     }
+  }
+
+  private mostrarErrorGuardado(error: HttpErrorResponse): void {
+    this.errorFormulario = `No se pudo guardar el cliente (HTTP ${error.status || 0}).`;
   }
 
   consultarDniCliente() {

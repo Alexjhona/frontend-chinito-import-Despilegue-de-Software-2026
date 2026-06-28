@@ -40,8 +40,8 @@ export class AuthService {
   private readonly ownerTokenKey = 'ownerAuthToken';
 
   constructor(
-    private httpClient: HttpClient,
-    private router: Router
+    private readonly httpClient: HttpClient,
+    private readonly router: Router
   ) {}
 
   login(user: string, password: string): Observable<LoginResponse> {

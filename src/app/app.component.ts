@@ -7,7 +7,6 @@ import { ThemeService } from './core/services/theme.service';
   standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
 })
 export class AppComponent {
   title = 'ng-menu-dashboard';
