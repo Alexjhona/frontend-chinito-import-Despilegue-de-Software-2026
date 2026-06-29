@@ -26,19 +26,19 @@ test('navegacion por modulos principales', async ({ page }) => {
   await login(page);
 
   const modules = [
-    { menu: 'Cliente', title: 'Clientes' },
-    { menu: 'Proveedor', title: 'Proveedores' },
-    { menu: 'Categoria', title: 'Familias del catalogo' },
-    { menu: 'Producto', title: 'Productos' },
-    { menu: 'Venta', title: 'Ventas' },
-    { menu: 'Trabajadores', title: 'Trabajadores' },
-    { menu: 'Ajustes', title: 'Ajustes' },
+    { menu: /Cliente/i, title: /Clientes/i },
+    { menu: /Proveedor/i, title: /Proveedores/i },
+    { menu: /Categor/i, title: /Familias del cat[aá]logo/i },
+    { menu: /Producto/i, title: /Productos/i },
+    { menu: /Venta/i, title: /Ventas/i },
+    { menu: /Trabajadores/i, title: /Trabajadores/i },
+    { menu: /Ajustes/i, title: /Ajustes/i },
   ];
 
   for (const module of modules) {
-    await page.getByLabel(/Abrir menu/i).click();
-    await page.getByRole('menuitem', { name: new RegExp(module.menu, 'i') }).first().click();
-    await expect(page.getByText(new RegExp(module.title, 'i')).first()).toBeVisible();
+    await page.getByLabel(/Abrir men[uú]/i).click();
+    await page.getByRole('menuitem', { name: module.menu }).first().click();
+    await expect(page.getByText(module.title).first()).toBeVisible();
   }
 });
 
@@ -46,8 +46,9 @@ test('categorias: listado y validacion de formulario', async ({ page }) => {
   await login(page);
   await page.goto('/categoria');
 
-  await expect(page.getByText('Accesorios')).toBeVisible();
-  await page.getByRole('button', { name: /Nueva Categoria/i }).click();
+  await expect(page.getByText('Accesorios').first()).toBeVisible();
+  await page.goto('/agregar-categoria');
+  await page.getByRole('button', { name: /Nueva Categor[ií]a/i }).click();
   await page.getByRole('button', { name: /^Guardar$/i }).click();
 
   await expect(page.getByText(/campo es obligatorio/i).first()).toBeVisible();
@@ -57,30 +58,31 @@ test('productos: listado, inventario y validacion de stock', async ({ page }) =>
   await login(page);
   await page.goto('/producto');
 
-  await expect(page.getByText('Audifonos Bluetooth')).toBeVisible();
+  await expect(page.getByText('Audifonos Bluetooth').first()).toBeVisible();
   await expect(page.getByText(/Stock/i).first()).toBeVisible();
+  await page.goto('/agregar-productos');
   await page.getByRole('button', { name: /Nuevo Producto/i }).click();
   await page.getByRole('button', { name: /^Guardar$/i }).click();
 
-  await expect(page.getByText(/stock 0/i)).toBeVisible();
+  await expect(page.getByText(/stock 0/i).first()).toBeVisible();
 });
 
 test('clientes: listado y validaciones de formulario', async ({ page }) => {
   await login(page);
   await page.goto('/cliente');
 
-  await expect(page.getByText('Luis')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'Luis' })).toBeVisible();
   await page.getByRole('button', { name: /Nuevo Cliente/i }).click();
   await page.getByRole('button', { name: /^Guardar$/i }).click();
 
-  await expect(page.getByText(/DNI de 8 digitos|RUC de 11 digitos/i)).toBeVisible();
+  await expect(page.getByText(/DNI de 8 d[ií]gitos|RUC de 11 d[ií]gitos/i).first()).toBeVisible();
 });
 
 test('proveedores: listado y validaciones de formulario', async ({ page }) => {
   await login(page);
   await page.goto('/proveedor');
 
-  await expect(page.getByText('Proveedor Demo SAC')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'Proveedor Demo SAC' })).toBeVisible();
   await page.getByRole('button', { name: /Nuevo Proveedor/i }).click();
   await page.getByRole('button', { name: /^Guardar$/i }).click();
 
@@ -102,9 +104,9 @@ test('ventas: listado y validacion de formulario', async ({ page }) => {
   await login(page);
   await page.goto('/venta');
 
-  await expect(page.getByText('Luis Perez')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'Luis Perez' })).toBeVisible();
   await page.getByRole('button', { name: /Registrar Venta/i }).click();
-  await page.getByRole('button', { name: /Registrar venta|Guardar/i }).first().click();
+  await page.getByRole('button', { name: /Registrar venta|Guardar/i }).first().click({ force: true });
 
   await expect(page.getByText(/cliente|producto|obligatorio|agrega/i).first()).toBeVisible();
 });

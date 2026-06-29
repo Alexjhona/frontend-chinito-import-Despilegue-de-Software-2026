@@ -42,7 +42,7 @@ pipeline {
 
         stage('Install Playwright Browser') {
             steps {
-                sh 'npx playwright install chromium'
+                sh 'npx playwright install chromium ffmpeg'
             }
         }
 

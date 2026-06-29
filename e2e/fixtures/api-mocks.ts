@@ -105,6 +105,7 @@ export async function mockBackend(page: Page) {
       clienteNombre: 'Luis Perez',
       total: 179.8,
       fecha: new Date().toISOString(),
+      items: [{ productoId: 10, cantidad: 2, precio: 89.9 }],
     },
   ]));
 }

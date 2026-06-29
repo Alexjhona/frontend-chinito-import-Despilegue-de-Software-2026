@@ -1,0 +1,73 @@
+<testsuites id="" name="" tests="10" failures="1" skipped="0" errors="0" time="123.98877">
+<testsuite name="frontend-flow.spec.ts" timestamp="2026-06-29T19:26:28.776Z" hostname="chromium" tests="10" failures="1" skipped="0" time="121.094" errors="0">
+<testcase name="inicio de sesion correcto" classname="frontend-flow.spec.ts" time="10.459">
+</testcase>
+<testcase name="inicio de sesion incorrecto" classname="frontend-flow.spec.ts" time="11.465">
+</testcase>
+<testcase name="navegacion por modulos principales" classname="frontend-flow.spec.ts" time="19.08">
+</testcase>
+<testcase name="categorias: listado y validacion de formulario" classname="frontend-flow.spec.ts" time="13.879">
+</testcase>
+<testcase name="productos: listado, inventario y validacion de stock" classname="frontend-flow.spec.ts" time="16.199">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\error-context.md]]
+
+[[ATTACHMENT|playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\trace.zip]]
+]]>
+</system-out>
+<failure message="expect(locator).toBeVisible() failed" type="expect.toBeVisible">
+<![CDATA[  [chromium] › frontend-flow.spec.ts:57:5 › productos: listado, inventario y validacion de stock ───
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/stock 0/i)
+    Expected: visible
+    Error: strict mode violation: getByText(/stock 0/i) resolved to 2 elements:
+        1) <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700"> No se puede agregar un producto con stock 0. Ing…</div> aka getByText('No se puede agregar un')
+        2) <p class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700"> No se puede guardar con stock 0. Ingresa una can…</p> aka getByText('No se puede guardar con stock')
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByText(/stock 0/i)
+
+
+      65 |   await page.getByRole('button', { name: /^Guardar$/i }).click();
+      66 |
+    > 67 |   await expect(page.getByText(/stock 0/i)).toBeVisible();
+         |                                            ^
+      68 | });
+      69 |
+      70 | test('clientes: listado y validaciones de formulario', async ({ page }) => {
+        at D:\ProyectoSistemadeVenta2026ChinitoImportaciones\microservicios-20260625T214858Z-3-001\microservicios\frontend-chinito-import-Despilegue-de-Software-2026\e2e\frontend-flow.spec.ts:67:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\test-results\playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\test-results\playwright\frontend-flow-productos-li-1b112-tario-y-validacion-de-stock-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+</testcase>
+<testcase name="clientes: listado y validaciones de formulario" classname="frontend-flow.spec.ts" time="13.98">
+</testcase>
+<testcase name="proveedores: listado y validaciones de formulario" classname="frontend-flow.spec.ts" time="13.268">
+</testcase>
+<testcase name="compras: endpoint disponible para integracion por gateway" classname="frontend-flow.spec.ts" time="5.75">
+</testcase>
+<testcase name="ventas: listado y validacion de formulario" classname="frontend-flow.spec.ts" time="10.097">
+</testcase>
+<testcase name="cierre de sesion" classname="frontend-flow.spec.ts" time="6.917">
+</testcase>
+</testsuite>
+</testsuites>
