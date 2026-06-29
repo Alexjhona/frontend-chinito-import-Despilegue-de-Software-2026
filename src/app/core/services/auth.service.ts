@@ -29,6 +29,24 @@ interface ActivateWorkerResponse {
   userName?: string;
 }
 
+interface JwtPayload {
+  exp?: number;
+  rol?: string;
+  role?: string;
+  authorities?: string[];
+  id?: string | number;
+  userId?: string | number;
+  trabajadorId?: string | number;
+  workerId?: string | number;
+  userName?: string;
+  username?: string;
+  preferred_username?: string;
+  sub?: string;
+  correo?: string;
+  email?: string;
+  [claim: string]: unknown;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -94,6 +112,7 @@ export class AuthService {
   }
 
   private setToken(token: string): void {
+    if (typeof window === 'undefined') return;
     localStorage.setItem(this.tokenKey, token);
   }
 
@@ -112,23 +131,19 @@ export class AuthService {
     }
 
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp * 1000;
+      const payload = this.decodePayload(token);
+      const exp = Number(payload?.exp || 0) * 1000;
       return Date.now() < exp;
     } catch (error) {
       return false;
     }
   }
 
-  getPayload(): any | null {
+  getPayload(): JwtPayload | null {
     const token = this.getToken();
     if (!token) return null;
 
-    try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch (error) {
-      return null;
-    }
+    return this.decodePayload(token);
   }
 
   getRol(): RolUsuario {
@@ -170,6 +185,7 @@ export class AuthService {
   }
 
   logout(): void {
+    if (typeof window === 'undefined') return;
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.ownerTokenKey);
     this.router.navigate(['/inicio']);
@@ -181,6 +197,17 @@ export class AuthService {
     const tokenActual = localStorage.getItem(this.tokenKey);
     if (tokenActual) {
       localStorage.setItem(this.ownerTokenKey, tokenActual);
+    }
+  }
+
+  private decodePayload(token: string): JwtPayload | null {
+    const [, encodedPayload] = token.split('.');
+    if (!encodedPayload) return null;
+
+    try {
+      return JSON.parse(atob(encodedPayload)) as JwtPayload;
+    } catch {
+      return null;
     }
   }
 }

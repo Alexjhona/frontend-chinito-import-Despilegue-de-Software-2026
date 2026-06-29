@@ -28,7 +28,9 @@ export class ThemeService {
 
   aplicar(config: ThemeConfig): void {
     const tema = this.normalizar(config);
-    localStorage.setItem(this.storageKey, JSON.stringify(tema));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.storageKey, JSON.stringify(tema));
+    }
     this.themeSubject.next(tema);
     this.aplicarDocumento(tema);
   }

@@ -29,7 +29,9 @@ export class AuditService {
       accion,
     };
     const entries = [entry, ...this.entries].slice(0, 80);
-    localStorage.setItem(this.storageKey, JSON.stringify(entries));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.storageKey, JSON.stringify(entries));
+    }
     this.auditSubject.next(entries);
   }
 

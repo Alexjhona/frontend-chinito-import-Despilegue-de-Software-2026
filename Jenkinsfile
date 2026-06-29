@@ -40,6 +40,18 @@ pipeline {
             }
         }
 
+        stage('Install Playwright Browser') {
+            steps {
+                sh 'npx playwright install chromium'
+            }
+        }
+
+        stage('Playwright E2E') {
+            steps {
+                sh 'npm run e2e:ci'
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
@@ -88,6 +100,8 @@ pipeline {
         }
 
         always {
+            archiveArtifacts artifacts: 'playwright-report/**,test-results/**', allowEmptyArchive: true, fingerprint: true
+            junit testResults: 'test-results/e2e-junit.xml', allowEmptyResults: true
             cleanWs()
         }
     }
