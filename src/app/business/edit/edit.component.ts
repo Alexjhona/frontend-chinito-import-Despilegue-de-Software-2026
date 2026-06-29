@@ -274,7 +274,7 @@ export class EditComponent implements OnDestroy {
   }
 
   private toggleId(ids: number[], id: number, agregar: boolean): number[] {
-    const normalizados = new Set(ids.map(valor => Number(valor)));
+    const normalizados = new Set(ids.map(Number));
     if (agregar) {
       normalizados.add(id);
     } else {
