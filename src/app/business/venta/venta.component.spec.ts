@@ -9,12 +9,12 @@ describe('VentaComponent', () => {
   let fixture: ComponentFixture<VentaComponent>;
   let httpMock: HttpTestingController;
 
-  const ventasUrl = 'http://localhost:8080/api/ventas';
-  const clientesUrl = 'http://localhost:8080/api/clientes';
-  const productosUrl = 'http://localhost:8080/api/productos';
-  const categoriasUrl = 'http://localhost:8080/api/categorias';
-  const stockUrl = 'http://localhost:8080/api/stock';
-  const dniUrl = 'http://localhost:8080/auth/dni';
+  const ventasUrl = '/api/ventas';
+  const clientesUrl = '/api/clientes';
+  const productosUrl = '/api/productos';
+  const categoriasUrl = '/api/categorias';
+  const stockUrl = '/api/stock';
+  const dniUrl = '/auth/dni';
   const clientes = [
     { id: 1, razonSocialONombre: 'Cliente Venta', dniOrRuc: '20111111111', direccion: 'Lima', telefono: '999111222' },
   ];
