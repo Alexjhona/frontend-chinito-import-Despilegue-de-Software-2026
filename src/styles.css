@@ -173,23 +173,36 @@
 
   .ai-image-glow {
     position: absolute;
-    width: 76%;
+    width: 82%;
     aspect-ratio: 1;
     border-radius: 999px;
-    background: conic-gradient(from 90deg, rgba(14, 165, 233, 0), rgba(14, 165, 233, 0.78), rgba(139, 92, 246, 0.82), rgba(16, 185, 129, 0.72), rgba(14, 165, 233, 0));
-    filter: blur(4px);
+    background: conic-gradient(from 90deg, rgba(14, 165, 233, 0), rgba(14, 165, 233, 0.78), rgba(244, 63, 94, 0.55), rgba(16, 185, 129, 0.72), rgba(14, 165, 233, 0));
+    filter: blur(7px);
+    opacity: 0.82;
     animation: ai-spin 1.4s linear infinite;
   }
 
   .ai-image-ring {
     position: relative;
-    width: 54%;
+    width: 68%;
     aspect-ratio: 1;
     border-radius: 999px;
-    border: 3px solid rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.5);
-    box-shadow: inset 0 0 24px rgba(14, 165, 233, 0.22), 0 10px 28px rgba(15, 23, 42, 0.12);
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.42);
+    box-shadow: inset 0 0 24px rgba(14, 165, 233, 0.22), 0 12px 32px rgba(15, 23, 42, 0.13);
     animation: ai-breathe 1.5s ease-in-out infinite;
+  }
+
+  .ai-image-logo {
+    position: absolute;
+    z-index: 2;
+    width: 58%;
+    max-width: 74px;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border-radius: 18px;
+    filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.24));
+    animation: ai-logo-pop 1.35s ease-in-out infinite;
   }
 
   .ai-image-scan {
@@ -205,6 +218,7 @@
     bottom: 14%;
     display: flex;
     gap: 4px;
+    z-index: 3;
   }
 
   .ai-image-dots span {
@@ -339,6 +353,16 @@
 
   50% {
     transform: scale(1.04);
+  }
+}
+
+@keyframes ai-logo-pop {
+  0%, 100% {
+    transform: scale(0.94) rotate(-2deg);
+  }
+
+  50% {
+    transform: scale(1.04) rotate(2deg);
   }
 }
 
