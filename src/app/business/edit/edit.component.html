@@ -169,7 +169,10 @@
         <header *ngIf="config.mostrarHeader"
                 class="flex cursor-pointer items-center justify-between rounded-lg border bg-white/90 px-4 py-3 shadow-lg transition"
                 [ngClass]="[clasePanel('header'), dispositivoPreview === 'mobile' ? 'flex-col items-stretch gap-3 px-3' : '']"
-                (click)="seleccionar('header')">
+                tabindex="0"
+                (click)="seleccionar('header')"
+                (keydown.enter)="seleccionar('header')"
+                (keydown.space)="$event.preventDefault(); seleccionar('header')">
           <div class="flex min-w-0 items-center gap-3">
             <img src="/logo.png" [alt]="config.marca" class="h-11 w-11 rounded-lg object-contain shadow-lg shadow-sky-500/20">
             <div class="min-w-0">
@@ -177,7 +180,7 @@
               <p class="truncate text-xs font-bold text-slate-500">{{ config.subtituloHeader }}</p>
             </div>
           </div>
-          <nav class="flex items-center gap-1 rounded-lg border border-white/80 bg-white/65 p-1" [class.w-full]="dispositivoPreview === 'mobile'">
+          <nav class="flex items-center gap-1 rounded-lg border border-white/80 bg-white/65 p-1" [class.w-full]="dispositivoPreview === 'mobile'" aria-label="Navegación de vista previa">
             <button type="button" class="rounded-lg px-3 py-2 text-sm font-black text-slate-600 hover:bg-sky-50" [class.flex-1]="dispositivoPreview === 'mobile'" [class.text-xs]="dispositivoPreview === 'mobile'" [class.bg-sky-50]="paginaPreview === 'inicio'" (click)="$event.stopPropagation(); seleccionarPagina('inicio')">Inicio</button>
             <button *ngIf="config.mostrarCatalogo" type="button" class="rounded-lg px-3 py-2 text-sm font-black text-slate-600 hover:bg-sky-50" [class.flex-1]="dispositivoPreview === 'mobile'" [class.text-xs]="dispositivoPreview === 'mobile'" [class.bg-sky-50]="paginaPreview === 'catalogo'" (click)="$event.stopPropagation(); seleccionarPagina('catalogo')">Catálogo</button>
             <button type="button" class="rounded-lg px-3 py-2 text-sm font-black text-slate-600 hover:bg-sky-50" [class.flex-1]="dispositivoPreview === 'mobile'" [class.text-xs]="dispositivoPreview === 'mobile'" [class.bg-sky-50]="paginaPreview === 'servicios'" (click)="$event.stopPropagation(); seleccionarPagina('servicios')">Servicios</button>
@@ -187,7 +190,10 @@
         <section *ngIf="paginaPreview === 'inicio'"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('hero')"
-                 (click)="seleccionar('hero')">
+                 tabindex="0"
+                 (click)="seleccionar('hero')"
+                 (keydown.enter)="seleccionar('hero')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('hero')">
           <div class="grid items-center gap-8 rounded-lg bg-gradient-to-br from-white via-blue-50 to-blue-100"
                [ngClass]="dispositivoPreview === 'desktop' ? 'min-h-[420px] p-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)]' : dispositivoPreview === 'tablet' ? 'min-h-[560px] grid-cols-1 p-7' : 'min-h-[620px] grid-cols-1 gap-5 p-5'">
             <div>
@@ -222,7 +228,10 @@
         <section *ngIf="paginaPreview === 'catalogo' && config.mostrarCatalogo"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('catalogo')"
-                 (click)="seleccionar('catalogo')">
+                 tabindex="0"
+                 (click)="seleccionar('catalogo')"
+                 (keydown.enter)="seleccionar('catalogo')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('catalogo')">
           <div class="mb-5 flex justify-end">
             <div class="h-12 w-[520px] rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-400 shadow-sm">Buscar categoría o producto...</div>
           </div>
@@ -238,7 +247,10 @@
         <section *ngIf="paginaPreview === 'productos' && config.mostrarProductos"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('productos')"
-                 (click)="seleccionar('productos')">
+                 tabindex="0"
+                 (click)="seleccionar('productos')"
+                 (keydown.enter)="seleccionar('productos')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('productos')">
           <div class="mb-5 flex justify-end">
             <div class="h-12 w-[520px] rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-400 shadow-sm">Buscar producto, código o categoría...</div>
           </div>
@@ -257,7 +269,10 @@
         <section *ngIf="paginaPreview === 'servicios' && config.mostrarServicios"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('servicios')"
-                 (click)="seleccionar('servicios')">
+                 tabindex="0"
+                 (click)="seleccionar('servicios')"
+                 (keydown.enter)="seleccionar('servicios')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('servicios')">
           <div class="mb-6 text-center">
             <h2 class="text-4xl font-black">¿Por qué elegirnos?</h2>
           </div>
@@ -271,27 +286,39 @@
 
         <section class="mt-6 grid cursor-pointer gap-4 rounded-lg bg-slate-950 p-5 text-white lg:grid-cols-4"
                  [ngClass]="clasePanel('beneficios')"
-                 (click)="seleccionar('beneficios')">
+                 tabindex="0"
+                 (click)="seleccionar('beneficios')"
+                 (keydown.enter)="seleccionar('beneficios')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('beneficios')">
           <article *ngFor="let beneficio of config.beneficios"><p class="text-lg font-black">{{ beneficio.titulo }}</p><p class="mt-1 text-sm font-semibold text-slate-300">{{ beneficio.descripcion }}</p></article>
         </section>
 
         <section *ngIf="paginaPreview === 'servicios' && !config.mostrarServicios"
                  class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
-                 (click)="seleccionar('servicios')">
+                 tabindex="0"
+                 (click)="seleccionar('servicios')"
+                 (keydown.enter)="seleccionar('servicios')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('servicios')">
           <p class="text-lg font-black text-slate-700">La página de servicios está oculta.</p>
           <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar servicios” en propiedades para verla en el inicio.</p>
         </section>
 
         <section *ngIf="paginaPreview === 'catalogo' && !config.mostrarCatalogo"
                  class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
-                 (click)="seleccionar('catalogo')">
+                 tabindex="0"
+                 (click)="seleccionar('catalogo')"
+                 (keydown.enter)="seleccionar('catalogo')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('catalogo')">
           <p class="text-lg font-black text-slate-700">La página de catálogo está oculta.</p>
           <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar catálogo” en propiedades para verla.</p>
         </section>
 
         <section *ngIf="paginaPreview === 'productos' && !config.mostrarProductos"
                  class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
-                 (click)="seleccionar('productos')">
+                 tabindex="0"
+                 (click)="seleccionar('productos')"
+                 (keydown.enter)="seleccionar('productos')"
+                 (keydown.space)="$event.preventDefault(); seleccionar('productos')">
           <p class="text-lg font-black text-slate-700">La página de productos está oculta.</p>
           <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar productos” en propiedades para verla.</p>
         </section>
@@ -301,9 +328,9 @@
       </div>
     </main>
 
-    <div *ngIf="formularioAbierto" class="fixed inset-0 z-[120] bg-slate-950/30 backdrop-blur-[3px]" (click)="cerrarFormulario()"></div>
+    <div *ngIf="formularioAbierto" class="fixed inset-0 z-[120] bg-slate-950/30 backdrop-blur-[3px]" tabindex="-1" aria-hidden="true" (click)="cerrarFormulario()" (keydown.escape)="cerrarFormulario()"></div>
 
-    <aside *ngIf="formularioAbierto" class="fixed right-4 top-1/2 z-[130] max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-[430px] -translate-y-1/2 overflow-y-auto rounded-lg border border-white/80 bg-white/95 p-4 shadow-[0_30px_120px_rgba(15,23,42,0.24)] backdrop-blur-2xl">
+    <aside *ngIf="formularioAbierto" class="fixed right-4 top-1/2 z-[130] max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-[430px] -translate-y-1/2 overflow-y-auto rounded-lg border border-white/80 bg-white/95 p-4 shadow-[0_30px_120px_rgba(15,23,42,0.24)] backdrop-blur-2xl" aria-label="Propiedades del editor">
       <div class="space-y-4">
         <div class="rounded-lg bg-gray-950 p-4 text-white">
           <div class="flex items-start justify-between gap-3">

@@ -102,6 +102,43 @@ describe('AjustesComponent', () => {
     expect(component.restaurando).toBeFalse();
   });
 
+  it('should load a JSON module backup from a Blob using text()', async () => {
+    spyOn(component, 'restaurarModuloDesdeItems').and.resolveTo();
+    const file = new File([
+      JSON.stringify({ data: { clientes: [{ id: 30, nombres: 'Marta' }] } }),
+    ], 'clientes.json', { type: 'application/json' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [file] });
+
+    await component.cargarRespaldoModulo({ target: input } as unknown as Event, 'clientes');
+
+    expect(component.restaurarModuloDesdeItems).toHaveBeenCalledWith('clientes', [
+      { id: 30, nombres: 'Marta' },
+    ]);
+    expect(component.mensaje).toBe('Clientes cargado al backend.');
+    expect(input.value).toBe('');
+  });
+
+  it('should restore local storage from a general backup file', async () => {
+    spyOn<any>(component, 'restaurarDatosBackend').and.resolveTo();
+    spyOn(localStorage, 'setItem');
+    const file = new File([
+      JSON.stringify({
+        localStorage: { token: 'abc123' },
+        data: { clientes: [] },
+      }),
+    ], 'respaldo.json', { type: 'application/json' });
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', { value: [file] });
+
+    await component.restaurarRespaldo({ target: input } as unknown as Event);
+
+    expect(localStorage.setItem).toHaveBeenCalledWith('token', 'abc123');
+    expect((component as any).restaurarDatosBackend).toHaveBeenCalledWith({ clientes: [] });
+    expect(component.mensaje).toContain('Respaldo restaurado');
+    expect(component.restaurando).toBeFalse();
+  });
+
   it('should load general statistics from backend data', () => {
     expect(component.estadisticas.clientes).toBe(1);
     expect(component.estadisticas.proveedores).toBe(1);

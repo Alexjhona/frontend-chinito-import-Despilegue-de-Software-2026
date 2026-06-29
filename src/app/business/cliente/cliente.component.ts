@@ -107,7 +107,7 @@ export class ClienteComponent implements OnDestroy {
 
   getNombreCliente(cliente: Cliente): string {
     const nombreSeparado = `${cliente.nombres || ''} ${cliente.apellidoPaterno || ''} ${cliente.apellidoMaterno || ''}`
-      .replace(/\s+/g, ' ')
+      .replaceAll(/\s+/g, ' ')
       .trim();
     return nombreSeparado || cliente.razonSocialONombre || cliente.nombre || cliente.razonSocial || '';
   }
@@ -115,7 +115,7 @@ export class ClienteComponent implements OnDestroy {
   private normalizarTexto(valor: string | undefined | null): string {
     return (valor || '')
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replaceAll(/[\u0300-\u036f]/g, '')
       .trim()
       .toLowerCase();
   }
@@ -216,7 +216,7 @@ export class ClienteComponent implements OnDestroy {
   }
 
   sanitizarDocumentoCliente() {
-    this.formCliente.dniOrRuc = (this.formCliente.dniOrRuc || '').replace(/\D/g, '').slice(0, 11);
+    this.formCliente.dniOrRuc = (this.formCliente.dniOrRuc || '').replaceAll(/\D/g, '').slice(0, 11);
   }
 
   permitirSoloNumeros(event: KeyboardEvent) {
@@ -330,7 +330,7 @@ export class ClienteComponent implements OnDestroy {
   }
 
   soloNumerosTelefono() {
-    const telefonoLimpio = (this.formCliente.telefono || '').replace(/\D/g, '').slice(0, 9);
+    const telefonoLimpio = (this.formCliente.telefono || '').replaceAll(/\D/g, '').slice(0, 9);
     this.telefonoAdvertencia = this.formCliente.telefono !== telefonoLimpio;
     this.formCliente.telefono = telefonoLimpio;
   }
@@ -353,10 +353,10 @@ export class ClienteComponent implements OnDestroy {
   }
 
   private normalizarCliente(cliente: Cliente): Cliente {
-    const nombres = (cliente.nombres || '').replace(/\s+/g, ' ').trim();
+    const nombres = (cliente.nombres || '').replaceAll(/\s+/g, ' ').trim();
     const apellidoPaterno = (cliente.apellidoPaterno || '').trim();
     const apellidoMaterno = (cliente.apellidoMaterno || '').trim();
-    const nombreLegacy = nombres || (cliente.razonSocialONombre || cliente.nombre || cliente.razonSocial || '').replace(/\s+/g, ' ').trim();
+    const nombreLegacy = nombres || (cliente.razonSocialONombre || cliente.nombre || cliente.razonSocial || '').replaceAll(/\s+/g, ' ').trim();
     const base = {
       ...this.crearClienteVacio(),
       ...cliente,

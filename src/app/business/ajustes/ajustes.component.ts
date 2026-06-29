@@ -157,29 +157,26 @@ export class AjustesComponent {
     this.mensaje = 'Respaldo general descargado.';
   }
 
-  restaurarRespaldo(event: Event): void {
+  async restaurarRespaldo(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const data = JSON.parse(String(reader.result || '{}'));
-        const storage = data.localStorage || {};
-        Object.keys(storage).forEach(key => localStorage.setItem(key, storage[key]));
-        this.restaurando = true;
-        await this.restaurarDatosBackend(data.data || {});
-        this.restaurando = false;
-        this.auditService.registrar('Respaldo restaurado');
-        this.mensaje = 'Respaldo restaurado. Los datos compatibles fueron enviados al backend.';
-      } catch {
-        this.restaurando = false;
-        this.mensaje = 'No se pudo restaurar el respaldo. Revisa el archivo.';
-      }
-      input.value = '';
-    };
-    reader.readAsText(file);
+    try {
+      const contenido = await file.text();
+      const data = JSON.parse(contenido || '{}');
+      const storage = data.localStorage || {};
+      Object.keys(storage).forEach(key => localStorage.setItem(key, storage[key]));
+      this.restaurando = true;
+      await this.restaurarDatosBackend(data.data || {});
+      this.restaurando = false;
+      this.auditService.registrar('Respaldo restaurado');
+      this.mensaje = 'Respaldo restaurado. Los datos compatibles fueron enviados al backend.';
+    } catch {
+      this.restaurando = false;
+      this.mensaje = 'No se pudo restaurar el respaldo. Revisa el archivo.';
+    }
+    input.value = '';
   }
 
   exportarClientes(): void {
@@ -223,29 +220,25 @@ export class AjustesComponent {
     });
   }
 
-  cargarRespaldoModulo(event: Event, modulo: ModuloRespaldo): void {
+  async cargarRespaldoModulo(event: Event, modulo: ModuloRespaldo): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const contenido = String(reader.result || '');
-        const items = file.name.endsWith('.json')
-          ? this.extraerItemsJson(JSON.parse(contenido), modulo)
-          : this.parseCsv(contenido);
+    try {
+      const contenido = await file.text();
+      const items = file.name.endsWith('.json')
+        ? this.extraerItemsJson(JSON.parse(contenido || '{}'), modulo)
+        : this.parseCsv(contenido);
 
-        await this.restaurarModuloDesdeItems(modulo, items);
-        this.auditService.registrar(`${this.nombreModulo(modulo)} restaurado`);
-        this.mensaje = `${this.nombreModulo(modulo)} cargado al backend.`;
-      } catch {
-        this.restaurando = false;
-        this.mensaje = `No se pudo cargar ${this.nombreModulo(modulo).toLowerCase()}. Revisa el archivo.`;
-      }
-      input.value = '';
-    };
-    reader.readAsText(file);
+      await this.restaurarModuloDesdeItems(modulo, items);
+      this.auditService.registrar(`${this.nombreModulo(modulo)} restaurado`);
+      this.mensaje = `${this.nombreModulo(modulo)} cargado al backend.`;
+    } catch {
+      this.restaurando = false;
+      this.mensaje = `No se pudo cargar ${this.nombreModulo(modulo).toLowerCase()}. Revisa el archivo.`;
+    }
+    input.value = '';
   }
 
   async restaurarModuloDesdeItems(modulo: ModuloRespaldo, items: Record<string, unknown>[]): Promise<void> {
@@ -366,16 +359,16 @@ export class AjustesComponent {
     `;
 
     this.descargarArchivo(tabla, `${nombre}_${this.fechaArchivo()}.xls`, 'application/vnd.ms-excel;charset=utf-8');
-    this.mensaje = `${nombre.replace('_', ' ')} exportado.`;
+    this.mensaje = `${nombre.replaceAll('_', ' ')} exportado.`;
   }
 
   private valorHtml(valor: unknown): string {
     const texto = typeof valor === 'object' && valor !== null ? JSON.stringify(valor) : String(valor ?? '');
     return texto
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
   }
 
   private celdaHtml(etiqueta: 'td' | 'th', contenido: string): string {
@@ -393,7 +386,7 @@ export class AjustesComponent {
   }
 
   private fechaArchivo(): string {
-    return new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    return new Date().toISOString().slice(0, 19).replaceAll(':', '-').replaceAll('T', '-');
   }
 
   private bytesLegibles(bytes: number): string {

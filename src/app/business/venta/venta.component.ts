@@ -242,7 +242,7 @@ export class VentaComponent implements OnDestroy {
   }
 
   get dniBuscado(): string {
-    return (this.busquedaCliente || '').replace(/\D/g, '').slice(0, 8);
+    return (this.busquedaCliente || '').replaceAll(/\D/g, '').slice(0, 8);
   }
 
   get mostrarClienteNoRegistrado(): boolean {
@@ -896,7 +896,7 @@ export class VentaComponent implements OnDestroy {
       const blob = await response.blob();
       return await new Promise(resolve => {
         const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
         reader.onerror = () => resolve(null);
         reader.readAsDataURL(blob);
       });
@@ -926,7 +926,7 @@ export class VentaComponent implements OnDestroy {
     link.click();
     link.remove();
 
-    window.open(url, '_blank', 'noopener');
+    globalThis.window.open(url, '_blank', 'noopener');
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
   }
 
@@ -973,7 +973,7 @@ export class VentaComponent implements OnDestroy {
   getNombreCliente(cliente: Cliente | Partial<Cliente> | undefined | null): string {
     if (!cliente) return 'Cliente sin nombre';
     const nombreSeparado = `${cliente.nombres || ''} ${cliente.apellidoPaterno || ''} ${cliente.apellidoMaterno || ''}`
-      .replace(/\s+/g, ' ')
+      .replaceAll(/\s+/g, ' ')
       .trim();
     return nombreSeparado || cliente.razonSocialONombre || 'Cliente sin nombre';
   }
@@ -1010,7 +1010,7 @@ export class VentaComponent implements OnDestroy {
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+      .replaceAll(/[\u0300-\u036f]/g, '');
   }
 
   private crearVentaVacia(): Venta {
@@ -1088,10 +1088,10 @@ export class VentaComponent implements OnDestroy {
   }
 
   private prepararClienteRapidoParaGuardar() {
-    this.nuevoCliente.dniOrRuc = (this.nuevoCliente.dniOrRuc || '').replace(/\D/g, '').slice(0, 8);
-    this.nuevoCliente.nombres = (this.nuevoCliente.nombres || '').replace(/\s+/g, ' ').trim();
-    this.nuevoCliente.apellidoPaterno = (this.nuevoCliente.apellidoPaterno || '').replace(/\s+/g, ' ').trim();
-    this.nuevoCliente.apellidoMaterno = (this.nuevoCliente.apellidoMaterno || '').replace(/\s+/g, ' ').trim();
+    this.nuevoCliente.dniOrRuc = (this.nuevoCliente.dniOrRuc || '').replaceAll(/\D/g, '').slice(0, 8);
+    this.nuevoCliente.nombres = (this.nuevoCliente.nombres || '').replaceAll(/\s+/g, ' ').trim();
+    this.nuevoCliente.apellidoPaterno = (this.nuevoCliente.apellidoPaterno || '').replaceAll(/\s+/g, ' ').trim();
+    this.nuevoCliente.apellidoMaterno = (this.nuevoCliente.apellidoMaterno || '').replaceAll(/\s+/g, ' ').trim();
     this.nuevoCliente.razonSocialONombre = this.getNombreCliente(this.nuevoCliente as Cliente);
     this.nuevoCliente.direccion = '';
     this.nuevoCliente.telefono = '';
@@ -1102,10 +1102,10 @@ export class VentaComponent implements OnDestroy {
   }
 
   private normalizarCliente(cliente: Cliente): Cliente {
-    const nombres = (cliente.nombres || '').replace(/\s+/g, ' ').trim();
-    const apellidoPaterno = (cliente.apellidoPaterno || '').replace(/\s+/g, ' ').trim();
-    const apellidoMaterno = (cliente.apellidoMaterno || '').replace(/\s+/g, ' ').trim();
-    const nombreLegacy = nombres || (cliente.razonSocialONombre || '').replace(/\s+/g, ' ').trim();
+    const nombres = (cliente.nombres || '').replaceAll(/\s+/g, ' ').trim();
+    const apellidoPaterno = (cliente.apellidoPaterno || '').replaceAll(/\s+/g, ' ').trim();
+    const apellidoMaterno = (cliente.apellidoMaterno || '').replaceAll(/\s+/g, ' ').trim();
+    const nombreLegacy = nombres || (cliente.razonSocialONombre || '').replaceAll(/\s+/g, ' ').trim();
     const base = {
       ...cliente,
       razonSocialONombre: cliente.razonSocialONombre || '',

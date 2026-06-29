@@ -103,7 +103,7 @@ export class EditComponent implements OnDestroy {
     private readonly publicContent: PublicContentService,
     private readonly dataRefresh: DataRefreshService,
   ) {
-    this.config = JSON.parse(JSON.stringify(this.publicContent.config));
+    this.config = structuredClone(this.publicContent.config);
     this.cargarCatalogo();
     this.refreshSub = this.dataRefresh.refresh$.subscribe(() => this.cargarCatalogo());
   }
@@ -120,7 +120,7 @@ export class EditComponent implements OnDestroy {
 
   resetear(): void {
     this.publicContent.resetear();
-    this.config = JSON.parse(JSON.stringify(this.publicContent.config));
+    this.config = structuredClone(this.publicContent.config);
     this.guardado = 'Se restauró el inicio original.';
     setTimeout(() => this.guardado = '', 2800);
   }

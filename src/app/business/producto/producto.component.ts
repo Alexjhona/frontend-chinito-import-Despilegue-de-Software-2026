@@ -326,7 +326,7 @@ export class ProductoComponent implements OnDestroy {
 
     const reader = new FileReader();
     reader.onload = () => {
-      this.formProducto.imagen = String(reader.result || '');
+      this.formProducto.imagen = typeof reader.result === 'string' ? reader.result : '';
     };
     reader.readAsDataURL(file);
   }
@@ -497,7 +497,7 @@ export class ProductoComponent implements OnDestroy {
       .trim()
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+      .replaceAll(/[\u0300-\u036f]/g, '');
   }
 
   private crearUrlImagenWeb(nombre: string, contexto: string, categoria = '', intento = 1): string {
@@ -526,7 +526,7 @@ export class ProductoComponent implements OnDestroy {
     let hash = 0;
 
     for (const caracter of valor) {
-      hash = Math.imul(hash, 31) + caracter.charCodeAt(0);
+      hash = Math.imul(hash, 31) + (caracter.codePointAt(0) ?? 0);
       if (hash > 0x7fffffff) hash -= 0x100000000;
     }
 

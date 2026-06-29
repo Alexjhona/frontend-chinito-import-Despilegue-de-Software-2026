@@ -9,7 +9,7 @@
         </div>
       </button>
 
-      <nav class="hidden items-center gap-1 rounded-lg border border-white/80 bg-white/65 p-1 shadow-inner shadow-sky-100/60 md:flex">
+      <nav class="hidden items-center gap-1 rounded-lg border border-white/80 bg-white/65 p-1 shadow-inner shadow-sky-100/60 md:flex" aria-label="Navegación principal">
         <a routerLink="/inicio" class="public-nav-link rounded-lg px-3 py-2 text-sm font-black text-slate-600 transition hover:bg-sky-50 hover:text-sky-700" [ngClass]="esVistaInicio ? 'bg-sky-50 text-sky-700' : ''">Inicio</a>
         <div *ngIf="contenido.mostrarCatalogo" class="group relative">
           <a routerLink="/catalogo" class="public-nav-link inline-flex rounded-lg px-3 py-2 text-sm font-black text-slate-600 transition hover:bg-sky-50 hover:text-sky-700" [ngClass]="esVistaCatalogo || esVistaProductos ? 'bg-sky-50 text-sky-700' : ''">Catálogo</a>
@@ -35,7 +35,7 @@
         <a routerLink="/servicios" class="public-nav-link rounded-lg px-3 py-2 text-sm font-black text-slate-600 transition hover:bg-sky-50 hover:text-sky-700" [ngClass]="esVistaServicios ? 'bg-sky-50 text-sky-700' : ''">Servicios</a>
       </nav>
 
-      <nav class="flex items-center gap-2">
+      <nav class="flex items-center gap-2" aria-label="Acceso de usuario">
         <a routerLink="/login" aria-label="Iniciar sesión" title="Iniciar sesión" class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-700 text-white shadow-lg shadow-blue-700/20 transition hover:bg-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd" d="M7.5 7.5a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM12 13.5c-4.418 0-8 2.239-8 5v.5A2 2 0 0 0 6 21h12a2 2 0 0 0 2-2v-.5c0-2.761-3.582-5-8-5Z" clip-rule="evenodd"></path>
@@ -43,7 +43,7 @@
         </a>
       </nav>
 
-      <nav class="grid w-full grid-cols-3 gap-2 rounded-lg border border-white/80 bg-white/70 p-1 shadow-inner shadow-sky-100/60 md:hidden">
+      <nav class="grid w-full grid-cols-3 gap-2 rounded-lg border border-white/80 bg-white/70 p-1 shadow-inner shadow-sky-100/60 md:hidden" aria-label="Navegación móvil">
         <a routerLink="/inicio"
            class="public-nav-link rounded-lg px-2 py-2.5 text-center text-xs font-black text-slate-600 transition hover:bg-sky-50 hover:text-sky-700"
            [ngClass]="esVistaInicio ? 'bg-sky-50 text-sky-700 shadow-sm' : ''">
@@ -259,8 +259,8 @@
         </button>
       </div>
 
-      <div *ngIf="servicioActivo" class="servicio-modal-backdrop" (click)="cerrarServicio()"></div>
-      <div *ngIf="servicioActivo" class="servicio-modal" role="dialog" aria-modal="true" aria-labelledby="servicio-modal-title">
+      <div *ngIf="servicioActivo" class="servicio-modal-backdrop" tabindex="-1" aria-hidden="true" (click)="cerrarServicio()" (keydown.escape)="cerrarServicio()"></div>
+      <dialog *ngIf="servicioActivo" class="servicio-modal" open aria-modal="true" aria-labelledby="servicio-modal-title" (cancel)="cerrarServicio()">
         <button type="button" class="servicio-modal-close" aria-label="Cerrar" (click)="cerrarServicio()">×</button>
 
         <div *ngIf="servicioActivoConfig as servicio" class="servicio-formulario">
@@ -301,7 +301,7 @@
             </ul>
           </div>
         </div>
-      </div>
+      </dialog>
     </section>
 
     <section class="beneficios-footer apple-section" aria-label="Beneficios de compra">

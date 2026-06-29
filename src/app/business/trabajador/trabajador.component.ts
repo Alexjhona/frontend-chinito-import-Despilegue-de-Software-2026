@@ -103,13 +103,15 @@ export class TrabajadorComponent implements OnDestroy {
 
   get trabajadoresFiltrados(): Trabajador[] {
     const texto = this.normalizar(this.busqueda);
-    if (!texto) return this.trabajadores;
-    return this.trabajadores.filter(t =>
-      this.normalizar(`${t.nombre} ${t.apellido}`).includes(texto) ||
-      this.normalizar(t.dni).includes(texto) ||
-      this.normalizar(t.correo || t.userName).includes(texto) ||
-      this.normalizar(t.rol).includes(texto)
-    );
+    if (texto) {
+      return this.trabajadores.filter(t =>
+        this.normalizar(`${t.nombre} ${t.apellido}`).includes(texto) ||
+        this.normalizar(t.dni).includes(texto) ||
+        this.normalizar(t.correo || t.userName).includes(texto) ||
+        this.normalizar(t.rol).includes(texto)
+      );
+    }
+    return this.trabajadores;
   }
 
   get trabajadoresPaginados(): Trabajador[] {
@@ -331,7 +333,7 @@ export class TrabajadorComponent implements OnDestroy {
 
   sanitizarDniTrabajador() {
     const dniAnterior = this.formTrabajador.dni;
-    this.formTrabajador.dni = this.formTrabajador.dni.replace(/\D/g, '').slice(0, 8);
+    this.formTrabajador.dni = this.formTrabajador.dni.replaceAll(/\D/g, '').slice(0, 8);
 
     if (this.dniConDatosCargados && this.formTrabajador.dni !== this.dniConDatosCargados) {
       this.formTrabajador.nombre = '';
@@ -348,7 +350,7 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   sanitizarCelularTrabajador() {
-    this.formTrabajador.celular = this.formTrabajador.celular.replace(/\D/g, '').slice(0, 9);
+    this.formTrabajador.celular = this.formTrabajador.celular.replaceAll(/\D/g, '').slice(0, 9);
   }
 
   permitirSoloNumeros(event: KeyboardEvent) {
@@ -366,7 +368,7 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   consultarDniTrabajador() {
-    this.formTrabajador.dni = this.formTrabajador.dni.replace(/\D/g, '').slice(0, 8);
+    this.formTrabajador.dni = this.formTrabajador.dni.replaceAll(/\D/g, '').slice(0, 8);
     const dni = this.formTrabajador.dni;
 
     if (dni.length !== 8) {
@@ -475,8 +477,8 @@ export class TrabajadorComponent implements OnDestroy {
   private limpiarFormulario() {
     this.formTrabajador.nombre = this.formTrabajador.nombre.trim();
     this.formTrabajador.apellido = this.formTrabajador.apellido.trim();
-    this.formTrabajador.dni = this.formTrabajador.dni.replace(/\D/g, '').slice(0, 8);
-    this.formTrabajador.celular = this.formTrabajador.celular.replace(/\D/g, '').slice(0, 9);
+    this.formTrabajador.dni = this.formTrabajador.dni.replaceAll(/\D/g, '').slice(0, 8);
+    this.formTrabajador.celular = this.formTrabajador.celular.replaceAll(/\D/g, '').slice(0, 9);
     this.formTrabajador.correo = this.formTrabajador.correo.trim().toLowerCase();
     this.formTrabajador.userName = this.formTrabajador.correo;
   }
@@ -594,11 +596,11 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   private obtenerOrigenRegistro(): string {
-    return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200';
+    return typeof globalThis.window !== 'undefined' ? globalThis.window.location.origin : 'http://localhost:4200';
   }
 
   private normalizar(valor: string | undefined | null): string {
-    return (valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    return (valor || '').normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').trim().toLowerCase();
   }
 
   private normalizarCorreo(valor: string | undefined | null): string {
@@ -606,16 +608,16 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   private normalizarDatosDni(data: DniConsulta): { nombres: string; apellidos: string } {
-    const nombres = (data.nombres || '').replace(/\s+/g, ' ').trim();
-    const apellidoPaterno = (data.apellidoPaterno || '').replace(/\s+/g, ' ').trim();
-    const apellidoMaterno = (data.apellidoMaterno || '').replace(/\s+/g, ' ').trim();
-    const apellidos = `${apellidoPaterno} ${apellidoMaterno}`.replace(/\s+/g, ' ').trim();
+    const nombres = (data.nombres || '').replaceAll(/\s+/g, ' ').trim();
+    const apellidoPaterno = (data.apellidoPaterno || '').replaceAll(/\s+/g, ' ').trim();
+    const apellidoMaterno = (data.apellidoMaterno || '').replaceAll(/\s+/g, ' ').trim();
+    const apellidos = `${apellidoPaterno} ${apellidoMaterno}`.replaceAll(/\s+/g, ' ').trim();
 
     if (nombres || apellidos) {
       return { nombres, apellidos };
     }
 
-    const nombreCompleto = (data.nombreCompleto || '').replace(/\s+/g, ' ').trim();
+    const nombreCompleto = (data.nombreCompleto || '').replaceAll(/\s+/g, ' ').trim();
     if (!nombreCompleto) {
       return { nombres: '', apellidos: '' };
     }

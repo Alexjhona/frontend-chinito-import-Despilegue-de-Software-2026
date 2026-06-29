@@ -37,7 +37,7 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    window.setTimeout(() => {
+    globalThis.setTimeout(() => {
       this.authService.login(user, this.password).subscribe({
         next: () => {
           this.auditService.registrar('Inicio de sesión');

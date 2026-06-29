@@ -346,11 +346,11 @@ export class InicioComponent implements OnDestroy {
   }
 
   private normalizar(valor: string | undefined | null): string {
-    return (valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    return (valor || '').normalize('NFD').replaceAll(/[\u0300-\u036f]/g, '').trim().toLowerCase();
   }
 
   private actualizarVista(url: string) {
-    const path = url.split('?')[0].split('#')[0].replace(/^\/+/, '') || 'inicio';
+    const path = url.split('?')[0].split('#')[0].replaceAll(/^\/+/g, '') || 'inicio';
 
     if (path === 'catalogo' || path === 'productos' || path === 'servicios') {
       this.vistaActual = path;
@@ -361,7 +361,7 @@ export class InicioComponent implements OnDestroy {
 
   private iniciarCarrusel(): void {
     if (this.sliderTimer) clearInterval(this.sliderTimer);
-    if (typeof window === 'undefined') return;
+    if (typeof globalThis.window === 'undefined') return;
 
     this.sliderTimer = setInterval(() => {
       this.slideActivo = (this.slideActivo + 1) % this.slidesInicio.length;

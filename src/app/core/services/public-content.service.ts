@@ -238,6 +238,6 @@ export class PublicContentService {
   }
 
   private clonar<T>(config: T): T {
-    return JSON.parse(JSON.stringify(config));
+    return structuredClone(config);
   }
 }

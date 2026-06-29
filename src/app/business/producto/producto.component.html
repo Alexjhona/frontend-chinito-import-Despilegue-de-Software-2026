@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  <div *ngIf="mostrarFormulario && puedeEscribir" class="fixed inset-0 z-[80] bg-slate-950/25 backdrop-blur-[2px]" (click)="cancelar()"></div>
+  <div *ngIf="mostrarFormulario && puedeEscribir" class="fixed inset-0 z-[80] bg-slate-950/25 backdrop-blur-[2px]" tabindex="-1" aria-hidden="true" (click)="cancelar()" (keydown.escape)="cancelar()"></div>
 
   <div *ngIf="mostrarFormulario && puedeEscribir" class="fixed left-1/2 top-1/2 z-[90] max-h-[calc(100vh-2rem)] w-[calc(100%-1.5rem)] max-w-6xl overflow-y-auto rounded-lg border border-white/70 bg-white/95 p-4 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl sm:p-5"
        [style.transform]="'translate(-50%, -50%)'">
@@ -71,7 +71,8 @@
           required
         />
         <ul *ngIf="busquedaCategoriaInput && categoriasFiltradas.length" class="absolute left-0 right-0 z-30 mt-2 max-h-48 overflow-auto rounded-lg border border-white/80 bg-white/95 p-1 shadow-[0_18px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-          <li *ngFor="let cat of categoriasFiltradas" class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-sky-50 hover:text-sky-700" (click)="seleccionarCategoria(cat)">
+          <li *ngFor="let cat of categoriasFiltradas">
+            <button type="button" class="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-bold text-gray-700 transition-colors hover:bg-sky-50 hover:text-sky-700" (click)="seleccionarCategoria(cat)">
             <span class="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-[11px] font-black text-sky-700">
               <img *ngIf="cat.imagen; else opcionCategoriaIniciales"
                    [src]="cat.imagen"
@@ -80,6 +81,7 @@
               <ng-template #opcionCategoriaIniciales>{{ getInicialesCategoria(cat.nombre) }}</ng-template>
             </span>
             <span class="truncate">{{ cat.nombre }}</span>
+            </button>
           </li>
         </ul>
         <p *ngIf="(categoriaCtrl.invalid || !formProducto.categoriaId) && (categoriaCtrl.touched || productoForm.submitted)" class="mt-2 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
@@ -109,7 +111,7 @@
           <div class="relative grid h-28 w-28 shrink-0 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-sky-100 via-emerald-50 to-rose-100 text-xl font-black text-sky-700 shadow-inner shadow-sky-100">
             <img *ngIf="formProducto.imagen; else productoPreviewIniciales"
                  [src]="formProducto.imagen"
-                 [alt]="formProducto.nombre || 'Imagen del producto'"
+                 [alt]="formProducto.nombre || 'Producto'"
                  class="h-full w-full object-cover"
                  (load)="imagenWebLista()"
                  (error)="imagenWebError()">
@@ -309,15 +311,19 @@
   <div class="fixed inset-0 z-[110] bg-slate-950/30 backdrop-blur-[2px] transition-opacity duration-300"
        [style.opacity]="accionPendiente ? '1' : '0'"
        [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
-       (click)="cancelarConfirmacion()"></div>
+       tabindex="-1"
+       aria-hidden="true"
+       (click)="cancelarConfirmacion()"
+       (keydown.escape)="cancelarConfirmacion()"></div>
 
-  <div class="fixed left-1/2 top-1/2 z-[120] w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-white/70 bg-white/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-all duration-300 sm:p-6"
+  <dialog class="fixed left-1/2 top-1/2 z-[120] w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-white/70 bg-white/95 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.18)] backdrop-blur-2xl transition-all duration-300 sm:p-6"
        [style.opacity]="accionPendiente ? '1' : '0'"
        [style.pointer-events]="accionPendiente ? 'auto' : 'none'"
        [style.transform]="accionPendiente ? 'translate(-50%, -50%) scale(1)' : 'translate(-50%, -46%) scale(0.96)'"
-       role="dialog"
+       [open]="!!accionPendiente"
        aria-modal="true"
-       aria-label="Confirmar acción sobre producto">
+       aria-label="Confirmar acción sobre producto"
+       (cancel)="cancelarConfirmacion()">
     <div class="mb-4 flex items-start gap-4">
       <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 via-rose-50 to-amber-100 text-amber-700 shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -334,5 +340,5 @@
       <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950" (click)="cancelarConfirmacion()">Cancelar</button>
       <button type="button" class="h-11 rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-blue-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl" (click)="confirmarAccion()">Confirmar</button>
     </div>
-  </div>
+  </dialog>
 </section>

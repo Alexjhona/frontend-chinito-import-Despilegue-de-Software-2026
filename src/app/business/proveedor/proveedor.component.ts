@@ -117,7 +117,7 @@ export class ProveedorComponent implements OnDestroy {
   private normalizarTexto(valor: string | undefined | null): string {
     return (valor || '')
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replaceAll(/[\u0300-\u036f]/g, '')
       .trim()
       .toLowerCase();
   }
@@ -192,7 +192,7 @@ export class ProveedorComponent implements OnDestroy {
   }
 
   consultarRucProveedor() {
-    this.formProveedor.dniOrRuc = this.formProveedor.dniOrRuc.replace(/\D/g, '').slice(0, 11);
+    this.formProveedor.dniOrRuc = this.formProveedor.dniOrRuc.replaceAll(/\D/g, '').slice(0, 11);
     const ruc = this.formProveedor.dniOrRuc;
 
     if (ruc.length !== 11) {
@@ -227,7 +227,7 @@ export class ProveedorComponent implements OnDestroy {
   }
 
   soloNumerosTelefono() {
-    const telefonoLimpio = this.formProveedor.telefono.replace(/\D/g, '').slice(0, 9);
+    const telefonoLimpio = this.formProveedor.telefono.replaceAll(/\D/g, '').slice(0, 9);
     this.telefonoAdvertencia = this.formProveedor.telefono !== telefonoLimpio;
     this.formProveedor.telefono = telefonoLimpio;
   }
@@ -356,7 +356,7 @@ export class ProveedorComponent implements OnDestroy {
   }
 
   private prepararProveedorParaGuardar() {
-    this.formProveedor.dniOrRuc = (this.formProveedor.dniOrRuc || '').replace(/\D/g, '').slice(0, 11);
+    this.formProveedor.dniOrRuc = (this.formProveedor.dniOrRuc || '').replaceAll(/\D/g, '').slice(0, 11);
     this.formProveedor.razonSocialONombre = (this.formProveedor.razonSocialONombre || '').trim();
     this.formProveedor.correoElectronico = (this.formProveedor.correoElectronico || '').trim();
     this.formProveedor.direccion = (this.formProveedor.direccion || '').trim();
