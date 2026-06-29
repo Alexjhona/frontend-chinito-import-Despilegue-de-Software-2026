@@ -1,12 +1,14 @@
 <section class="space-y-5 sm:space-y-6">
-  <div class="flex justify-end">
-    <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:w-auto" (click)="nuevoTrabajador()">
-      Nuevo Trabajador
-    </button>
-  </div>
+  <div class="space-y-5 rounded-lg border border-white/60 bg-white/70 p-2 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl sm:space-y-6">
+    <div class="flex justify-end">
+      <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:w-auto" (click)="nuevoTrabajador()">
+        Nuevo Trabajador
+      </button>
+    </div>
 
-  <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
-    <input type="text" class="h-14 w-full rounded-lg border border-white/80 bg-white/80 px-4 text-base font-semibold text-gray-800 outline-none shadow-inner shadow-sky-100/60 placeholder:text-gray-400" placeholder="Buscar por nombre, DNI, correo o rol..." [(ngModel)]="busqueda">
+    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+      <input type="text" class="h-14 w-full rounded-lg border border-white/80 bg-white/80 px-4 text-base font-semibold text-gray-800 outline-none shadow-inner shadow-sky-100/60 placeholder:text-gray-400" placeholder="Buscar por nombre, DNI, correo o rol..." [(ngModel)]="busqueda" (ngModelChange)="paginaTrabajadores = 1">
+    </div>
   </div>
 
   <div *ngIf="mostrarFormulario" class="fixed inset-0 z-[80] bg-slate-950/25 backdrop-blur-[2px]" (click)="cancelar()"></div>
@@ -132,7 +134,7 @@
     <p class="mt-1 text-sm font-semibold text-gray-500">Crea uno nuevo o cambia el texto de búsqueda.</p>
   </div>
 
-  <div class="hidden overflow-x-auto rounded-lg border border-white/70 bg-white/80 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl xl:block">
+  <div class="hidden max-h-[calc(100vh-22rem)] overflow-auto rounded-lg border border-white/70 bg-white/80 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl xl:block">
     <div class="grid min-w-[1060px] grid-cols-[minmax(180px,1.15fr)_86px_minmax(190px,1fr)_108px_92px_minmax(340px,1.15fr)] items-center gap-3 rounded-lg bg-slate-50/80 px-4 py-3 text-xs font-black uppercase text-gray-500">
       <span>Trabajador</span>
       <span>DNI</span>
@@ -143,7 +145,7 @@
     </div>
 
     <div class="mt-3 space-y-2">
-      <article *ngFor="let trabajador of trabajadoresFiltrados" class="grid min-w-[1060px] grid-cols-[minmax(180px,1.15fr)_86px_minmax(190px,1fr)_108px_92px_minmax(340px,1.15fr)] items-center gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 shadow-sm transition-colors hover:bg-sky-50/40">
+      <article *ngFor="let trabajador of trabajadoresPaginados" class="grid min-w-[1060px] grid-cols-[minmax(180px,1.15fr)_86px_minmax(190px,1fr)_108px_92px_minmax(340px,1.15fr)] items-center gap-3 rounded-lg border border-slate-100 bg-white px-4 py-3 shadow-sm transition-colors hover:bg-sky-50/40">
         <div class="flex min-w-0 items-center gap-3">
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 to-blue-50 text-sm font-black text-sky-700">{{ iniciales(trabajador) }}</span>
           <div class="min-w-0">
@@ -173,8 +175,8 @@
     </div>
   </div>
 
-  <div class="grid gap-3 xl:hidden">
-    <article *ngFor="let trabajador of trabajadoresFiltrados" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+  <div class="grid max-h-[calc(100vh-20rem)] gap-3 overflow-y-auto pr-1 xl:hidden">
+    <article *ngFor="let trabajador of trabajadoresPaginados" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
       <div class="flex items-start gap-3">
         <span class="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-sky-100 to-blue-50 text-base font-black text-sky-700">{{ iniciales(trabajador) }}</span>
         <div class="min-w-0 flex-1">
@@ -213,6 +215,14 @@
         <button class="rounded-lg bg-rose-50 px-3 py-3 text-xs font-black text-rose-700 transition-colors active:scale-[0.98]" (click)="solicitarEliminar(trabajador)">Eliminar</button>
       </div>
     </article>
+  </div>
+
+  <div *ngIf="trabajadoresFiltrados.length > elementosPorPagina" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/70 bg-white/80 px-4 py-3 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <span class="text-sm font-black text-gray-500">Página {{ paginaTrabajadores }} de {{ totalPaginasTrabajadores }}</span>
+    <div class="flex gap-2">
+      <button type="button" class="h-10 rounded-lg bg-white px-4 text-xs font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="paginaTrabajadores === 1" (click)="cambiarPaginaTrabajadores(-1)">Anterior</button>
+      <button type="button" class="h-10 rounded-lg bg-gradient-to-r from-sky-500 to-blue-500 px-4 text-xs font-black text-white shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="paginaTrabajadores === totalPaginasTrabajadores" (click)="cambiarPaginaTrabajadores(1)">Siguiente</button>
+    </div>
   </div>
 
   <div class="fixed inset-0 z-[110] bg-slate-950/30 backdrop-blur-[2px] transition-opacity duration-300"

@@ -68,6 +68,7 @@ export class AjustesComponent {
   private readonly apiProductos = 'http://localhost:8080/api/productos';
   private readonly apiCategorias = 'http://localhost:8080/api/categorias';
   private readonly apiProveedores = 'http://localhost:8080/api/proveedores';
+  private readonly apiStock = 'http://localhost:8080/api/stock';
   private readonly apiPorModulo: Record<ModuloRespaldo, string> = {
     clientes: this.apiClientes,
     proveedores: this.apiProveedores,
@@ -283,24 +284,48 @@ export class AjustesComponent {
     }).subscribe(data => {
       const productos = data.productos;
       const ventas = data.ventas;
+      const stockRequests = productos.map(producto => {
+        if (producto['stock'] !== undefined || producto['cantidad'] !== undefined) {
+          return of({ cantidad: this.stockDesdeProducto(producto) });
+        }
 
-      this.estadisticas = {
-        clientes: data.clientes.length,
-        proveedores: data.proveedores.length,
-        categorias: data.categorias.length,
-        productos: productos.length,
-        ventas: ventas.length,
-        montoVendido: ventas.reduce((total, venta) => total + Number(venta['total'] || 0), 0),
-        productosStockBajo: productos.filter(producto => {
-          const stock = Number(producto['stock'] ?? producto['cantidad'] ?? 0);
-          return stock > 0 && stock < 3;
-        }).length,
-        productosSinStock: productos.filter(producto => Number(producto['stock'] ?? producto['cantidad'] ?? 0) <= 0).length,
-      };
+        const id = producto['id'];
+        if (!id) return of(this.stockDesdeProducto(producto));
+        return this.http.get<Record<string, unknown>>(`${this.apiStock}/${id}`).pipe(
+          catchError(() => of({ cantidad: this.stockDesdeProducto(producto) }))
+        );
+      });
 
-      this.espacioUtilizado = `${this.bytesLegibles(JSON.stringify(data).length)} / 2 GB`;
-      this.cargandoEstadisticas = false;
+      forkJoin(stockRequests.length ? stockRequests : [of({ cantidad: 0 })]).subscribe(stocks => {
+        const stocksReales = productos.map((producto, index) => this.stockDesdeRespuesta(stocks[index], producto));
+
+        this.estadisticas = {
+          clientes: data.clientes.length,
+          proveedores: data.proveedores.length,
+          categorias: data.categorias.length,
+          productos: productos.length,
+          ventas: ventas.length,
+          montoVendido: ventas.reduce((total, venta) => total + Number(venta['total'] || 0), 0),
+          productosStockBajo: stocksReales.filter(stock => stock > 0 && stock < 3).length,
+          productosSinStock: stocksReales.filter(stock => stock <= 0).length,
+        };
+
+        this.espacioUtilizado = `${this.bytesLegibles(JSON.stringify(data).length)} / 2 GB`;
+        this.cargandoEstadisticas = false;
+      });
     });
+  }
+
+  private stockDesdeRespuesta(stockData: unknown, producto: Record<string, unknown>): number {
+    if (stockData && typeof stockData === 'object' && 'cantidad' in stockData) {
+      return Number((stockData as Record<string, unknown>)['cantidad'] || 0);
+    }
+
+    return this.stockDesdeProducto(producto);
+  }
+
+  private stockDesdeProducto(producto: Record<string, unknown>): number {
+    return Number(producto['stock'] ?? producto['cantidad'] ?? 0);
   }
 
   private obtenerLocalStorage(): Record<string, string> {

@@ -16,6 +16,7 @@
         class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
         placeholder="Buscar por RUC, razón social o correo..."
         [(ngModel)]="busqueda"
+        (ngModelChange)="paginaProveedores = 1"
       />
     </div>
   </div>
@@ -104,7 +105,7 @@
   </div>
 
   <div class="grid gap-3 md:hidden">
-    <article *ngFor="let proveedor of proveedoresFiltrados" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <article *ngFor="let proveedor of proveedoresPaginados" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <p class="truncate text-base font-black text-gray-950">{{ getNombreProveedor(proveedor) || 'Proveedor sin nombre' }}</p>
@@ -144,7 +145,7 @@
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr *ngFor="let proveedor of proveedoresFiltrados" class="transition-colors hover:bg-sky-50/50">
+        <tr *ngFor="let proveedor of proveedoresPaginados" class="transition-colors hover:bg-sky-50/50">
           <td class="px-5 py-4 text-sm font-black text-gray-900">{{ proveedor.dniOrRuc }}</td>
           <td class="px-5 py-4 text-sm font-semibold text-gray-700">{{ getNombreProveedor(proveedor) || 'Proveedor sin nombre' }}</td>
           <td class="px-5 py-4 text-sm font-medium text-gray-500">{{ proveedor.correoElectronico }}</td>
@@ -158,6 +159,14 @@
         </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <div *ngIf="proveedoresFiltrados.length > elementosPorPagina" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/70 bg-white/80 px-4 py-3 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <span class="text-sm font-black text-gray-500">Página {{ paginaProveedores }} de {{ totalPaginasProveedores }}</span>
+    <div class="flex gap-2">
+      <button type="button" class="h-10 rounded-lg bg-white px-4 text-xs font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="paginaProveedores === 1" (click)="cambiarPaginaProveedores(-1)">Anterior</button>
+      <button type="button" class="h-10 rounded-lg bg-gradient-to-r from-sky-500 to-blue-500 px-4 text-xs font-black text-white shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="paginaProveedores === totalPaginasProveedores" (click)="cambiarPaginaProveedores(1)">Siguiente</button>
     </div>
   </div>
 

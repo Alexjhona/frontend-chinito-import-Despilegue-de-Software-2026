@@ -42,136 +42,129 @@
     </div>
   </div>
 
-  <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
-    <div class="space-y-6">
-      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p class="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Apariencia</p>
-            <h2 class="mt-1 text-2xl font-black text-gray-950">Tema y botones del sistema</h2>
-          </div>
-          <span class="w-fit rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">Vista previa activa</span>
-        </div>
-
-        <div class="mt-5 grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <div class="space-y-4">
-            <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
-              <p class="text-sm font-black text-gray-600">Tema</p>
-              <div class="mt-3 grid grid-cols-2 gap-2">
-                <button *ngFor="let item of temas" type="button" class="h-11 rounded-lg text-sm font-black transition hover:-translate-y-0.5"
-                        [class.bg-gray-950]="tema === item"
-                        [class.text-white]="tema === item"
-                        [class.shadow-lg]="tema === item"
-                        [class.bg-white]="tema !== item"
-                        [class.text-gray-700]="tema !== item"
-                        (click)="tema = item; aplicarTema()">
-                  {{ item }}
-                </button>
-              </div>
-            </div>
-
-            <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
-              <p class="text-sm font-black text-gray-600">Color principal</p>
-              <div class="mt-3 grid grid-cols-5 gap-2">
-                <button *ngFor="let color of colores" type="button" class="grid h-11 place-items-center rounded-lg bg-gradient-to-r text-[0px] shadow-sm transition hover:-translate-y-0.5"
-                        [ngClass]="{
-                          'from-sky-500 to-blue-600': color === 'Azul',
-                          'from-emerald-500 to-green-600': color === 'Verde',
-                          'from-rose-500 to-red-600': color === 'Rojo',
-                          'from-violet-500 to-purple-600': color === 'Morado',
-                          'from-orange-400 to-amber-600': color === 'Naranja',
-                          'ring-4 ring-gray-950/10': colorPrincipal === color
-                        }"
-                        [title]="color"
-                        (click)="colorPrincipal = color; aplicarTema()">
-                  {{ color }}
-                </button>
-              </div>
-              <p class="mt-3 text-xs font-bold text-gray-500">Seleccionado: {{ colorPrincipal }}</p>
-            </div>
-          </div>
-
-          <div class="rounded-lg border border-gray-100 p-4 transition" [class.bg-gray-950]="previewOscuro" [class.bg-slate-50]="!previewOscuro">
-            <div class="rounded-lg bg-white p-5 shadow-xl" [class.bg-gray-900]="previewOscuro">
-              <div class="flex items-center justify-between gap-3">
-                <div class="h-3 w-28 rounded-full bg-gradient-to-r" [ngClass]="colorClase"></div>
-                <span class="rounded-full px-3 py-1 text-xs font-black" [class.bg-white]="previewOscuro" [class.text-gray-950]="previewOscuro" [class.bg-gray-950]="!previewOscuro" [class.text-white]="!previewOscuro">{{ tema }}</span>
-              </div>
-              <h3 class="mt-5 text-2xl font-black" [class.text-white]="previewOscuro" [class.text-gray-950]="!previewOscuro">Chinito Importaciones</h3>
-              <p class="mt-2 text-sm font-bold" [class.text-gray-300]="previewOscuro" [class.text-gray-500]="!previewOscuro">Así se verán los botones principales dentro del sistema.</p>
-              <div class="mt-5 flex flex-wrap gap-3">
-                <button type="button" class="h-11 rounded-lg bg-gradient-to-r px-5 text-sm font-black text-white shadow-lg" [ngClass]="colorClase">Guardar</button>
-                <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-700 shadow-md shadow-gray-200/80">Cancelar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Auditoría</p>
-            <h2 class="mt-1 text-2xl font-black text-gray-950">Movimientos recientes</h2>
-          </div>
-          <span class="rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-orange-700">{{ auditoria.length }} registros</span>
-        </div>
-
-        <div class="mt-5 overflow-hidden rounded-lg border border-gray-100">
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[620px] text-left text-sm">
-              <thead class="bg-gray-50 text-xs font-black uppercase tracking-[0.16em] text-gray-400">
-                <tr><th class="px-4 py-3">Fecha</th><th class="px-4 py-3">Usuario</th><th class="px-4 py-3">Acción</th></tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 font-bold text-gray-700">
-                <tr *ngFor="let item of auditoria" class="transition hover:bg-orange-50/40">
-                  <td class="px-4 py-3">{{ item.fecha }}</td>
-                  <td class="px-4 py-3">{{ item.usuario }}</td>
-                  <td class="px-4 py-3">{{ item.accion }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+  <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">Resumen</p>
+        <h2 class="mt-1 text-2xl font-black text-gray-950">Estado del negocio</h2>
+      </div>
+      <button type="button" class="h-10 w-full rounded-lg bg-emerald-600 px-4 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-emerald-700 sm:w-auto" (click)="cargarEstadisticasGenerales()">
+        {{ cargandoEstadisticas ? 'Cargando...' : 'Actualizar datos' }}
+      </button>
     </div>
 
-    <aside class="space-y-6">
-      <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-        <div class="flex items-center justify-between gap-3">
-          <div>
-            <p class="text-xs font-black uppercase tracking-[0.18em] text-emerald-600">Estadísticas</p>
-            <h2 class="mt-1 text-2xl font-black text-gray-950">Negocio</h2>
+    <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Clientes</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.clientes }}</p></div>
+      <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Proveedores</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.proveedores }}</p></div>
+      <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Categorías</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.categorias }}</p></div>
+      <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Productos</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.productos }}</p></div>
+    </div>
+
+    <div class="mt-3 grid gap-3 lg:grid-cols-2">
+      <div class="rounded-lg border border-sky-100 bg-sky-50/80 p-4">
+        <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-500">Ventas realizadas</p>
+        <div class="mt-2 flex items-end justify-between gap-3">
+          <p class="text-3xl font-black text-gray-950">{{ estadisticas.ventas }}</p>
+          <p class="text-lg font-black text-sky-700">S/ {{ estadisticas.montoVendido | number:'1.2-2' }}</p>
+        </div>
+      </div>
+      <div class="rounded-lg border border-amber-100 bg-amber-50/80 p-4">
+        <p class="text-xs font-black uppercase tracking-[0.16em] text-amber-600">Alertas de stock</p>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div><p class="text-2xl font-black text-amber-700">{{ estadisticas.productosStockBajo }}</p><p class="text-xs font-black text-amber-700">Menos de 3</p></div>
+          <div><p class="text-2xl font-black text-red-700">{{ estadisticas.productosSinStock }}</p><p class="text-xs font-black text-red-700">Sin stock</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_430px]">
+    <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Apariencia</p>
+          <h2 class="mt-1 text-2xl font-black text-gray-950">Tema del sistema</h2>
+        </div>
+        <span class="w-fit rounded-full bg-violet-50 px-4 py-2 text-xs font-black text-violet-700">Vista previa activa</span>
+      </div>
+
+      <div class="mt-5 grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div class="space-y-4">
+          <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
+            <p class="text-sm font-black text-gray-600">Tema</p>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <button *ngFor="let item of temas" type="button" class="h-11 rounded-lg text-sm font-black transition hover:-translate-y-0.5"
+                      [class.bg-gray-950]="tema === item"
+                      [class.text-white]="tema === item"
+                      [class.shadow-lg]="tema === item"
+                      [class.bg-white]="tema !== item"
+                      [class.text-gray-700]="tema !== item"
+                      (click)="tema = item; aplicarTema()">
+                {{ item }}
+              </button>
+            </div>
           </div>
-          <button type="button" class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:-translate-y-0.5 hover:bg-emerald-700" (click)="cargarEstadisticasGenerales()">
-            {{ cargandoEstadisticas ? 'Cargando...' : 'Actualizar' }}
-          </button>
-        </div>
 
-        <div class="mt-5 grid grid-cols-2 gap-3">
-          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Clientes</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.clientes }}</p></div>
-          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Proveedores</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.proveedores }}</p></div>
-          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Categorías</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.categorias }}</p></div>
-          <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-4"><p class="text-xs font-black uppercase tracking-[0.16em] text-gray-400">Productos</p><p class="mt-2 text-3xl font-black text-gray-950">{{ estadisticas.productos }}</p></div>
-        </div>
-
-        <div class="mt-3 rounded-lg border border-sky-100 bg-sky-50/80 p-4">
-          <p class="text-xs font-black uppercase tracking-[0.16em] text-sky-500">Ventas realizadas</p>
-          <div class="mt-2 flex items-end justify-between gap-3">
-            <p class="text-3xl font-black text-gray-950">{{ estadisticas.ventas }}</p>
-            <p class="text-lg font-black text-sky-700">S/ {{ estadisticas.montoVendido | number:'1.2-2' }}</p>
+          <div class="rounded-lg border border-gray-100 bg-gray-50/70 p-4">
+            <p class="text-sm font-black text-gray-600">Color principal</p>
+            <div class="mt-3 grid grid-cols-5 gap-2">
+              <button *ngFor="let color of colores" type="button" class="grid h-11 place-items-center rounded-lg bg-gradient-to-r text-[0px] shadow-sm transition hover:-translate-y-0.5"
+                      [ngClass]="{
+                        'from-sky-500 to-blue-600': color === 'Azul',
+                        'from-emerald-500 to-green-600': color === 'Verde',
+                        'from-rose-500 to-red-600': color === 'Rojo',
+                        'from-violet-500 to-purple-600': color === 'Morado',
+                        'from-orange-400 to-amber-600': color === 'Naranja',
+                        'ring-4 ring-gray-950/10': colorPrincipal === color
+                      }"
+                      [title]="color"
+                      (click)="colorPrincipal = color; aplicarTema()">
+                {{ color }}
+              </button>
+            </div>
+            <p class="mt-3 text-xs font-bold text-gray-500">Seleccionado: {{ colorPrincipal }}</p>
           </div>
         </div>
 
-        <div class="mt-3 rounded-lg border border-amber-100 bg-amber-50/80 p-4">
-          <p class="text-xs font-black uppercase tracking-[0.16em] text-amber-600">Alertas de stock</p>
-          <div class="mt-3 grid grid-cols-2 gap-3">
-            <div><p class="text-2xl font-black text-amber-700">{{ estadisticas.productosStockBajo }}</p><p class="text-xs font-black text-amber-700">Menos de 3</p></div>
-            <div><p class="text-2xl font-black text-red-700">{{ estadisticas.productosSinStock }}</p><p class="text-xs font-black text-red-700">Sin stock</p></div>
+        <div class="rounded-lg border border-gray-100 p-4 transition" [class.bg-gray-950]="previewOscuro" [class.bg-slate-50]="!previewOscuro">
+          <div class="rounded-lg bg-white p-5 shadow-xl" [class.bg-gray-900]="previewOscuro">
+            <div class="flex items-center justify-between gap-3">
+              <div class="h-3 w-28 rounded-full bg-gradient-to-r" [ngClass]="colorClase"></div>
+              <span class="rounded-full px-3 py-1 text-xs font-black" [class.bg-white]="previewOscuro" [class.text-gray-950]="previewOscuro" [class.bg-gray-950]="!previewOscuro" [class.text-white]="!previewOscuro">{{ tema }}</span>
+            </div>
+            <h3 class="mt-5 text-2xl font-black" [class.text-white]="previewOscuro" [class.text-gray-950]="!previewOscuro">Chinito Importaciones</h3>
+            <p class="mt-2 text-sm font-bold" [class.text-gray-300]="previewOscuro" [class.text-gray-500]="!previewOscuro">Así se verán los botones principales dentro del sistema.</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <button type="button" class="h-11 rounded-lg bg-gradient-to-r px-5 text-sm font-black text-white shadow-lg" [ngClass]="colorClase">Guardar</button>
+              <button type="button" class="h-11 rounded-lg bg-white px-5 text-sm font-black text-gray-700 shadow-md shadow-gray-200/80">Cancelar</button>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-    </aside>
+    <section class="rounded-lg border border-white/80 bg-white/85 p-5 shadow-[0_18px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-orange-600">Auditoría</p>
+          <h2 class="mt-1 text-2xl font-black text-gray-950">Movimientos</h2>
+        </div>
+        <span class="rounded-full bg-orange-50 px-4 py-2 text-xs font-black text-orange-700">{{ auditoria.length }}</span>
+      </div>
+
+      <div class="mt-5 max-h-[420px] overflow-y-auto rounded-lg border border-gray-100">
+        <table class="w-full min-w-[380px] text-left text-sm">
+          <thead class="sticky top-0 bg-gray-50 text-xs font-black uppercase tracking-[0.16em] text-gray-400">
+            <tr><th class="px-4 py-3">Fecha</th><th class="px-4 py-3">Acción</th></tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 font-bold text-gray-700">
+            <tr *ngFor="let item of auditoria" class="transition hover:bg-orange-50/40">
+              <td class="px-4 py-3 align-top text-xs text-gray-500">{{ item.fecha }}</td>
+              <td class="px-4 py-3">{{ item.accion }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </section>

@@ -43,6 +43,8 @@ export class TrabajadorComponent implements OnDestroy {
   accionPendiente: 'editar' | 'eliminar' | 'reset' | 'impersonar' | null = null;
   trabajadorPendiente: Trabajador | null = null;
   busqueda = '';
+  paginaTrabajadores = 1;
+  readonly elementosPorPagina = 10;
   mensaje = '';
   errorFormulario = '';
   mensajeDni = '';
@@ -108,6 +110,26 @@ export class TrabajadorComponent implements OnDestroy {
       this.normalizar(t.correo || t.userName).includes(texto) ||
       this.normalizar(t.rol).includes(texto)
     );
+  }
+
+  get trabajadoresPaginados(): Trabajador[] {
+    this.ajustarPaginaTrabajadores();
+    const inicio = (this.paginaTrabajadores - 1) * this.elementosPorPagina;
+    return this.trabajadoresFiltrados.slice(inicio, inicio + this.elementosPorPagina);
+  }
+
+  get totalPaginasTrabajadores(): number {
+    return Math.max(1, Math.ceil(this.trabajadoresFiltrados.length / this.elementosPorPagina));
+  }
+
+  cambiarPaginaTrabajadores(cambio: number) {
+    this.paginaTrabajadores = Math.min(Math.max(this.paginaTrabajadores + cambio, 1), this.totalPaginasTrabajadores);
+  }
+
+  private ajustarPaginaTrabajadores() {
+    if (this.paginaTrabajadores > this.totalPaginasTrabajadores) {
+      this.paginaTrabajadores = this.totalPaginasTrabajadores;
+    }
   }
 
   nombreCompleto(trabajador: Trabajador): string {

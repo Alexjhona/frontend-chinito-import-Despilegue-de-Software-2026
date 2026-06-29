@@ -1,22 +1,25 @@
 <section class="space-y-5 sm:space-y-6">
-  <div *ngIf="puedeEscribir" class="flex justify-end">
-    <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30 active:translate-y-0 sm:w-auto" (click)="nuevoCliente()">
-      <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 hover:translate-x-full"></span>
-      <span class="relative">Nuevo Cliente</span>
-    </button>
-  </div>
+  <div class="space-y-5 rounded-lg border border-white/60 bg-white/70 p-2 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl sm:space-y-6">
+    <div *ngIf="puedeEscribir" class="flex justify-end">
+      <button class="relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-sky-500 via-blue-500 to-violet-500 px-6 text-sm font-black text-white shadow-xl shadow-blue-500/25 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30 active:translate-y-0 sm:w-auto" (click)="nuevoCliente()">
+        <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 hover:translate-x-full"></span>
+        <span class="relative">Nuevo Cliente</span>
+      </button>
+    </div>
 
-  <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
-    <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-      </svg>
-      <input
-        type="text"
-        class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
-        placeholder="Buscar por DNI/RUC o nombre..."
-        [(ngModel)]="busqueda"
-      />
+    <div class="rounded-lg border border-white/70 bg-white/75 p-3 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-4">
+      <div class="flex items-center gap-3 rounded-lg border border-white/80 bg-white/80 px-4 shadow-inner shadow-sky-100/60">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor" class="h-5 w-5 text-sky-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+        </svg>
+        <input
+          type="text"
+          class="h-14 w-full bg-transparent text-base font-semibold text-gray-800 outline-none placeholder:text-gray-400"
+          placeholder="Buscar por DNI/RUC o nombre..."
+          [(ngModel)]="busqueda"
+          (ngModelChange)="paginaClientes = 1"
+        />
+      </div>
     </div>
   </div>
 
@@ -85,8 +88,8 @@
     {{ mensajeExito }}
   </div>
 
-  <div class="grid gap-3 md:hidden">
-    <article *ngFor="let cliente of clientesFiltrados" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+  <div class="grid max-h-[calc(100vh-20rem)] gap-3 overflow-y-auto pr-1 md:hidden">
+    <article *ngFor="let cliente of clientesPaginados" class="rounded-lg border border-white/70 bg-white/80 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <p class="truncate text-base font-black text-gray-950">{{ getNombreCliente(cliente) || 'Cliente sin nombre' }}</p>
@@ -102,8 +105,8 @@
     </article>
   </div>
 
-  <div class="hidden overflow-hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl md:block">
-    <div class="overflow-x-auto">
+  <div class="hidden rounded-lg border border-white/70 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl md:block">
+    <div class="max-h-[calc(100vh-22rem)] overflow-auto">
       <table class="w-full min-w-[720px] table-auto">
         <thead>
         <tr class="bg-white/70 text-left text-xs font-black uppercase tracking-[0.18em] text-gray-400">
@@ -115,7 +118,7 @@
         </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-        <tr *ngFor="let cliente of clientesFiltrados" class="transition-colors hover:bg-sky-50/50">
+        <tr *ngFor="let cliente of clientesPaginados" class="transition-colors hover:bg-sky-50/50">
           <td class="px-5 py-4 text-sm font-black text-gray-900">{{ cliente.dniOrRuc }}</td>
           <td class="px-5 py-4 text-sm font-semibold text-gray-700">{{ cliente.nombres || getNombreCliente(cliente) || 'Cliente sin nombre' }}</td>
           <td class="px-5 py-4 text-sm font-medium text-gray-500">{{ cliente.apellidoPaterno || '-' }}</td>
@@ -129,6 +132,14 @@
         </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <div *ngIf="clientesFiltrados.length > elementosPorPagina" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/70 bg-white/80 px-4 py-3 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <span class="text-sm font-black text-gray-500">Página {{ paginaClientes }} de {{ totalPaginasClientes }}</span>
+    <div class="flex gap-2">
+      <button type="button" class="h-10 rounded-lg bg-white px-4 text-xs font-black text-gray-600 shadow-md shadow-gray-200/80 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="paginaClientes === 1" (click)="cambiarPaginaClientes(-1)">Anterior</button>
+      <button type="button" class="h-10 rounded-lg bg-gradient-to-r from-sky-500 to-blue-500 px-4 text-xs font-black text-white shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="paginaClientes === totalPaginasClientes" (click)="cambiarPaginaClientes(1)">Siguiente</button>
     </div>
   </div>
 

@@ -39,6 +39,8 @@ export class ClienteComponent implements OnDestroy {
   editCliente: Cliente | null = null;
   formCliente: Cliente = this.crearClienteVacio();
   busqueda: string = ''; // NUEVO
+  paginaClientes = 1;
+  readonly elementosPorPagina = 10;
   mensajeExito = '';
   errorFormulario = '';
   mensajeDni = '';
@@ -81,6 +83,26 @@ export class ClienteComponent implements OnDestroy {
       this.normalizarTexto(c.dniOrRuc).includes(texto) ||
       this.normalizarTexto(this.getNombreCliente(c)).includes(texto)
     );
+  }
+
+  get clientesPaginados(): Cliente[] {
+    this.ajustarPaginaClientes();
+    const inicio = (this.paginaClientes - 1) * this.elementosPorPagina;
+    return this.clientesFiltrados.slice(inicio, inicio + this.elementosPorPagina);
+  }
+
+  get totalPaginasClientes(): number {
+    return Math.max(1, Math.ceil(this.clientesFiltrados.length / this.elementosPorPagina));
+  }
+
+  cambiarPaginaClientes(cambio: number) {
+    this.paginaClientes = Math.min(Math.max(this.paginaClientes + cambio, 1), this.totalPaginasClientes);
+  }
+
+  private ajustarPaginaClientes() {
+    if (this.paginaClientes > this.totalPaginasClientes) {
+      this.paginaClientes = this.totalPaginasClientes;
+    }
   }
 
   getNombreCliente(cliente: Cliente): string {

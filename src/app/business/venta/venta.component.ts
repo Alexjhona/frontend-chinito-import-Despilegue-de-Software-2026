@@ -98,6 +98,8 @@ export class VentaComponent implements OnDestroy {
 
   busqueda: string = '';
   filtroFecha: string = '';
+  paginaVentas = 1;
+  readonly elementosPorPagina = 10;
   mostrarDetalles: { [key: number]: boolean } = {};
 
   private readonly apiVentas = 'http://localhost:8080/api/ventas';
@@ -695,152 +697,212 @@ export class VentaComponent implements OnDestroy {
   }
 
   // ================= PDF =================
-  generarBoletaDesdeVenta(venta: Venta) {
+  async generarBoletaDesdeVenta(venta: Venta) {
     const doc = new jsPDF();
-    const marginX = 10;
+    const marginX = 14;
     const pageWidth = 210;
-
-    let y = 20;
+    const pageHeight = 297;
+    const footerY = pageHeight - 14;
+    const contentWidth = pageWidth - (marginX * 2);
 
     const cliente = this.clientes.find(c => c.id === venta.clienteId)
       || (this.clienteSeleccionado?.id === venta.clienteId ? this.clienteSeleccionado : null);
     const fechaVenta = this.obtenerFechaVenta(venta);
     const fecha = fechaVenta.toLocaleDateString('es-PE');
+    const hora = fechaVenta.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+    const numeroVenta = venta.id ? `INV-${String(venta.id).padStart(5, '0')}` : 'VENTA';
+    const nombreCliente = cliente ? this.getNombreCliente(cliente) : venta.clienteNombre || 'Cliente sin nombre';
+    const totalVenta = venta.items.reduce((acc, item) => acc + ((item.precio || 0) * Number(item.cantidad || 0)), 0);
 
-    // =========================
-    // 🧾 TÍTULO
-    // =========================
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('NOTA DE VENTA', pageWidth / 2, y, { align: 'center' });
-
-    y += 15;
-
-    // =========================
-    // 👤 DATOS DE CABECERA
-    // =========================
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-
-    doc.text('Cliente:', marginX, y);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${cliente?.razonSocialONombre || '-'}`, marginX + 18, y);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text(`N°: INV${venta.id}`, pageWidth - 60, y);
-
-    y += 6;
-    doc.text('Documento:', marginX, y);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${cliente?.dniOrRuc || '-'}`, marginX + 23, y);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Fecha: ${fecha}`, pageWidth - 60, y);
-
-    y += 6;
-    doc.text('Dirección:', marginX, y);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${cliente?.direccion || '-'}`, marginX + 19, y);
-
-    y += 15;
-
-    // =========================
-    // 📦 TABLA CON MARCOS DEFINIDOS
-    // =========================
-    const cols = [
-      { title: 'N°', width: 15 },
-      { title: 'Producto', width: 85 },
-      { title: 'Cant.', width: 20 },
-      { title: 'P. Unit', width: 35 },
-      { title: 'Total', width: 35 }
-    ];
-
-    const rowHeight = 9; // Un poco más alto para que el texto respire
-
-    // CONFIGURACIÓN DE BORDES
-    doc.setDrawColor(0, 0, 0); // Color negro para las líneas
-    doc.setLineWidth(0.1);     // Grosor fino pero visible
-
-    // --- ENCABEZADOS ---
-    let currentX = marginX;
-    doc.setFont('helvetica', 'bold');
-
-    cols.forEach(col => {
-      // Fondo azul
-      doc.setFillColor(33, 150, 243);
-      doc.rect(currentX, y, col.width, rowHeight, 'FD'); // 'FD' = Fill and Draw (Relleno y Borde)
-
-      // Texto blanco
-      doc.setTextColor(255, 255, 255);
-      doc.text(col.title, currentX + col.width / 2, y + 6, { align: 'center' });
-
-      currentX += col.width;
+    doc.setProperties({
+      title: `Boleta ${numeroVenta}`,
+      subject: 'Comprobante de venta',
+      author: 'Chinito Importaciones',
     });
 
-    y += rowHeight;
+    doc.setFillColor(248, 250, 252);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    const pintarFondo = () => {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    };
+    const agregarNuevaPagina = () => {
+      doc.addPage();
+      pintarFondo();
+      y = 20;
+      pintarEncabezadoTabla();
+    };
 
-    // --- FILAS DE PRODUCTOS ---
-    doc.setTextColor(0, 0, 0);
+    pintarFondo();
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(marginX, 12, contentWidth, 38, 3, 3, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(marginX, 12, contentWidth, 38, 3, 3, 'S');
+
+    const logo = await this.obtenerLogoPdf();
+    if (logo) {
+      doc.addImage(logo, 'PNG', marginX + 5, 17, 22, 22);
+    }
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('CHINITO IMPORTACIONES', marginX + 33, 25);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105);
+    doc.text('Comprobante claro de venta', marginX + 33, 32);
+    doc.text('Gracias por su preferencia', marginX + 33, 38);
 
-    let subtotal = 0;
+    doc.setFillColor(14, 165, 233);
+    doc.roundedRect(pageWidth - marginX - 52, 18, 44, 21, 3, 3, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('BOLETA', pageWidth - marginX - 30, 27, { align: 'center' });
+    doc.setFontSize(9);
+    doc.text(numeroVenta, pageWidth - marginX - 30, 35, { align: 'center' });
+
+    let y = 62;
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('Datos del cliente', marginX, y);
+    doc.text('Datos de la venta', pageWidth / 2 + 4, y);
+
+    y += 5;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(marginX, y, (contentWidth / 2) - 4, 27, 3, 3, 'F');
+    doc.roundedRect(pageWidth / 2 + 4, y, (contentWidth / 2) - 4, 27, 3, 3, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.roundedRect(marginX, y, (contentWidth / 2) - 4, 27, 3, 3, 'S');
+    doc.roundedRect(pageWidth / 2 + 4, y, (contentWidth / 2) - 4, 27, 3, 3, 'S');
+
+    this.textoDatoPdf(doc, 'Nombre', nombreCliente, marginX + 5, y + 9, 62, 24);
+    this.textoDatoPdf(doc, 'Documento', cliente?.dniOrRuc || '-', marginX + 5, y + 21, 62, 24);
+    this.textoDatoPdf(doc, 'Fecha', fecha, pageWidth / 2 + 9, y + 9, 54, 22);
+    this.textoDatoPdf(doc, 'Hora', hora, pageWidth / 2 + 9, y + 21, 54, 22);
+
+    y += 42;
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text('Productos comprados', marginX, y);
+
+    y += 7;
+    const cols = [
+      { title: 'Producto', x: marginX, width: 92 },
+      { title: 'Cant.', x: marginX + 92, width: 22 },
+      { title: 'Precio', x: marginX + 114, width: 32 },
+      { title: 'Subtotal', x: marginX + 146, width: 36 },
+    ];
+
+    const pintarEncabezadoTabla = () => {
+      doc.setFillColor(15, 23, 42);
+      doc.roundedRect(marginX, y, contentWidth, 9, 2, 2, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      cols.forEach(col => doc.text(col.title, col.x + (col.title === 'Producto' ? 4 : col.width / 2), y + 6.3, { align: col.title === 'Producto' ? 'left' : 'center' }));
+      y += 9;
+    };
+
+    pintarEncabezadoTabla();
 
     venta.items.forEach((item, index) => {
-      let rowX = marginX;
-      const precio = item.precio ?? 0;
-      const totalItem = precio * item.cantidad;
-      subtotal += totalItem;
+      const precio = item.precio || 0;
+      const cantidad = Number(item.cantidad || 0);
+      const subtotal = precio * cantidad;
+      const producto = item.productoNombre || 'Producto';
+      const productoLineas = doc.splitTextToSize(`${index + 1}. ${producto}`, 86);
+      const rowHeight = Math.max(12, 6 + (productoLineas.length * 4.8));
 
-      const rowData = [
-        String(index + 1),
-        item.productoNombre || '',
-        String(item.cantidad),
-        precio.toFixed(2),
-        totalItem.toFixed(2)
-      ];
+      if (y + rowHeight + 34 > footerY) {
+        agregarNuevaPagina();
+      }
 
-      rowData.forEach((text, i) => {
-        const w = cols[i].width;
+      doc.setFillColor(index % 2 === 0 ? 255 : 248, index % 2 === 0 ? 255 : 250, index % 2 === 0 ? 255 : 252);
+      doc.rect(marginX, y, contentWidth, rowHeight, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.line(marginX, y + rowHeight, pageWidth - marginX, y + rowHeight);
 
-        // Dibujar celda con borde
-        doc.rect(rowX, y, w, rowHeight);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(productoLineas, marginX + 4, y + 7);
+      doc.setFont('helvetica', 'normal');
+      doc.text(String(cantidad), marginX + 103, y + 7, { align: 'center' });
+      doc.text(`S/ ${precio.toFixed(2)}`, marginX + 130, y + 7, { align: 'center' });
+      doc.setFont('helvetica', 'bold');
+      doc.text(`S/ ${subtotal.toFixed(2)}`, pageWidth - marginX - 4, y + 7, { align: 'right' });
 
-        // Alinear texto
-        if (i === 1) {
-          doc.text(text, rowX + 2, y + 6); // Producto a la izquierda
-        } else {
-          doc.text(text, rowX + w / 2, y + 6, { align: 'center' }); // Números centrados
-        }
-        rowX += w;
-      });
       y += rowHeight;
     });
 
-    // =========================
-    // 💰 TOTALES
-    // =========================
     y += 10;
-    const boxWidth = 80;
-    const boxX = pageWidth - marginX - boxWidth;
+    if (y + 36 > footerY) {
+      doc.addPage();
+      pintarFondo();
+      y = 22;
+    }
 
+    doc.setFillColor(236, 253, 245);
+    doc.roundedRect(pageWidth - marginX - 74, y, 74, 23, 3, 3, 'F');
+    doc.setDrawColor(167, 243, 208);
+    doc.roundedRect(pageWidth - marginX - 74, y, 74, 23, 3, 3, 'S');
+    doc.setTextColor(6, 95, 70);
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('TOTAL A PAGAR', pageWidth - marginX - 70, y + 8);
+    doc.setFontSize(16);
+    doc.text(`S/ ${totalVenta.toFixed(2)}`, pageWidth - marginX - 4, y + 18, { align: 'right' });
 
-
-    // TOTAL (Recuadro azul con borde)
-    doc.setFillColor(33, 150, 243);
-    doc.rect(boxX - 2, y, boxWidth + 2, 10, 'FD'); // Fondo y borde
-
-    doc.setTextColor(255, 255, 255);
-    doc.text('TOTAL:', boxX + 2, y + 7);
-    doc.text(`S/ ${subtotal.toFixed(2)}`, pageWidth - marginX - 2, y + 7, { align: 'right' });
-
-    // Pie de página
-    doc.setTextColor(0, 0, 0);
-    y += 20;
-    doc.text('Gracias por su compra', pageWidth / 2, y, { align: 'center' });
+    this.agregarPieBoleta(doc);
 
     this.descargarPdf(doc, `boleta_${venta.id || 'venta'}_${fechaVenta.toISOString().slice(0, 10)}.pdf`);
     this.mensaje = this.mensaje || 'PDF generado correctamente';
+  }
+
+  private textoDatoPdf(doc: jsPDF, etiqueta: string, valor: string, x: number, y: number, ancho: number, separacion = 22): void {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`${etiqueta}:`, x, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(15, 23, 42);
+    doc.text(doc.splitTextToSize(valor || '-', ancho), x + separacion, y);
+  }
+
+  private agregarPieBoleta(doc: jsPDF): void {
+    const pageCount = doc.getNumberOfPages();
+
+    for (let page = 1; page <= pageCount; page++) {
+      doc.setPage(page);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 280, 196, 280);
+      doc.setTextColor(71, 85, 105);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text('Gracias por su compra. Revise sus productos antes de retirarse.', 105, 286, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text(`Pagina ${page} de ${pageCount}`, 196, 292, { align: 'right' });
+    }
+  }
+
+  private async obtenerLogoPdf(): Promise<string | null> {
+    try {
+      const response = await fetch('/logo.png');
+      const blob = await response.blob();
+      return await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
   }
 
   private obtenerFechaVenta(venta: Venta): Date {
@@ -882,6 +944,26 @@ export class VentaComponent implements OnDestroy {
 
       return coincideTexto && coincideFecha;
     });
+  }
+
+  get ventasPaginadas(): Venta[] {
+    this.ajustarPaginaVentas();
+    const inicio = (this.paginaVentas - 1) * this.elementosPorPagina;
+    return this.ventasFiltradas.slice(inicio, inicio + this.elementosPorPagina);
+  }
+
+  get totalPaginasVentas(): number {
+    return Math.max(1, Math.ceil(this.ventasFiltradas.length / this.elementosPorPagina));
+  }
+
+  cambiarPaginaVentas(cambio: number) {
+    this.paginaVentas = Math.min(Math.max(this.paginaVentas + cambio, 1), this.totalPaginasVentas);
+  }
+
+  private ajustarPaginaVentas() {
+    if (this.paginaVentas > this.totalPaginasVentas) {
+      this.paginaVentas = this.totalPaginasVentas;
+    }
   }
 
   get totalVentasFiltradas(): number {

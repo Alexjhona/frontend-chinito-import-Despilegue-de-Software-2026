@@ -38,6 +38,8 @@ export class ProveedorComponent implements OnDestroy {
   editProveedor: Proveedor | null = null;
   formProveedor: Proveedor = this.crearProveedorVacio();
   busqueda: string = ''; // NUEVO
+  paginaProveedores = 1;
+  readonly elementosPorPagina = 10;
   mensajeExito = '';
   errorFormulario = '';
   mensajeRuc = '';
@@ -82,6 +84,26 @@ export class ProveedorComponent implements OnDestroy {
       this.normalizarTexto(this.getNombreProveedor(p)).includes(texto) ||
       this.normalizarTexto(p.correoElectronico).includes(texto)
     );
+  }
+
+  get proveedoresPaginados(): Proveedor[] {
+    this.ajustarPaginaProveedores();
+    const inicio = (this.paginaProveedores - 1) * this.elementosPorPagina;
+    return this.proveedoresFiltrados.slice(inicio, inicio + this.elementosPorPagina);
+  }
+
+  get totalPaginasProveedores(): number {
+    return Math.max(1, Math.ceil(this.proveedoresFiltrados.length / this.elementosPorPagina));
+  }
+
+  cambiarPaginaProveedores(cambio: number) {
+    this.paginaProveedores = Math.min(Math.max(this.paginaProveedores + cambio, 1), this.totalPaginasProveedores);
+  }
+
+  private ajustarPaginaProveedores() {
+    if (this.paginaProveedores > this.totalPaginasProveedores) {
+      this.paginaProveedores = this.totalPaginasProveedores;
+    }
   }
 
   getNombreProveedor(proveedor: Proveedor): string {
