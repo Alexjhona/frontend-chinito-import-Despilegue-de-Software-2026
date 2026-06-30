@@ -169,12 +169,7 @@
         <header *ngIf="config.mostrarHeader"
                 class="flex cursor-pointer items-center justify-between rounded-lg border bg-white/90 px-4 py-3 shadow-lg transition"
                 [ngClass]="[clasePanel('header'), dispositivoPreview === 'mobile' ? 'flex-col items-stretch gap-3 px-3' : '']"
-                role="button"
-                aria-label="Editar encabezado"
-                tabindex="0"
-                (click)="seleccionar('header')"
-                (keydown.enter)="seleccionar('header')"
-                (keydown.space)="$event.preventDefault(); seleccionar('header')">
+                (click)="seleccionar('header')">
           <div class="flex min-w-0 items-center gap-3">
             <img src="/logo.png" [alt]="config.marca" class="h-11 w-11 rounded-lg object-contain shadow-lg shadow-sky-500/20">
             <div class="min-w-0">
@@ -192,12 +187,7 @@
         <section *ngIf="paginaPreview === 'inicio'"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('hero')"
-                 role="button"
-                 aria-label="Editar hero"
-                 tabindex="0"
-                 (click)="seleccionar('hero')"
-                 (keydown.enter)="seleccionar('hero')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('hero')">
+                 (click)="seleccionar('hero')">
           <div class="grid items-center gap-8 rounded-lg bg-gradient-to-br from-white via-blue-50 to-blue-100"
                [ngClass]="dispositivoPreview === 'desktop' ? 'min-h-[420px] p-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1fr)]' : dispositivoPreview === 'tablet' ? 'min-h-[560px] grid-cols-1 p-7' : 'min-h-[620px] grid-cols-1 gap-5 p-5'">
             <div>
@@ -232,12 +222,7 @@
         <section *ngIf="paginaPreview === 'catalogo' && config.mostrarCatalogo"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('catalogo')"
-                 role="button"
-                 aria-label="Editar catálogo"
-                 tabindex="0"
-                 (click)="seleccionar('catalogo')"
-                 (keydown.enter)="seleccionar('catalogo')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('catalogo')">
+                 (click)="seleccionar('catalogo')">
           <div class="mb-5 flex justify-end">
             <div class="h-12 w-[520px] rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-400 shadow-sm">Buscar categoría o producto...</div>
           </div>
@@ -253,12 +238,7 @@
         <section *ngIf="paginaPreview === 'productos' && config.mostrarProductos"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('productos')"
-                 role="button"
-                 aria-label="Editar productos"
-                 tabindex="0"
-                 (click)="seleccionar('productos')"
-                 (keydown.enter)="seleccionar('productos')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('productos')">
+                 (click)="seleccionar('productos')">
           <div class="mb-5 flex justify-end">
             <div class="h-12 w-[520px] rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-400 shadow-sm">Buscar producto, código o categoría...</div>
           </div>
@@ -277,12 +257,7 @@
         <section *ngIf="paginaPreview === 'servicios' && config.mostrarServicios"
                  class="mt-6 cursor-pointer rounded-lg border bg-white/40 p-4 transition"
                  [ngClass]="clasePanel('servicios')"
-                 role="button"
-                 aria-label="Editar servicios"
-                 tabindex="0"
-                 (click)="seleccionar('servicios')"
-                 (keydown.enter)="seleccionar('servicios')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('servicios')">
+                 (click)="seleccionar('servicios')">
           <div class="mb-6 text-center">
             <h2 class="text-4xl font-black">¿Por qué elegirnos?</h2>
           </div>
@@ -296,47 +271,27 @@
 
         <section class="mt-6 grid cursor-pointer gap-4 rounded-lg bg-slate-950 p-5 text-white lg:grid-cols-4"
                  [ngClass]="clasePanel('beneficios')"
-                 role="button"
-                 aria-label="Editar beneficios"
-                 tabindex="0"
-                 (click)="seleccionar('beneficios')"
-                 (keydown.enter)="seleccionar('beneficios')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('beneficios')">
+                 (click)="seleccionar('beneficios')">
           <article *ngFor="let beneficio of config.beneficios"><p class="text-lg font-black">{{ beneficio.titulo }}</p><p class="mt-1 text-sm font-semibold text-slate-300">{{ beneficio.descripcion }}</p></article>
         </section>
 
         <section *ngIf="paginaPreview === 'servicios' && !config.mostrarServicios"
                  class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
-                 role="button"
-                 aria-label="Editar servicios ocultos"
-                 tabindex="0"
-                 (click)="seleccionar('servicios')"
-                 (keydown.enter)="seleccionar('servicios')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('servicios')">
+                 (click)="seleccionar('servicios')">
           <p class="text-lg font-black text-slate-700">La página de servicios está oculta.</p>
           <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar servicios” en propiedades para verla en el inicio.</p>
         </section>
 
         <section *ngIf="paginaPreview === 'catalogo' && !config.mostrarCatalogo"
                  class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
-                 role="button"
-                 aria-label="Editar catálogo oculto"
-                 tabindex="0"
-                 (click)="seleccionar('catalogo')"
-                 (keydown.enter)="seleccionar('catalogo')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('catalogo')">
+                 (click)="seleccionar('catalogo')">
           <p class="text-lg font-black text-slate-700">La página de catálogo está oculta.</p>
           <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar catálogo” en propiedades para verla.</p>
         </section>
 
         <section *ngIf="paginaPreview === 'productos' && !config.mostrarProductos"
                  class="mt-6 cursor-pointer rounded-lg border border-dashed border-slate-300 bg-white/70 p-8 text-center"
-                 role="button"
-                 aria-label="Editar productos ocultos"
-                 tabindex="0"
-                 (click)="seleccionar('productos')"
-                 (keydown.enter)="seleccionar('productos')"
-                 (keydown.space)="$event.preventDefault(); seleccionar('productos')">
+                 (click)="seleccionar('productos')">
           <p class="text-lg font-black text-slate-700">La página de productos está oculta.</p>
           <p class="mt-2 text-sm font-bold text-slate-400">Activa “Mostrar productos” en propiedades para verla.</p>
         </section>

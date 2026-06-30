@@ -734,9 +734,9 @@
   background:
     radial-gradient(circle at 12% 20%, rgba(99, 102, 241, 0.18), transparent 24%),
     radial-gradient(circle at 86% 20%, rgba(59, 130, 246, 0.16), transparent 22%),
-    #070912;
+    #030712;
   padding: 24px 30px;
-  color: #fff;
+  color: #ffffff;
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.18);
 }
 

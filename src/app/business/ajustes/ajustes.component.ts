@@ -432,7 +432,13 @@ export class AjustesComponent {
   private valorTexto(valor: unknown): string {
     if (valor === null || valor === undefined) return '';
     if (typeof valor === 'object') return JSON.stringify(valor);
-    return String(valor);
+    if (typeof valor === 'string') return valor;
+    if (typeof valor === 'number') return valor.toString();
+    if (typeof valor === 'boolean') return valor ? 'true' : 'false';
+    if (typeof valor === 'bigint') return valor.toString();
+    if (typeof valor === 'symbol') return valor.description ?? '';
+    if (typeof valor === 'function') return valor.name;
+    return '';
   }
 
   private esRegistro(valor: unknown): valor is Record<string, unknown> {
