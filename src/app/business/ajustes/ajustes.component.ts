@@ -10,6 +10,10 @@ import { ColorSistema, TemaSistema, ThemeService } from '../../core/services/the
 type Tema = TemaSistema;
 type ColorPrincipal = ColorSistema;
 type ModuloRespaldo = 'clientes' | 'proveedores' | 'categorias' | 'productos' | 'ventas';
+type RespaldoGeneral = {
+  data?: Partial<Record<ModuloRespaldo, Record<string, unknown>[]>>;
+  localStorage?: Record<string, unknown>;
+};
 
 interface EstadisticasGenerales {
   clientes: number;
@@ -164,11 +168,11 @@ export class AjustesComponent {
 
     try {
       const contenido = await file.text();
-      const data = JSON.parse(contenido || '{}');
-      const storage = data.localStorage || {};
-      Object.keys(storage).forEach(key => localStorage.setItem(key, storage[key]));
+      const data = this.parseJson<RespaldoGeneral>(contenido, {});
+      const storage = data.localStorage ?? {};
+      Object.entries(storage).forEach(([key, value]) => localStorage.setItem(key, this.valorTexto(value)));
       this.restaurando = true;
-      await this.restaurarDatosBackend(data.data || {});
+      await this.restaurarDatosBackend(data.data ?? {});
       this.restaurando = false;
       this.auditService.registrar('Respaldo restaurado');
       this.mensaje = 'Respaldo restaurado. Los datos compatibles fueron enviados al backend.';
@@ -228,7 +232,7 @@ export class AjustesComponent {
     try {
       const contenido = await file.text();
       const items = file.name.endsWith('.json')
-        ? this.extraerItemsJson(JSON.parse(contenido || '{}'), modulo)
+        ? this.extraerItemsJson(this.parseJson<unknown>(contenido, {}), modulo)
         : this.parseCsv(contenido);
 
       await this.restaurarModuloDesdeItems(modulo, items);
@@ -298,7 +302,7 @@ export class AjustesComponent {
           categorias: data.categorias.length,
           productos: productos.length,
           ventas: ventas.length,
-          montoVendido: ventas.reduce((total, venta) => total + Number(venta['total'] || 0), 0),
+          montoVendido: ventas.reduce((total, venta) => total + Number(venta['total'] ?? 0), 0),
           productosStockBajo: stocksReales.filter(stock => stock > 0 && stock < 3).length,
           productosSinStock: stocksReales.filter(stock => stock <= 0).length,
         };
@@ -311,7 +315,7 @@ export class AjustesComponent {
 
   private stockDesdeRespuesta(stockData: unknown, producto: Record<string, unknown>): number {
     if (stockData && typeof stockData === 'object' && 'cantidad' in stockData) {
-      return Number((stockData as Record<string, unknown>)['cantidad'] || 0);
+      return Number((stockData as Record<string, unknown>)['cantidad'] ?? 0);
     }
 
     return this.stockDesdeProducto(producto);
@@ -363,8 +367,7 @@ export class AjustesComponent {
   }
 
   private valorHtml(valor: unknown): string {
-    const texto = typeof valor === 'object' && valor !== null ? JSON.stringify(valor) : String(valor ?? '');
-    return texto
+    return this.valorTexto(valor)
       .replaceAll('&', '&amp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
@@ -399,11 +402,34 @@ export class AjustesComponent {
     return this.modulosRespaldo.find(item => item.id === modulo)?.nombre || modulo;
   }
 
-  private extraerItemsJson(data: any, modulo: ModuloRespaldo): Record<string, unknown>[] {
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.data)) return data.data;
-    if (Array.isArray(data?.data?.[modulo])) return data.data[modulo];
+  private extraerItemsJson(data: unknown, modulo: ModuloRespaldo): Record<string, unknown>[] {
+    if (this.esListaRegistros(data)) return data;
+    if (!this.esRegistro(data)) return [];
+
+    const respaldoData = data['data'];
+    if (this.esListaRegistros(respaldoData)) return respaldoData;
+    if (this.esRegistro(respaldoData)) {
+      const itemsModulo = respaldoData[modulo];
+      if (this.esListaRegistros(itemsModulo)) return itemsModulo;
+    }
     return [];
+  }
+
+  private parseJson<T>(contenido: string, fallback: T): T {
+    return contenido.trim() ? JSON.parse(contenido) as T : fallback;
+  }
+
+  private valorTexto(valor: unknown): string {
+    if (valor === null || valor === undefined) return '';
+    return typeof valor === 'object' ? JSON.stringify(valor) : String(valor);
+  }
+
+  private esRegistro(valor: unknown): valor is Record<string, unknown> {
+    return typeof valor === 'object' && valor !== null && !Array.isArray(valor);
+  }
+
+  private esListaRegistros(valor: unknown): valor is Record<string, unknown>[] {
+    return Array.isArray(valor) && valor.every(item => this.esRegistro(item));
   }
 
   private parseCsv(contenido: string): Record<string, unknown>[] {

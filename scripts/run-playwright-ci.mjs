@@ -19,6 +19,20 @@ function npxCommand(args) {
   };
 }
 
+function nodeCommand(args) {
+  if (process.platform === 'win32') {
+    return {
+      command: 'cmd.exe',
+      args: ['/d', '/s', '/c', `node ${args.join(' ')}`],
+    };
+  }
+
+  return {
+    command: 'node',
+    args,
+  };
+}
+
 async function isReady() {
   try {
     const response = await fetch(appUrl, { signal: AbortSignal.timeout(3000) });
@@ -38,7 +52,7 @@ async function waitForServer(child, timeoutMs = serverStartupTimeoutMs) {
 
     if (child?.exitCode !== null) {
       throw new Error(
-        `Angular dev server exited before responding at ${appUrl}.\n` +
+        `CI web server exited before responding at ${appUrl}.\n` +
         `Exit code: ${child.exitCode}\n` +
         `Server output:\n${serverOutput || '(no output captured)'}`,
       );
@@ -48,7 +62,7 @@ async function waitForServer(child, timeoutMs = serverStartupTimeoutMs) {
   }
 
   throw new Error(
-    `Angular dev server did not respond at ${appUrl} after ${timeoutMs / 1000}s.\n` +
+    `CI web server did not respond at ${appUrl} after ${timeoutMs / 1000}s.\n` +
       `Server output:\n${serverOutput || '(no output captured)'}`,
   );
 }
@@ -131,8 +145,8 @@ let startedServer = false;
 try {
   if (!(await isReady())) {
     startedServer = true;
-    const angular = npxCommand(['ng', 'serve', '--host', '127.0.0.1', '--port', '4200']);
-    server = spawn(angular.command, angular.args, {
+    const staticServer = nodeCommand(['scripts/serve-dist-ci.mjs']);
+    server = spawn(staticServer.command, staticServer.args, {
       stdio: ['inherit', 'pipe', 'pipe'],
       shell: false,
     });
