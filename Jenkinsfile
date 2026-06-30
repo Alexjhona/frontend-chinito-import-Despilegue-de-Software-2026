@@ -52,6 +52,12 @@ pipeline {
             }
         }
 
+        stage('K6 Performance') {
+            steps {
+                sh 'npm run k6:ci'
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {

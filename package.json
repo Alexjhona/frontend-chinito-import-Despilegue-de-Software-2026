@@ -10,6 +10,7 @@
     "test:ci": "ng test --watch=false --browsers=ChromeHeadlessNoSandbox --code-coverage",
     "e2e": "playwright test",
     "e2e:ci": "node scripts/run-playwright-ci.mjs",
+    "k6:ci": "node scripts/run-k6-ci.mjs",
     "serve:ssr:ng-menu-dashboard": "node dist/ng-menu-dashboard/server/server.mjs"
   },
   "private": true,

@@ -1,7 +1,8 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
 import { setTimeout as delay } from 'node:timers/promises';
 
-const appUrl = 'http://127.0.0.1:4200';
+const appUrl = process.env.K6_TARGET_URL || 'http://127.0.0.1:4200';
 const serverStartupTimeoutMs = 120_000;
 let serverOutput = '';
 
@@ -17,6 +18,12 @@ function npxCommand(args) {
     command: 'npx',
     args,
   };
+}
+
+function commandExists(command) {
+  const lookup = process.platform === 'win32' ? 'where' : 'command';
+  const args = process.platform === 'win32' ? [command] : ['-v', command];
+  return spawnSync(lookup, args, { stdio: 'ignore', shell: process.platform !== 'win32' }).status === 0;
 }
 
 async function isReady() {
@@ -49,7 +56,7 @@ async function waitForServer(child, timeoutMs = serverStartupTimeoutMs) {
 
   throw new Error(
     `Angular dev server did not respond at ${appUrl} after ${timeoutMs / 1000}s.\n` +
-      `Server output:\n${serverOutput || '(no output captured)'}`,
+    `Server output:\n${serverOutput || '(no output captured)'}`,
   );
 }
 
@@ -72,56 +79,20 @@ function stopProcessTree(child) {
   child.kill('SIGTERM');
 }
 
-async function runPlaywright() {
+async function runK6() {
+  mkdirSync('test-results', { recursive: true });
+
   return new Promise((resolve) => {
-    const playwright = npxCommand(['playwright', 'test']);
-    const child = spawn(playwright.command, playwright.args, {
-      stdio: ['inherit', 'pipe', 'pipe'],
+    const child = spawn('k6', ['run', '--summary-export', 'test-results/k6-summary.json', 'k6/frontend-smoke.js'], {
+      stdio: 'inherit',
       shell: false,
       env: {
         ...process.env,
-        E2E_EXTERNAL_SERVER: '1',
+        K6_TARGET_URL: appUrl,
       },
     });
 
-    let resolved = false;
-    let passedSummaryTimer;
-    let output = '';
-    const localWindowsWatchdog = process.platform === 'win32' && !process.env.CI && !process.env.JENKINS_URL
-      ? setTimeout(() => {
-          const cleanOutput = output.toLowerCase();
-          stopProcessTree(child);
-          resolveOnce(cleanOutput.includes('passed') && !cleanOutput.includes('failed') ? 0 : 1);
-        }, 90_000)
-      : undefined;
-
-    const resolveOnce = (code) => {
-      if (resolved) {
-        return;
-      }
-
-      resolved = true;
-      clearTimeout(passedSummaryTimer);
-      clearTimeout(localWindowsWatchdog);
-      resolve(code);
-    };
-
-    const watchOutput = (chunk, stream) => {
-      const text = chunk.toString();
-      stream.write(chunk);
-      output += text.replace(/\u001b\[[0-9;]*m/g, '');
-
-      if (/\b\d+\s+passed\b/.test(output) && !passedSummaryTimer) {
-        passedSummaryTimer = setTimeout(() => {
-          stopProcessTree(child);
-          resolveOnce(0);
-        }, 2000);
-      }
-    };
-
-    child.stdout.on('data', (chunk) => watchOutput(chunk, process.stdout));
-    child.stderr.on('data', (chunk) => watchOutput(chunk, process.stderr));
-    child.on('close', (code) => resolveOnce(code ?? 1));
+    child.on('close', (code) => resolve(code ?? 1));
   });
 }
 
@@ -129,6 +100,10 @@ let server;
 let startedServer = false;
 
 try {
+  if (!commandExists('k6')) {
+    throw new Error('k6 is not installed or is not available in PATH on this Jenkins agent.');
+  }
+
   if (!(await isReady())) {
     startedServer = true;
     const angular = npxCommand(['ng', 'serve', '--host', '127.0.0.1', '--port', '4200']);
@@ -142,7 +117,7 @@ try {
     await waitForServer(server);
   }
 
-  const exitCode = await runPlaywright();
+  const exitCode = await runK6();
   process.exitCode = exitCode;
 } catch (error) {
   console.error(error);
