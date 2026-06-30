@@ -1,9 +1,14 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { chmodSync, createWriteStream, existsSync, mkdirSync } from 'node:fs';
+import { get } from 'node:https';
+import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const appUrl = process.env.K6_TARGET_URL || 'http://127.0.0.1:4200';
 const serverStartupTimeoutMs = 120_000;
+const k6Version = process.env.K6_VERSION || '0.54.0';
+const k6InstallDir = join(process.cwd(), '.ci-tools', 'k6', k6Version);
+const k6Executable = process.platform === 'win32' ? join(k6InstallDir, 'k6.exe') : join(k6InstallDir, 'k6');
 let serverOutput = '';
 
 function npxCommand(args) {
@@ -38,6 +43,72 @@ function commandExists(command) {
   const lookup = process.platform === 'win32' ? 'where' : 'command';
   const args = process.platform === 'win32' ? [command] : ['-v', command];
   return spawnSync(lookup, args, { stdio: 'ignore', shell: process.platform !== 'win32' }).status === 0;
+}
+
+function downloadFile(url, destination) {
+  return new Promise((resolve, reject) => {
+    const file = createWriteStream(destination);
+
+    get(url, (response) => {
+      if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
+        file.close();
+        downloadFile(response.headers.location, destination).then(resolve, reject);
+        return;
+      }
+
+      if (response.statusCode !== 200) {
+        file.close();
+        reject(new Error(`Unable to download ${url}. HTTP status: ${response.statusCode}`));
+        return;
+      }
+
+      response.pipe(file);
+      file.on('finish', () => {
+        file.close(resolve);
+      });
+    }).on('error', (error) => {
+      file.close();
+      reject(error);
+    });
+  });
+}
+
+async function ensureK6() {
+  if (commandExists('k6')) {
+    return 'k6';
+  }
+
+  if (existsSync(k6Executable)) {
+    return k6Executable;
+  }
+
+  if (process.env.K6_REQUIRED !== 'true') {
+    console.warn('k6 is not installed or is not available in PATH. Skipping optional K6 performance smoke test.');
+    process.exit(0);
+  }
+
+  if (process.platform !== 'linux' || process.arch !== 'x64') {
+    throw new Error('k6 is not installed and automatic install is only configured for Linux x64 Jenkins agents.');
+  }
+
+  mkdirSync(k6InstallDir, { recursive: true });
+
+  const archive = join(k6InstallDir, `k6-v${k6Version}-linux-amd64.tar.gz`);
+  const downloadUrl = `https://github.com/grafana/k6/releases/download/v${k6Version}/k6-v${k6Version}-linux-amd64.tar.gz`;
+
+  console.log(`k6 is not installed. Downloading k6 v${k6Version} for this CI workspace...`);
+  await downloadFile(downloadUrl, archive);
+
+  const extractResult = spawnSync('tar', ['-xzf', archive, '--strip-components=1', '-C', k6InstallDir], {
+    stdio: 'inherit',
+  });
+
+  if (extractResult.status !== 0) {
+    throw new Error(`Unable to extract k6 archive. tar exited with code ${extractResult.status}.`);
+  }
+
+  chmodSync(k6Executable, 0o755);
+  return k6Executable;
 }
 
 async function isReady() {
@@ -93,11 +164,11 @@ function stopProcessTree(child) {
   child.kill('SIGTERM');
 }
 
-async function runK6() {
+async function runK6(k6Command) {
   mkdirSync('test-results', { recursive: true });
 
   return new Promise((resolve) => {
-    const child = spawn('k6', ['run', '--summary-export', 'test-results/k6-summary.json', 'k6/frontend-smoke.js'], {
+    const child = spawn(k6Command, ['run', '--summary-export', 'test-results/k6-summary.json', 'k6/frontend-smoke.js'], {
       stdio: 'inherit',
       shell: false,
       env: {
@@ -114,14 +185,7 @@ let server;
 let startedServer = false;
 
 try {
-  if (!commandExists('k6')) {
-    if (process.env.K6_REQUIRED !== 'true') {
-      console.warn('k6 is not installed or is not available in PATH. Skipping optional K6 performance smoke test.');
-      process.exit(0);
-    }
-
-    throw new Error('k6 is not installed or is not available in PATH on this Jenkins agent.');
-  }
+  const k6Command = await ensureK6();
 
   if (!(await isReady())) {
     startedServer = true;
@@ -136,7 +200,7 @@ try {
     await waitForServer(server);
   }
 
-  const exitCode = await runK6();
+  const exitCode = await runK6(k6Command);
   process.exitCode = exitCode;
 } catch (error) {
   console.error(error);
