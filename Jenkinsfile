@@ -12,7 +12,7 @@ pipeline {
         CHROME_BIN = '/usr/bin/chromium'
         K6_VUS = '3'
         K6_DURATION = '15s'
-        K6_REQUIRED = 'false'
+        K6_REQUIRED = 'true'
     }
 
     stages {
