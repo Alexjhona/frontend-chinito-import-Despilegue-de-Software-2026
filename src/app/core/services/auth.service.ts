@@ -96,12 +96,12 @@ export class AuthService {
   }
 
   isImpersonating(): boolean {
-    if (typeof window === 'undefined') return false;
+    if (globalThis.window === undefined) return false;
     return Boolean(localStorage.getItem(this.ownerTokenKey));
   }
 
   returnToOwnerSession(): void {
-    if (typeof window === 'undefined') return;
+    if (globalThis.window === undefined) return;
 
     const ownerToken = localStorage.getItem(this.ownerTokenKey);
     if (!ownerToken) return;
@@ -112,12 +112,12 @@ export class AuthService {
   }
 
   private setToken(token: string): void {
-    if (typeof window === 'undefined') return;
+    if (globalThis.window === undefined) return;
     localStorage.setItem(this.tokenKey, token);
   }
 
   getToken(): string | null {
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       return localStorage.getItem(this.tokenKey);
     }
     return null;
@@ -180,7 +180,7 @@ export class AuthService {
   }
 
   private normalizarRol(rol: string): string {
-    const rolNormalizado = rol.trim().toUpperCase().replace(/[\s-]+/g, '_');
+    const rolNormalizado = rol.trim().toUpperCase().replaceAll(/[\s-]+/g, '_');
     return rolNormalizado === 'SUBADMIN' ? 'SUB_ADMIN' : rolNormalizado;
   }
 
@@ -197,14 +197,14 @@ export class AuthService {
   }
 
   logout(): void {
-    if (typeof window === 'undefined') return;
+    if (globalThis.window === undefined) return;
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.ownerTokenKey);
     this.router.navigate(['/inicio']);
   }
 
   private guardarSesionPrincipal(): void {
-    if (typeof window === 'undefined' || localStorage.getItem(this.ownerTokenKey)) return;
+    if (globalThis.window === undefined || localStorage.getItem(this.ownerTokenKey)) return;
 
     const tokenActual = localStorage.getItem(this.tokenKey);
     if (tokenActual) {

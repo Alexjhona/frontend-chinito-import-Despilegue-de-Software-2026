@@ -205,8 +205,7 @@ export class VentaComponent implements OnDestroy {
     this.prepararClienteRapidoParaGuardar();
 
     if (
-      !this.nuevoCliente.dniOrRuc ||
-      this.nuevoCliente.dniOrRuc.length !== 8 ||
+      this.nuevoCliente.dniOrRuc?.length !== 8 ||
       !this.nuevoCliente.nombres ||
       !this.nuevoCliente.apellidoPaterno ||
       !this.nuevoCliente.apellidoMaterno
@@ -222,22 +221,25 @@ export class VentaComponent implements OnDestroy {
       return;
     }
 
-    this.http.post<Cliente>(this.apiClientes, this.nuevoCliente).subscribe(nuevo => {
-      const clienteNormalizado = this.normalizarCliente(nuevo);
-      this.clientes = [
-        clienteNormalizado,
-        ...this.clientes.filter(cliente => cliente.dniOrRuc !== clienteNormalizado.dniOrRuc),
-      ];
-      this.clienteSeleccionado = clienteNormalizado;
-      this.nuevaVenta.clienteId = nuevo.id;
-      this.busquedaCliente = this.getNombreCliente(clienteNormalizado);
-      this.clientesFiltrados = [];
-      this.mostrarNuevoCliente = false;
-      this.nuevoCliente = this.crearClienteVacio();
-      this.mensaje = 'Cliente agregado correctamente';
-      this.cargarClientes();
-    }, () => {
-      this.errorNuevoCliente = 'No se pudo registrar el cliente. Revisa el DNI o intenta nuevamente.';
+    this.http.post<Cliente>(this.apiClientes, this.nuevoCliente).subscribe({
+      next: nuevo => {
+        const clienteNormalizado = this.normalizarCliente(nuevo);
+        this.clientes = [
+          clienteNormalizado,
+          ...this.clientes.filter(cliente => cliente.dniOrRuc !== clienteNormalizado.dniOrRuc),
+        ];
+        this.clienteSeleccionado = clienteNormalizado;
+        this.nuevaVenta.clienteId = nuevo.id;
+        this.busquedaCliente = this.getNombreCliente(clienteNormalizado);
+        this.clientesFiltrados = [];
+        this.mostrarNuevoCliente = false;
+        this.nuevoCliente = this.crearClienteVacio();
+        this.mensaje = 'Cliente agregado correctamente';
+        this.cargarClientes();
+      },
+      error: () => {
+        this.errorNuevoCliente = 'No se pudo registrar el cliente. Revisa el DNI o intenta nuevamente.';
+      },
     });
   }
 
@@ -359,9 +361,8 @@ export class VentaComponent implements OnDestroy {
 
   private buscarProductos(texto: string): Producto[] {
     const terminos = texto.split(' ').filter(Boolean);
-    const productos = !terminos.length
-      ? this.productos
-      : this.productos.filter(p => {
+    const productos = terminos.length
+      ? this.productos.filter(p => {
         const categoria = this.getCategoriaProducto(p)?.nombre || '';
         const textoProducto = this.normalizarTexto([
           p.nombre,
@@ -370,7 +371,8 @@ export class VentaComponent implements OnDestroy {
         ].join(' '));
 
         return terminos.every(termino => textoProducto.includes(termino));
-      });
+      })
+      : this.productos;
 
     return productos.slice(0, 20);
   }

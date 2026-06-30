@@ -29,14 +29,14 @@ export class AuditService {
       accion,
     };
     const entries = [entry, ...this.entries].slice(0, 80);
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       localStorage.setItem(this.storageKey, JSON.stringify(entries));
     }
     this.auditSubject.next(entries);
   }
 
   private leer(): AuditEntry[] {
-    const raw = typeof window === 'undefined' ? null : localStorage.getItem(this.storageKey);
+    const raw = globalThis.window === undefined ? null : localStorage.getItem(this.storageKey);
     if (!raw) return [];
 
     try {

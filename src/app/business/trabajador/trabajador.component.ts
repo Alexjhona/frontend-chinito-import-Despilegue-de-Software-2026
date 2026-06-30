@@ -648,20 +648,32 @@ export class TrabajadorComponent implements OnDestroy {
     const idTrabajador = trabajador.id ? String(trabajador.id) : '';
     if (idSesion && idTrabajador && idSesion === idTrabajador) return true;
 
-    const identificadoresSesion = [
+    const identificadoresSesion = new Set([
       payload.correo,
       payload.email,
       payload.userName,
       payload.username,
       payload.preferred_username,
       payload.sub,
-    ].map(valor => this.normalizarCorreo(String(valor || ''))).filter(Boolean);
+    ].map(valor => this.normalizarCorreo(this.textoSeguro(valor))).filter(Boolean));
 
     const identificadoresTrabajador = [
       trabajador.correo,
       trabajador.userName,
     ].map(valor => this.normalizarCorreo(valor)).filter(Boolean);
 
-    return identificadoresTrabajador.some(valor => identificadoresSesion.includes(valor));
+    return identificadoresTrabajador.some(valor => identificadoresSesion.has(valor));
+  }
+
+  private textoSeguro(valor: unknown): string {
+    if (valor === null || valor === undefined) return '';
+    if (typeof valor === 'object') return JSON.stringify(valor);
+    if (typeof valor === 'string') return valor;
+    if (typeof valor === 'number') return valor.toString();
+    if (typeof valor === 'boolean') return valor ? 'true' : 'false';
+    if (typeof valor === 'bigint') return valor.toString();
+    if (typeof valor === 'symbol') return valor.description ?? '';
+    if (typeof valor === 'function') return valor.name;
+    return '';
   }
 }
