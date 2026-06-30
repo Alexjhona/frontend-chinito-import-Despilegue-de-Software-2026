@@ -596,7 +596,7 @@ export class TrabajadorComponent implements OnDestroy {
   }
 
   private obtenerOrigenRegistro(): string {
-    return typeof globalThis.window !== 'undefined' ? globalThis.window.location.origin : 'http://localhost:4200';
+    return globalThis.window === undefined ? 'http://localhost:4200' : globalThis.window.location.origin;
   }
 
   private normalizar(valor: string | undefined | null): string {

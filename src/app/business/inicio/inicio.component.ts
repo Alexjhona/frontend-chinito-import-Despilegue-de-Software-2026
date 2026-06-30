@@ -361,7 +361,7 @@ export class InicioComponent implements OnDestroy {
 
   private iniciarCarrusel(): void {
     if (this.sliderTimer) clearInterval(this.sliderTimer);
-    if (typeof globalThis.window === 'undefined') return;
+    if (globalThis.window === undefined) return;
 
     this.sliderTimer = setInterval(() => {
       this.slideActivo = (this.slideActivo + 1) % this.slidesInicio.length;

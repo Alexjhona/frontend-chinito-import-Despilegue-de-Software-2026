@@ -153,7 +153,7 @@ export class AuthService {
       || payload?.authorities?.[0]
       || payload?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
       || 'ADMIN';
-    const rol = this.normalizarRol(String(rolTexto));
+    const rol = this.normalizarRol(this.valorTexto(rolTexto));
     return this.esRolValido(rol) ? rol : 'ADMIN';
   }
 
@@ -182,6 +182,12 @@ export class AuthService {
   private normalizarRol(rol: string): string {
     const rolNormalizado = rol.trim().toUpperCase().replace(/[\s-]+/g, '_');
     return rolNormalizado === 'SUBADMIN' ? 'SUB_ADMIN' : rolNormalizado;
+  }
+
+  private valorTexto(valor: unknown): string {
+    if (valor === null || valor === undefined) return '';
+    if (typeof valor === 'object') return JSON.stringify(valor);
+    return String(valor);
   }
 
   logout(): void {

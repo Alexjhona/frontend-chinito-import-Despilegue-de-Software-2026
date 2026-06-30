@@ -399,7 +399,6 @@
 .servicio-card {
   appearance: none;
   width: 100%;
-  border: 0;
   text-align: left;
   overflow: hidden;
   border: 1px solid rgba(226, 232, 240, 0.9);
@@ -483,7 +482,7 @@
   height: 40px;
   place-items: center;
   border-radius: 14px;
-  color: #fff;
+  color: #ffffff;
   padding: 0 12px;
   font-size: 13px;
   font-weight: 950;
@@ -757,7 +756,7 @@
   place-items: center;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
-  color: #f8fafc;
+  color: #ffffff;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 

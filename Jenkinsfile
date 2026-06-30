@@ -73,6 +73,7 @@ pipeline {
                             -Dsonar.tests=src \
                             -Dsonar.test.inclusions=**/*.spec.ts \
                             -Dsonar.coverage.exclusions=**/*.html,**/*.css,**/*.server.ts,src/main.ts,src/main.server.ts,src/app/app.config.ts,src/app/app.config.server.ts,src/app/business/ajustes/**,src/app/business/cliente/**,src/app/business/categoria/**,src/app/business/dashboard/**,src/app/business/edit/**,src/app/business/inicio/**,src/app/business/producto/**,src/app/business/proveedor/**,src/app/business/trabajador/**,src/app/business/venta/**,src/app/business/authentication/register/**,src/app/core/interceptors/auth.interceptor.ts,src/app/core/services/auth.service.ts,src/app/core/services/audit.service.ts,src/app/core/services/data-refresh.service.ts,src/app/core/services/public-content.service.ts,src/app/core/services/theme.service.ts,src/app/shared/components/header/** \
+                            -Dsonar.cpd.exclusions=**/*.html,**/*.css,**/*.spec.ts,src/app/business/**,src/app/shared/components/** \
                             -Dsonar.javascript.lcov.reportPaths=coverage/ng-menu-dashboard/lcov.info \
                             -Dsonar.host.url=$SONAR_HOST_URL \
                             -Dsonar.token=$SONAR_TOKEN

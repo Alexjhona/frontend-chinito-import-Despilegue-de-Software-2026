@@ -71,21 +71,25 @@
 @layer utilities {
   html[data-color] .app-internal-shell button[type="submit"],
   html[data-color] .app-internal-shell .app-primary,
-  html[data-color] .app-internal-shell button[class*="from-sky"],
-  html[data-color] .app-internal-shell button[class*="from-blue"],
-  html[data-color] .app-internal-shell button[class*="to-violet"],
-  html[data-color] .app-internal-shell a[class*="from-sky"],
-  html[data-color] .app-internal-shell a[class*="from-blue"],
-  html[data-color] .app-internal-shell a[class*="to-violet"] {
+  html[data-color] .app-internal-shell button[class~="bg-gradient-to-r"][class*="from-sky-500"],
+  html[data-color] .app-internal-shell button[class~="bg-gradient-to-r"][class*="from-blue-500"],
+  html[data-color] .app-internal-shell button[class~="bg-gradient-to-r"][class*="to-violet-500"],
+  html[data-color] .app-internal-shell a[class~="bg-gradient-to-r"][class*="from-sky-500"],
+  html[data-color] .app-internal-shell a[class~="bg-gradient-to-r"][class*="from-blue-500"],
+  html[data-color] .app-internal-shell a[class~="bg-gradient-to-r"][class*="to-violet-500"] {
     background: linear-gradient(90deg, var(--app-primary), var(--app-primary-2)) !important;
     color: #ffffff !important;
     box-shadow: 0 12px 28px color-mix(in srgb, var(--app-primary) 28%, transparent) !important;
   }
 
-  html[data-color] .app-internal-shell button[class*="bg-sky-"],
-  html[data-color] .app-internal-shell button[class*="bg-blue-"],
-  html[data-color] .app-internal-shell a[role="button"][class*="bg-sky-"],
-  html[data-color] .app-internal-shell a[role="button"][class*="bg-blue-"] {
+  html[data-color] .app-internal-shell button[class~="bg-sky-500"],
+  html[data-color] .app-internal-shell button[class~="bg-sky-600"],
+  html[data-color] .app-internal-shell button[class~="bg-blue-500"],
+  html[data-color] .app-internal-shell button[class~="bg-blue-600"],
+  html[data-color] .app-internal-shell a[role="button"][class~="bg-sky-500"],
+  html[data-color] .app-internal-shell a[role="button"][class~="bg-sky-600"],
+  html[data-color] .app-internal-shell a[role="button"][class~="bg-blue-500"],
+  html[data-color] .app-internal-shell a[role="button"][class~="bg-blue-600"] {
     background: var(--app-primary) !important;
     color: #ffffff !important;
   }

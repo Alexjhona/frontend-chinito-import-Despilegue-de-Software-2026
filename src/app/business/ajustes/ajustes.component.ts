@@ -120,6 +120,16 @@ export class AjustesComponent {
     this.mensaje = 'Apariencia aplicada al sistema.';
   }
 
+  restablecerColores(): void {
+    this.colorPrincipal = 'Azul';
+    this.themeService.aplicar({
+      tema: this.tema,
+      colorPrincipal: this.colorPrincipal,
+    });
+    this.auditService.registrar('Colores restablecidos');
+    this.mensaje = 'Colores restablecidos al valor original.';
+  }
+
   crearRespaldo(): void {
     forkJoin({
       clientes: this.http.get<unknown[]>(this.apiClientes).pipe(catchError(() => of([]))),
@@ -288,7 +298,7 @@ export class AjustesComponent {
 
         const id = producto['id'];
         if (!id) return of(this.stockDesdeProducto(producto));
-        return this.http.get<Record<string, unknown>>(`${this.apiStock}/${id}`).pipe(
+        return this.http.get<Record<string, unknown>>(`${this.apiStock}/${this.valorTexto(id)}`).pipe(
           catchError(() => of({ cantidad: this.stockDesdeProducto(producto) }))
         );
       });
@@ -421,7 +431,8 @@ export class AjustesComponent {
 
   private valorTexto(valor: unknown): string {
     if (valor === null || valor === undefined) return '';
-    return typeof valor === 'object' ? JSON.stringify(valor) : String(valor);
+    if (typeof valor === 'object') return JSON.stringify(valor);
+    return String(valor);
   }
 
   private esRegistro(valor: unknown): valor is Record<string, unknown> {
