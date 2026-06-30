@@ -115,6 +115,11 @@ let startedServer = false;
 
 try {
   if (!commandExists('k6')) {
+    if (process.env.K6_REQUIRED !== 'true') {
+      console.warn('k6 is not installed or is not available in PATH. Skipping optional K6 performance smoke test.');
+      process.exit(0);
+    }
+
     throw new Error('k6 is not installed or is not available in PATH on this Jenkins agent.');
   }
 
