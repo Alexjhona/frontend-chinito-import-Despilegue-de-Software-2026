@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { chmodSync, createWriteStream, existsSync, mkdirSync } from 'node:fs';
+import { chmodSync, createWriteStream, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { get } from 'node:https';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -45,31 +45,92 @@ function commandExists(command) {
   return spawnSync(lookup, args, { stdio: 'ignore', shell: process.platform !== 'win32' }).status === 0;
 }
 
+function downloadWithSystemTool(url, destination) {
+  if (commandExists('curl')) {
+    const result = spawnSync('curl', [
+      '--fail',
+      '--location',
+      '--silent',
+      '--show-error',
+      '--connect-timeout',
+      '30',
+      '--max-time',
+      '180',
+      '--retry',
+      '3',
+      '--output',
+      destination,
+      url,
+    ], {
+      stdio: 'inherit',
+    });
+    return result.status === 0;
+  }
+
+  if (commandExists('wget')) {
+    const result = spawnSync('wget', [
+      '--quiet',
+      '--timeout=30',
+      '--tries=3',
+      '--output-document',
+      destination,
+      url,
+    ], {
+      stdio: 'inherit',
+    });
+    return result.status === 0;
+  }
+
+  return false;
+}
+
 function downloadFile(url, destination) {
   return new Promise((resolve, reject) => {
     const file = createWriteStream(destination);
+    let settled = false;
 
-    get(url, (response) => {
+    const finish = (error) => {
+      if (settled) return;
+      settled = true;
+      file.close(() => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    };
+
+    const followRedirect = (location) => {
+      if (settled) return;
+      settled = true;
+      file.close(() => {
+        downloadFile(location, destination).then(resolve, reject);
+      });
+    };
+
+    const request = get(url, (response) => {
       if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
-        file.close();
-        downloadFile(response.headers.location, destination).then(resolve, reject);
+        response.resume();
+        followRedirect(response.headers.location);
         return;
       }
 
       if (response.statusCode !== 200) {
-        file.close();
-        reject(new Error(`Unable to download ${url}. HTTP status: ${response.statusCode}`));
+        response.resume();
+        finish(new Error(`Unable to download ${url}. HTTP status: ${response.statusCode}`));
         return;
       }
 
       response.pipe(file);
-      file.on('finish', () => {
-        file.close(resolve);
-      });
-    }).on('error', (error) => {
-      file.close();
-      reject(error);
+      file.on('finish', () => finish());
     });
+
+    request.setTimeout(90_000, () => {
+      request.destroy(new Error(`Timed out downloading ${url}`));
+    });
+    request.on('error', (error) => finish(error));
+    file.on('error', (error) => finish(error));
   });
 }
 
@@ -97,7 +158,11 @@ async function ensureK6() {
   const downloadUrl = `https://github.com/grafana/k6/releases/download/v${k6Version}/k6-v${k6Version}-linux-amd64.tar.gz`;
 
   console.log(`k6 is not installed. Downloading k6 v${k6Version} for this CI workspace...`);
-  await downloadFile(downloadUrl, archive);
+  rmSync(archive, { force: true });
+
+  if (!downloadWithSystemTool(downloadUrl, archive)) {
+    await downloadFile(downloadUrl, archive);
+  }
 
   const extractResult = spawnSync('tar', ['-xzf', archive, '--strip-components=1', '-C', k6InstallDir], {
     stdio: 'inherit',
@@ -181,34 +246,40 @@ async function runK6(k6Command) {
   });
 }
 
-let server;
-let startedServer = false;
+async function main() {
+  let server;
+  let startedServer = false;
 
-try {
-  const k6Command = await ensureK6();
+  try {
+    const k6Command = await ensureK6();
 
-  if (!(await isReady())) {
-    startedServer = true;
-    const staticServer = nodeCommand(['scripts/serve-dist-ci.mjs']);
-    server = spawn(staticServer.command, staticServer.args, {
-      stdio: ['inherit', 'pipe', 'pipe'],
-      shell: false,
-    });
-    server.stdout.on('data', (chunk) => captureServerOutput(chunk, process.stdout));
-    server.stderr.on('data', (chunk) => captureServerOutput(chunk, process.stderr));
+    if (!(await isReady())) {
+      startedServer = true;
+      const staticServer = nodeCommand(['scripts/serve-dist-ci.mjs']);
+      server = spawn(staticServer.command, staticServer.args, {
+        stdio: ['inherit', 'pipe', 'pipe'],
+        shell: false,
+      });
+      server.stdout.on('data', (chunk) => captureServerOutput(chunk, process.stdout));
+      server.stderr.on('data', (chunk) => captureServerOutput(chunk, process.stderr));
 
-    await waitForServer(server);
+      await waitForServer(server);
+    }
+
+    process.exitCode = await runK6(k6Command);
+  } catch (error) {
+    console.error(error);
+    process.exitCode = 1;
+  } finally {
+    if (startedServer) {
+      stopProcessTree(server);
+    }
   }
-
-  const exitCode = await runK6(k6Command);
-  process.exitCode = exitCode;
-} catch (error) {
-  console.error(error);
-  process.exitCode = 1;
-} finally {
-  if (startedServer) {
-    stopProcessTree(server);
-  }
-
-  process.exit(process.exitCode ?? 0);
 }
+
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => process.exit(process.exitCode ?? 0));
