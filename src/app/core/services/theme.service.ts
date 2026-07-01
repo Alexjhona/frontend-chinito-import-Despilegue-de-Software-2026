@@ -28,7 +28,7 @@ export class ThemeService {
 
   aplicar(config: ThemeConfig): void {
     const tema = this.normalizar(config);
-    if (typeof window !== 'undefined') {
+    if (globalThis.window !== undefined) {
       localStorage.setItem(this.storageKey, JSON.stringify(tema));
     }
     this.themeSubject.next(tema);
@@ -40,7 +40,7 @@ export class ThemeService {
   }
 
   private leerTema(): ThemeConfig {
-    const raw = typeof window === 'undefined' ? null : localStorage.getItem(this.storageKey);
+    const raw = globalThis.window === undefined ? null : localStorage.getItem(this.storageKey);
     if (!raw) return DEFAULT_THEME;
 
     try {

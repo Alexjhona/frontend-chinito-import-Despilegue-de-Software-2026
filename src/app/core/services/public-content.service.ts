@@ -184,7 +184,7 @@ export class PublicContentService {
   }
 
   private leerConfig(): PublicContentConfig {
-    if (typeof window === 'undefined') return this.clonar(DEFAULT_PUBLIC_CONTENT);
+    if (globalThis.window === undefined) return this.clonar(DEFAULT_PUBLIC_CONTENT);
 
     const raw = localStorage.getItem(this.storageKey);
     if (!raw) return this.clonar(DEFAULT_PUBLIC_CONTENT);
@@ -210,31 +210,34 @@ export class PublicContentService {
 
   private normalizarSlides(slides: unknown): PublicSlideConfig[] {
     if (!Array.isArray(slides) || !slides.length) return this.clonar(DEFAULT_PUBLIC_CONTENT.slidesInicio);
-    return this.clonar(DEFAULT_PUBLIC_CONTENT.slidesInicio).map((base, index) => ({
-      ...base,
-      ...(slides[index] || {}),
-    }));
+    return this.clonar(DEFAULT_PUBLIC_CONTENT.slidesInicio)
+      .map((base, index) => this.unirConfig(base, slides[index]));
   }
 
   private normalizarServicios(servicios: unknown): PublicServicioConfig[] {
     if (!Array.isArray(servicios) || !servicios.length) return this.clonar(DEFAULT_PUBLIC_CONTENT.servicios);
-    return this.clonar(DEFAULT_PUBLIC_CONTENT.servicios).map(base => ({
-      ...base,
-      ...(servicios.find((servicio: Partial<PublicServicioConfig>) => servicio?.id === base.id) || {}),
-    }));
+    return this.clonar(DEFAULT_PUBLIC_CONTENT.servicios)
+      .map(base => this.unirConfig(
+        base,
+        servicios.find((servicio: Partial<PublicServicioConfig>) => servicio?.id === base.id)
+      ));
   }
 
   private normalizarBeneficios(beneficios: unknown): PublicBeneficioConfig[] {
     if (!Array.isArray(beneficios) || !beneficios.length) return this.clonar(DEFAULT_PUBLIC_CONTENT.beneficios);
-    return this.clonar(DEFAULT_PUBLIC_CONTENT.beneficios).map((base, index) => ({
-      ...base,
-      ...(beneficios[index] || {}),
-    }));
+    return this.clonar(DEFAULT_PUBLIC_CONTENT.beneficios)
+      .map((base, index) => this.unirConfig(base, beneficios[index]));
   }
 
   private normalizarIds(ids: unknown): number[] {
     if (!Array.isArray(ids)) return [];
-    return [...new Set(ids.map(id => Number(id)).filter(id => Number.isFinite(id)))];
+    return [...new Set(ids.map(Number).filter(id => Number.isFinite(id)))];
+  }
+
+  private unirConfig<T extends object>(base: T, valor: unknown): T {
+    return valor && typeof valor === 'object'
+      ? { ...base, ...(valor as Partial<T>) }
+      : base;
   }
 
   private clonar<T>(config: T): T {

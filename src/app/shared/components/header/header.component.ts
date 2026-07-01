@@ -15,7 +15,7 @@ export class HeaderComponent implements OnDestroy {
   isMenuOpen = false;
   mostrarConfirmacionLogout = false;
   tituloActual = 'Inicio';
-  private routeSubscription: Subscription;
+  private readonly routeSubscription: Subscription;
 
   constructor(
     private readonly authService: AuthService,
@@ -24,8 +24,8 @@ export class HeaderComponent implements OnDestroy {
   ) {
     this.actualizarTitulo(this.router.url);
     this.routeSubscription = this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(event => this.actualizarTitulo((event as NavigationEnd).urlAfterRedirects));
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(event => this.actualizarTitulo(event.urlAfterRedirects));
   }
 
   toggleMenu(): void {
